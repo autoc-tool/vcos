@@ -1,0 +1,941 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+/* Including File */
+#include "dcm.h"
+#include "pdur.h"
+
+# if (CONFIG_MODULE_RTE == 1)
+#include "Rte_Dcm.h"
+#endif
+
+#if (CONFIG_MODULE_DEM == 1)
+#include "dem.h"
+#endif
+#if (CONFIG_MODULE_NVM == 1)
+#include "nvm.h"
+#endif
+#if (CONFIG_MODULE_COMM == 1)
+#include "comm.h"
+#endif
+#include "dcm_callout_stubs.h"
+{%- for header in dcm_HeaderFile %}
+#include "{{ header }}"
+{%- endfor %}
+
+#define DCM_START_SEC_MULTI_APP_BSS
+#include "dcm_memmap.h"
+{%- for key, value in dcm_DcmDslBuffers.items() %}
+static VAR(uint8, DCM_MULTI_APP_BSS) dcm_dsl_buffer_{{ key }}[{{ value["DcmDslBufferSize"]["Value"] }}];
+{%- endfor %}
+
+{%- if dcm_DcmDslProtocolRows|length > 0 %}
+static VAR(dcm_dsl_run_time_protocol_parameters_type, DCM_MULTI_APP_BSS) dcm_dsl_runtime_variables[{{dcm_DcmDslProtocolRows|length}}];
+{%- endif %}
+{%- for key, value in dcm_DcmDslBuffers.items() %}
+static VAR(dcm_dsl_buffer_runtime_type, DCM_MULTI_APP_BSS) dsl_buffer_runtime_{{ key }};
+{%- endfor %}
+#define DCM_STOP_SEC_MULTI_APP_BSS
+#include "dcm_memmap.h"
+
+
+#define DCM_START_SEC_PRIVATE_BSS
+#include "dcm_memmap.h"
+{%- if dcm_DcmDspVehicleSystemGroupRow|length > 0 %}
+static VAR(dcm_vsg_state_type, DCM_PRIVATE_BSS) vsg_enable_state_list[DCM_NOF_VEHICLE_SYSTEM_GROUPS];
+{%- endif %}
+#define DCM_STOP_SEC_PRIVATE_BSS
+#include "dcm_memmap.h"
+
+/* RID CallBack 配置 */
+{%- for key, value in dcm_DcmDspRoutines.items() %}
+{%- if check_key_exit(value, "DcmDspStartRoutine") %}
+#define DCM_START_SEC_CODE
+#include "dcm_memmap.h"
+static FUNC(Std_ReturnType, DCM_CODE) {{ "DCM_RoutineServices_"+key+"_Start" }}(uint8 *indata, dcm_op_status_type op_status, uint8 *outdata, uint16 *current_data_length, dcm_nrc_type *error_code){
+    {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineIn") %}
+        {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"]) %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspStartRoutineIn")}} dataInIn_{{signal_name}};
+        {%- endfor %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+    dataInIn_{{signal_name}} = {{get_routine_util_name(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"],signal_name)}}
+        {%- endfor %}
+    {%- endif %}
+    {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineOut") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) %}
+        {%- else %}
+    *current_data_length = {{ get_routine_parameters_size(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) }};
+        {%- endif %}
+    {%- else %}
+    *current_data_length = 0;
+    {%- endif %}
+    Std_ReturnType std_return;
+    std_return = {{ get_ui_func_by_use_port(value["DcmDspRoutineUsePort"]["Value"], value["DcmDspStartRoutine"]["DcmDspStartRoutineFnc"]["Value"], "Rte_Call_RoutineServices_"+key+"_Start") }} (
+    {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineIn") %}
+        {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"]) %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+                dataInIn_{{signal_name}},
+        {%- endfor %}
+    {%- endif %}
+                op_status,
+    {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineOut") %}
+        {%- set outsignals_type_dict = get_routine_parameters_signal_type(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) %}
+        {%- for signal_name, signals_type in outsignals_type_dict.items() %}
+            {%- if value["DcmDspRoutineUsePort"]["Value"] and signals_type != "UINT8_N" %}
+                ((Dcm_StartDataOut_{{key}}_{{signal_name}}Type *){{get_routine_outsignal_util_name(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"],signal_name)}}),
+            {%- else %}
+                (({{ get_routine_transform_signal_type(signals_type,"DcmDspStartRoutineOut")}} *){{get_routine_outsignal_util_name(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"],signal_name)}}),
+            {%- endif %}
+        {%- endfor %}
+    {%- endif %}
+    {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineIn") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"]) %}
+                *current_data_length,
+        {%- endif %}
+    {%- elif check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineOut") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) %}
+                *current_data_length,
+        {%- endif %}
+    {%- endif %}
+                error_code
+            );
+    return std_return;
+};
+#define   DCM_STOP_SEC_CODE
+#include "dcm_memmap.h"
+{% endif %}
+
+{%- if check_key_exit(value, "DcmDspStopRoutine") %}
+#define DCM_START_SEC_CODE
+#include "dcm_memmap.h"
+static FUNC(Std_ReturnType, DCM_CODE) {{  "DCM_RoutineServices_"+key+"_Stop" }}(uint8 *indata, dcm_op_status_type op_status, uint8 *outdata, uint16 *current_data_length, dcm_nrc_type *error_code){
+    {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineIn") %}
+        {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"]) %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspStopRoutineIn")}} dataInIn_{{signal_name}};
+        {%- endfor %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+    dataInIn_{{signal_name}} = {{get_routine_util_name(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"],signal_name)}}
+        {%- endfor %}
+    {%- endif %}
+    {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineOut") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) %}
+        {%- else %}
+    *current_data_length = {{ get_routine_parameters_size(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) }};
+        {%- endif %}
+    {%- else %}
+    *current_data_length = 0;
+    {%- endif %}
+    Std_ReturnType std_return;
+    std_return = {{get_ui_func_by_use_port(value["DcmDspRoutineUsePort"]["Value"], value["DcmDspStopRoutine"]["DcmDspStopRoutineFnc"]["Value"], "Rte_Call_RoutineServices_"+key+"_Stop")}}(
+    {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineIn") %}
+    {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"]) %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+                dataInIn_{{signal_name}},
+        {%- endfor %}
+    {%- endif %}
+                op_status,
+    {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineOut") %}
+        {%- set outsignals_type_dict = get_routine_parameters_signal_type(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) %}
+        {%- for signal_name, signals_type in outsignals_type_dict.items() %}
+            {%- if value["DcmDspRoutineUsePort"]["Value"] and signals_type != "UINT8_N" %}
+                ((Dcm_StopDataOut_{{key}}_{{signal_name}}Type *){{get_routine_outsignal_util_name(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"],signal_name)}}),
+            {%- else %}
+                (({{ get_routine_transform_signal_type(signals_type,"DcmDspStopRoutineOut")}} *){{get_routine_outsignal_util_name(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"],signal_name)}}),
+            {%- endif %}
+        {%- endfor %}
+    {%- endif %}
+    {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineIn") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"]) %}
+                *current_data_length,
+        {%- endif %}
+    {%- elif check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineOut") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) %}
+                *current_data_length,
+        {%- endif %}
+    {%- endif %}
+                error_code
+            );
+    return std_return;
+};
+#define   DCM_STOP_SEC_CODE
+#include "dcm_memmap.h"
+{% endif %}
+
+{%- if check_key_exit(value, "DcmDspRequestRoutineResults") %}
+#define DCM_START_SEC_CODE
+#include "dcm_memmap.h"
+static FUNC(Std_ReturnType, DCM_CODE) {{  "DCM_RoutineServices_"+key+"_RequestResults"}}(dcm_op_status_type op_status, uint8 *outdata, uint16 *current_data_length, dcm_nrc_type *error_code){
+    {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsIn") %}
+        {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsIn"]) %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspRequestRoutineResultsIn")}} dataInIn_{{signal_name}};
+        {%- endfor %}
+        {%- for signal_name, signals_type in signals_type_dict.items() %}
+    dataInIn_{{signal_name}} = {{get_routine_util_name(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsIn"],signal_name)}}
+        {%- endfor %}
+    {%- endif %}
+    {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsOut") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) %}
+        {%- else %}
+    *current_data_length = {{ get_routine_parameters_size(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) }};
+        {%- endif %}
+    {%- else %}
+    *current_data_length = 0;
+    {%- endif %}
+    Std_ReturnType std_return;
+    std_return = {{get_ui_func_by_use_port(value["DcmDspRoutineUsePort"]["Value"], value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsFnc"]["Value"], "Rte_Call_RoutineServices_"+key+"_RequestResults")}}(
+    {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsIn") %}
+        {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsIn"]) %}
+            {%- for signal_name, signals_type in signals_type_dict.items() %}
+                dataInIn_{{signal_name}},
+            {%- endfor %}
+    {%- endif %}
+                op_status,
+    {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsOut") %}
+        {%- set outsignals_type_dict = get_routine_parameters_signal_type(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) %}
+        {%- for signal_name, signals_type in outsignals_type_dict.items() %}
+            {%- if value["DcmDspRoutineUsePort"]["Value"] and signals_type != "UINT8_N" %}
+                ((Dcm_RequestDataOut_{{key}}_{{signal_name}}Type *){{get_routine_outsignal_util_name(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"],signal_name)}}),
+            {%- else %}
+                (({{ get_routine_transform_signal_type(signals_type,"DcmDspRequestRoutineResultsOut")}} *){{get_routine_outsignal_util_name(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"],signal_name)}}),
+            {%- endif %}
+        {%- endfor %}
+    {%- endif %}
+    {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsIn") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsIn"]) %}
+                *current_data_length,
+        {%- endif %}
+    {%- elif check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsOut") %}
+        {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) %}
+                *current_data_length,
+        {%- endif %}
+    {%- endif %}
+                error_code
+            );
+    return std_return;
+
+};
+#define   DCM_STOP_SEC_CODE
+#include "dcm_memmap.h"
+{% endif %}
+{%- endfor %}
+
+#define DCM_START_SEC_CONST
+#include "dcm_memmap.h"
+
+{%- for key, value in dcm_DcmDslProtocolRows.items() %}
+static CONST(dcm_dsl_main_connection_type, DCM_CONST) DcmDslProtocolRow{{ loop.index0 }}_ConnectionList[{{get_connection_count_in_protocol(value)}}];
+{%- endfor %}
+{%- if dcm_DcmDslProtocolRxs|length > 0 %}
+static CONST(dcm_dsl_protocol_rx_type, DCM_CONST) dcm_dsl_protocol_rx_list[{{dcm_DcmDslProtocolRxs|length}}];
+{%- endif %}
+{%- if dcm_DcmDslProtocolTxs|length > 0 %}
+static CONST(dcm_dsl_protocol_tx_type, DCM_CONST) dcm_dsl_protocol_tx_list[{{dcm_DcmDslProtocolTxs|length}}];
+{%- endif %}
+
+/************************************************************************
+ *                                  DSD                                 *
+ ************************************************************************/
+/* 子服务 dcm_dsd_sub_service_type 配置  */
+{%- for key, value in dcm_DcmDsdService.items() %}
+    {%- set subservice_dit = get_subservice_dict(value) %}
+    {%- if subservice_dit|length > 0 %}
+/* DsdTable({{value["dsd_service_table_index"]}}) 服务{{ "0x%.2X" | format(value["DcmDsdSidTabServiceId"]["Value"]) }} */
+static CONST(dcm_dsd_sub_service_type, DCM_CONST) SubService_table{{ value["dsd_service_table_index"] }}_{{ "0x%.2X" | format(value["DcmDsdSidTabServiceId"]["Value"]) }}[] = {
+    /*  子服务名称                           DsdSubServiceId  SubServiceModeRuleIndex  DsdSubServiceSecurityMask  DsdSubServiceSessionMask */
+        {%- for key1, value1 in subservice_dit.items() %}
+            {%- set security_mask = get_security_mask(value1["DcmDsdSubServiceSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+            {%- set session_mask = get_session_mask(value1["DcmDsdSubServiceSessionLevelRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+    {{"{/* %-30s */             0x%.2X, %22du, %13du /* %s */, %13du /* %s */ }," | format(key1, value1["DcmDsdSubServiceId"]["Value"], get_moderule_ref_str(value1["DcmDsdSubServiceModeRuleRef"]["ValueRef"],dcm_DcmModeRules), security_mask, to_binary(security_mask), session_mask, to_binary(session_mask)) }}
+        {%- endfor %}
+};
+    {% endif %}
+{%- endfor %}
+
+{% if dcm_DcmDsdServiceTable|length > 0 %}
+/* 服务 DsdServiceType 配置 */
+{%- for key, value in dcm_DcmDsdServiceTable.items() %}
+static CONST(dcm_dsd_service_type, DCM_CONST) DsdService_{{ value["dsd_service_table_index"] }}[] = {
+    /*  服务名称                             DsdSidTabServiceId  DsdSidSubServiceCount  DsdSidTabModeRuleIndex  DsdSidTabSecurityMask   DsdSidTabSessionMask       DsdSubServiceList */
+    {%- for key1, value1 in dcm_DcmDsdService.items() %}
+        {%- if value["dsd_service_table_index"] == value1["dsd_service_table_index"] %}
+            {%- set subservice_dit = get_subservice_dict(value1) %}
+            {%- set session_mask = get_session_mask(value1["DcmDsdSidTabSessionLevelRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+            {%- set security_mask = get_security_mask(value1["DcmDsdSidTabSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+    {{"{/* %-30s */                0x%.2X, %20du, %22du, %8du /* %s */,  %8du /* %s */, %23s}," | format(key1.split("_")[0], value1["DcmDsdSidTabServiceId"]["Value"], subservice_dit|length, get_moderule_ref_str(value1["DcmDsdSidTabModeRuleRef"]["ValueRef"],dcm_DcmModeRules), security_mask, to_binary(security_mask), session_mask, to_binary(session_mask), get_subservice_ref(value1)) }}
+        {%- endif %}
+    {%- endfor %}
+};
+{%- endfor %}
+static CONST(dcm_dsd_service_table_type, DCM_CONST) dsd_service_table[] = {
+    {%- for key, value in dcm_DcmDsdServiceTable.items() %}
+    {
+        .nof_services = {{ value|length - 3 }}u,
+        .dsd_service = DsdService_{{ value["dsd_service_table_index"] }},
+    },
+    {%- endfor %}
+};
+{% endif %}
+
+/************************************************************************
+ *                                  DSP                                 *
+ ************************************************************************/
+{% if dcm_DcmDspSecurityRow|length > 0 %}
+/*********************
+ *  安全访问级别配置  *
+ *********************/
+static CONST(dcm_dsp_security_type, DCM_CONST) dsp_security_list[] = {
+    {%- for key, value in dcm_DcmDspSecurityRow.items() %}
+    {   /* 会话级别  {{key}} */
+        .dsp_security_level = {{ value["DcmDspSecurityLevel"]["Value"] }}u,
+        .dsp_security_adr_size = {{ value["DcmDspSecurityADRSize"]["Value"] }}u,
+        .dsp_security_seed_size = {{ value["DcmDspSecuritySeedSize"]["Value"] }}u,
+        .dsp_security_key_size = {{ value["DcmDspSecurityKeySize"]["Value"] }}u,
+        .dsp_security_delay_time_on_boot = {{ (value["DcmDspSecurityDelayTimeOnBoot"]["Value"] * 1000) | int }}u,
+        .dsp_security_num_att_delay = {{ value["DcmDspSecurityNumAttDelay"]["Value"] }}u,
+        .dsp_security_delay_time = {{ (value["DcmDspSecurityDelayTime"]["Value"] * 1000) | int }}u,
+        .get_seed = {.{% if value["DcmDspSecurityADRSize"]["Value"] == 0 %}get_seed_without_record{% else %}get_seed_with_record{% endif %} = {{ get_ui_func_by_variation(value["DcmDspSecurityUsePort"]["Value"], value["DcmDspSecurityGetSeedFnc"]["Value"], "Rte_Call_SecurityAccess_"+key+"_GetSeed") }}},
+        .compare_key = {{ get_ui_func_by_variation(value["DcmDspSecurityUsePort"]["Value"], value["DcmDspSecurityCompareKeyFnc"]["Value"], "Rte_Call_SecurityAccess_"+key+"_CompareKey") }},
+        {%- if get_dcm_sec_att_cntr_enabled_value(dcm_DcmDspSecurityRow) == "STD_ON" %}
+        .set_attempt_counter = {{ get_func_CheckEnabled(value["DcmDspSecurityUsePort"]["Value"], value["DcmDspSecuritySetAttemptCounterFnc"]["Value"], "Rte_Call_SecurityAccess_"+key+"_SetSecurityAttemptCounter", value["DcmDspSecurityAttemptCounterEnabled"]["Value"]) }},
+        .get_attempt_counter = {{ get_func_CheckEnabled(value["DcmDspSecurityUsePort"]["Value"], value["DcmDspSecurityGetAttemptCounterFnc"]["Value"], "Rte_Call_SecurityAccess_"+key+"_GetSecurityAttemptCounter", value["DcmDspSecurityAttemptCounterEnabled"]["Value"]) }},
+        {%- endif %}
+    },
+    {%- endfor %}
+};
+{% endif%}
+{% if dcm_DcmDspSessionRow|length > 0 %}
+/*********************
+ *    会话模式配置    *
+ *********************/
+static CONST(dcm_dsp_session_type, DCM_CONST) dsp_session_list[] = {
+    {%- for key, value in dcm_DcmDspSessionRow.items() %}
+    {   /* {{key}} 会话 */
+        .dsp_session_level = {{ value["DcmDspSessionLevel"]["Value"] }},
+        .dsp_session_p2server_max = {{ (value["DcmDspSessionP2ServerMax"]["Value"] * 1000) | int }}u, //ms
+        .dsp_session_p2star_server_max = {{ (value["DcmDspSessionP2StarServerMax"]["Value"] * 1000) | int }}u, //ms
+        .dsp_session_for_boot = {{value["DcmDspSessionForBoot"]["Value"]}},
+        .dsp_session_response_multiple_pending_fnc = {{ get_fnc_value_except_none(value["DcmDspSessionResponseMultiplePendingFnc"]["Value"]) }},
+    },
+    {%- endfor %}
+};
+{% endif %}
+
+/*********************
+ *    DID相关配置    *
+ *********************/
+/* DID VSG 配置 */
+{%- for key, value in dcm_DcmDspDidInfos.items() %}
+    {%- if check_key_exit(value, "DcmDspDidRead") -%}
+        {%- set vsg_ref_list = get_vsg_ref_list(value["DcmDspDidRead"]["DcmDspDidReadVehicleSystemGroupRef"]["ValueRef"]) -%}
+        {%- if vsg_ref_list|length > 0 %}
+static CONST(dcm_vsg_id_type, DCM_CONST) DidReadVSG_{{ key }}[{{ vsg_ref_list|length }}] = {
+            {%- for vsg in vsg_ref_list %}
+    DcmConf_DcmDspVSGRow_{{ dcm_get_last_str(vsg) }},
+            {%- endfor %}
+};
+        {%- endif -%}
+    {%- endif -%}
+    {%- if check_key_exit(value, "DcmDspDidWrite") -%}
+        {%- set vsg_ref_list = get_vsg_ref_list(value["DcmDspDidWrite"]["DcmDspDidWriteVehicleSystemGroupRef"]["ValueRef"]) -%}
+        {%- if vsg_ref_list|length > 0 %}
+static CONST(dcm_vsg_id_type, DCM_CONST) DidWriteVSG_{{ key }}[{{ vsg_ref_list|length }}] = {
+            {%- for vsg in vsg_ref_list %}
+    DcmConf_DcmDspVSGRow_{{ dcm_get_last_str(vsg) }},
+            {%- endfor %}
+};
+        {%- endif -%}
+    {%- endif -%}
+    {%- if check_key_exit(value, "DcmDspDidControl") -%}
+        {%- set vsg_ref_list = get_vsg_ref_list(value["DcmDspDidControl"]["DcmDspDidControlVehicleSystemGroupRef"]["ValueRef"]) -%}
+        {%- if vsg_ref_list|length > 0 %}
+static CONST(dcm_vsg_id_type, DCM_CONST) DidControlVSG_{{ key }}[{{ vsg_ref_list|length }}] = {
+            {%- for vsg in vsg_ref_list %}
+    DcmConf_DcmDspVSGRow_{{ dcm_get_last_str(vsg) }},
+            {%- endfor %}
+};
+        {%- endif -%}
+    {%- endif -%}
+{%- endfor %}
+
+/* DID 读写控制权限配置 */
+{%- for key, value in dcm_DcmDspDidInfos.items() %}
+    {%- if check_key_exit(value, "DcmDspDidRead") %}
+        {%- set vsg_ref_list = get_vsg_ref_list(value["DcmDspDidRead"]["DcmDspDidReadVehicleSystemGroupRef"]["ValueRef"]) %}
+        {%- set session_mask = get_session_mask(value["DcmDspDidRead"]["DcmDspDidReadSessionRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+        {%- set security_mask = get_security_mask(value["DcmDspDidRead"]["DcmDspDidReadSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+static CONST(dcm_dsp_did_read_type, DCM_CONST) DspDidRead_{{ key }} = {
+    .dsp_did_read_vsg_ref_size = {{ vsg_ref_list|length }}u,
+    .dsp_did_read_session_mask = {{ session_mask }}u, //{{ to_binary(session_mask) }}
+    .dsp_did_read_security_mask = {{ security_mask }}u,  //{{ to_binary(security_mask) }}
+    .dsp_did_read_vsg_ref = {% if vsg_ref_list|length > 0 %}DidReadVSG_{{ key }}{% else %}NULL{%- endif %},
+};
+    {% endif %}
+
+    {%- if check_key_exit(value, "DcmDspDidWrite") %}
+        {%- set vsg_ref_list = get_vsg_ref_list(value["DcmDspDidWrite"]["DcmDspDidWriteVehicleSystemGroupRef"]["ValueRef"]) %}
+        {%- set session_mask = get_session_mask(value["DcmDspDidWrite"]["DcmDspDidWriteSessionRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+        {%- set security_mask = get_security_mask(value["DcmDspDidWrite"]["DcmDspDidWriteSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+static CONST(dcm_dsp_did_write_type, DCM_CONST) DspDidWrite_{{ key }} = {
+    .dsp_did_write_vsg_ref_size = {{ vsg_ref_list|length }}u,
+    .dsp_did_write_session_mask = {{ session_mask }}u, //{{ to_binary(session_mask) }}
+    .dsp_did_write_security_mask = {{ security_mask }}u,  //{{ to_binary(security_mask) }}
+    .dsp_did_write_vsg_ref = {% if vsg_ref_list|length > 0 %}DidWriteVSG_{{ key }}{% else %}NULL{%- endif %},
+};
+    {% endif %}
+
+    {%- if check_key_exit(value, "DcmDspDidControl") %}
+        {%- set vsg_ref_list = get_vsg_ref_list(value["DcmDspDidControl"]["DcmDspDidControlVehicleSystemGroupRef"]["ValueRef"]) %}
+        {%- set session_mask = get_session_mask(value["DcmDspDidControl"]["DcmDspDidControlSessionRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+        {%- set security_mask = get_security_mask(value["DcmDspDidControl"]["DcmDspDidControlSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+static CONST(dcm_dsp_did_control_type, DCM_CONST) DspDidControl_{{ key }} = {
+    .dsp_did_control_vsg_ref_size = {{ vsg_ref_list|length }}u,
+    .dsp_did_control_session_mask = {{ session_mask }}u, //{{ to_binary(session_mask) }}
+    .dsp_did_control_security_mask = {{ security_mask }}u,  //{{ to_binary(security_mask) }}
+    .dsp_did_control_vsg_ref = {% if vsg_ref_list|length > 0 %}DidControlVSG_{{ key }}{% else %}NULL{%- endif %},
+};
+    {% endif %}
+{%- endfor %}
+
+/* Dsp Data 配置 */
+{%- for key, value in dcm_DcmDspDatas.items() %}
+static CONST(dcm_dsp_data_type, DCM_CONST) DspData_{{ key }} = {
+    {%- set did_info = get_did_info_dict(dcm_DcmDspDidInfos, dcm_DcmDspDids, key) %}
+    .dsp_did_fixed_length = (boolean)TRUE,
+    .dsp_data_type = DCM_{{ value["DcmDspDataType"]["Value"] }},
+    .dsp_data_endianess = {{ adapt_dsp_data_endianess(value["DcmDspDataEndianness"]["Value"]) }},
+    .dsp_data_use_port = {{ adapt_dsp_data_use_port(value["DcmDspDataUsePort"]["Value"]) }},
+    .dsp_data_bit_size = {{ value["DcmDspDataByteSize"]["Value"]|int * 8 }}u,
+    {%- if is_nvmdid_used(dcm_DcmDspDatas) %}
+    .dsp_nvm_use_block_id = {{ get_nvmblockid(value["DcmDspDataBlockIdRef"]["ValueRef"])}},
+    {%- endif %}
+#if (DCM_DSP_DATA_READ_DATA_LENGTH_FNC_ENABLED == STD_ON)
+    .dsp_data_read_data_length_fnc = {{ get_func_client_server_readdatalength(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataReadDataLengthFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key +"_ReadDataLength", "DcmDspDidRead", value["DcmDspDataType"]["Value"]) }},
+#endif
+#if (DCM_DSP_DATA_CONDITION_CHECK_READ_FNC_ENABLED == STD_ON)
+    .dsp_data_condition_check_read_fnc = {.{{adapt_dsp_data_ConditionCheckReadFnc_type(value["DcmDspDataUsePort"]["Value"])}} = {{ get_func_ConditionCheckRead(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataConditionCheckReadFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key + "_ConditionCheckRead",value["DcmDspDataConditionCheckReadFncUsed"]["Value"]) }}},
+#endif
+#if (DCM_DSP_DATA_READ_DATA_FNC_ENABLED == STD_ON)
+    .dsp_data_read_data_fnc = {.{{adapt_dsp_data_ReadDataFnc_type(value["DcmDspDataUsePort"]["Value"])}} = {{ get_func_client_server_read_write(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataReadFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key +"_ReadData", "DcmDspDidRead") }}},
+#endif
+#if (DCM_DSP_DATA_WRITE_DATA_FNC_ENABLED == STD_ON)
+    .dsp_data_write_data_fnc = {.{{adapt_dsp_data_WriteDataFnc_type(value["DcmDspDataUsePort"]["Value"])}} = {{ get_func_client_server_read_write(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataWriteFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key + "_WriteData", "DcmDspDidWrite") }}},
+#endif
+#if (DCM_DSP_DATA_RETURN_CONTROL_TO_ECU_FNC_ENABLED == STD_ON)
+    .dsp_data_return_control_to_ecu_fnc = {.func_return_control_to_ecu_fnc = {{ get_func_client_server_control_ReturnControlToECU(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataReturnControlToEcuFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key + "_ReturnControlToECU") }}},
+#endif
+#if (DCM_DSP_DATA_RESET_TO_DEFAULT_FNC_ENABLED == STD_ON)
+    .dsp_data_reset_to_default_fnc = {.{{adapt_dsp_data_ResetToDefaultFnc_type(value["DcmDspDataUsePort"]["Value"])}} = {{ get_func_client_server_control_ResetToDefault(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataResetToDefaultFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key + "_ResetToDefault") }}},
+#endif
+#if (DCM_DSP_DATA_FREEZE_CURRENT_STATE_FNC_ENABLED == STD_ON)
+    .dsp_data_freeze_current_state_fnc = {.{{adapt_dsp_data_FreezeCurrentStateFnc_type(value["DcmDspDataUsePort"]["Value"])}} = {{ get_func_client_server_control_FreezeCurrentState(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataFreezeCurrentStateFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key + "_FreezeCurrentState") }}},
+#endif
+#if (DCM_DSP_DATA_SHORT_TERM_ADJUSTMENT_FNC_ENABLED == STD_ON)
+    .dsp_data_short_term_adjustment_fnc = {.{{adapt_dsp_data_ShortTermAdjustmentFnc_type(value["DcmDspDataUsePort"]["Value"])}} = {{ get_func_client_server_control_ShortTermAdjustment(value["DcmDspDataUsePort"]["Value"], value["DcmDspDataShortTermAdjustmentFnc"]["Value"], did_info, "Rte_Call_DataServices_" + key + "_ShortTermAdjustment") }}},
+#endif
+};
+{% endfor %}
+
+/* Dsp Did Signal 配置 */
+{%- for key, value in dcm_DcmDspDids.items() %}
+static CONST(dcm_dsp_signal_type, DCM_CONST) DspSignalRef_{{ key }}_SignalList[] = {
+    {%- for key1, value1 in value.items() %}
+        {%- set signal = get_didsignal_form_dspdid(value1) %}
+        {%- if signal != None %}
+    {
+        .dsp_signal_data_ref = &DspData_{{ dcm_get_last_str(signal["DcmDspDidDataRef"]["ValueRef"]) }},
+        .dsp_signal_bit_position = {{ signal["DcmDspDidByteOffset"]["Value"]|int * 8 }}
+    },
+        {%- endif %}
+    {%- endfor %}
+};
+{% endfor %}
+
+/* Dsp Did Info 配置 */
+{%- for key, value in dcm_DcmDspDidInfos.items() %}
+static CONST(dcm_dsp_did_info_type, DCM_CONST) DspDidInfoRef_{{ key }} = {
+    .dsp_did_access = {
+        .dsp_did_read = {% if check_key_exit(value, "DcmDspDidRead") %}&DspDidRead_{{ key }}{% else %}NULL{% endif %},
+        .dsp_did_write = {% if check_key_exit(value, "DcmDspDidWrite") %}&DspDidWrite_{{ key }}{% else %}NULL{% endif %},
+        .dsp_did_control = {% if check_key_exit(value, "DcmDspDidControl") %}&DspDidControl_{{ key }}{% else %}NULL{% endif %},
+    }
+};
+{% endfor %}
+
+{% if dcm_DcmDspDids|length > 0 %}
+/* Dsp Did 配置 */
+static CONST(dcm_dsp_did_type, DCM_CONST) dsp_did_list[] = {
+{%- for key, value in dcm_DcmDspDids.items() %}
+    {
+        .dsp_did_identifier = {{ "0x%X" | format(value["DcmDspDidIdentifier"]["Value"]) }},
+        .dsp_did_info_ref = &DspDidInfoRef_{{ dcm_get_last_str(value["DcmDspDidInfoRef"]["ValueRef"]) }},
+        .dsp_signal_ref = DspSignalRef_{{ key }}_SignalList,
+        .dsp_nof_signals = {{ get_didsignal_number_form_dspdid(value) }}u,
+        .dsp_did_data_byte_size = {{ value["DcmDspDidSize"]["Value"] }}u,/* byte */
+    },
+{%- endfor %}
+};
+{% endif %}
+
+{% if dcm_DcmDspDidRanges|length > 0 %}
+/* Dsp Did Range 配置 */
+static CONST(dcm_dsp_did_range_type, DCM_CONST) dsp_did_range_list[] = {
+{%- for key, value in dcm_DcmDspDidRanges.items() %}
+    {
+        .dsp_did_range_info_ref = &DspDidInfoRef_{{ dcm_get_last_str(value["DcmDspDidRangeInfoRef"]["ValueRef"]) }},
+        .dsp_did_range_max_data_length = {{ value["DcmDspDidRangeMaxDataLength"]["Value"] }},
+        .dsp_did_range_lower_limit = {{"0x%X" | format(value["DcmDspDidRangeIdentifierLowerLimit"]["Value"])}},
+        .dsp_did_range_upper_limit = {{"0x%X" | format(value["DcmDspDidRangeIdentifierUpperLimit"]["Value"])}},
+        .did_range_is_did_available = {% if value["DcmDspDidRangeUsePort"]["Value"] == true %}{{"Rte_Call_DataServices_DIDRange_" + key +"_IsDidAvailable"}}{% else %}{{value["DcmDspDidRangeIsDidAvailableFnc"]["Value"]}}{% endif %},
+        .did_range_read_data_fnc = {% if value["DcmDspDidRangeUsePort"]["Value"] == true %}{{"Rte_Call_DataServices_DIDRange_" + key +"_ReadData" }}{% else %}{{value["DcmDspDidRangeReadDidFnc"]["Value"]}}{% endif %},
+        .read_did_range_data_length_fnc = {% if value["DcmDspDidRangeUsePort"]["Value"] == true %}{{ "Rte_Call_DataServices_DIDRange_" + key +"_DataLength"}}{% else %}{{value["DcmDspDidRangeReadDataLengthFnc"]["Value"]}}{% endif %},
+        .did_range_write_data_fnc = {% if value["DcmDspDidRangeUsePort"]["Value"] == true %}{{ "Rte_Call_DataServices_DIDRange_" + key +"_WriteData" }}{% else %}{{value["DcmDspDidRangeWriteDidFnc"]["Value"]}}{% endif %},
+        .dcm_eol = (boolean)FALSE
+    },
+{%- endfor %}
+    {
+        .dcm_eol = (boolean)TRUE
+    }
+};
+{% endif %}
+
+/*********************
+ *    RID相关配置    *
+ *********************/
+/* RID VSG 配置 */
+{%- for key, value in dcm_DcmDspRoutines.items() %}
+    {%- set vsg_ref_list = get_routine_subservice_vsgref(value, dcm_DcmDspCommonAuthorizations) %}
+    {%- if vsg_ref_list|length > 0 %}
+static CONST(dcm_vsg_id_type, DCM_CONST) Dcm_DspVSG_cfg_0x31_{{ key }}[{{ vsg_ref_list|length }}] = {
+        {%- for vsg in vsg_ref_list %}
+    DcmConf_DcmDspVSGRow_{{ dcm_get_last_str(vsg) }},
+        {%- endfor %}
+};
+    {%- endif %}
+{%- endfor %}
+
+{% if dcm_DcmDspRoutines|length > 0 %}
+/* RID List 配置 */
+static CONST(dcm_dsp_routine_type, DCM_CONST) dsp_routine_list[] = {
+{%- for key, value in dcm_DcmDspRoutines.items() %}
+    {%- set vsg_ref_list = get_routine_subservice_vsgref(value, dcm_DcmDspCommonAuthorizations) %}
+    {%- set routine_authorization_name = get_routine_authorization_name(value) %}
+    {%- set session_mask = get_session_mask(dcm_DcmDspCommonAuthorizations[routine_authorization_name]['DcmDspCommonAuthorizationSessionRef']["ValueRef"], dcm_DcmDspSessionRow) %}
+    {%- set security_mask = get_security_mask(dcm_DcmDspCommonAuthorizations[routine_authorization_name]['DcmDspCommonAuthorizationSecurityLevelRef']["ValueRef"], dcm_DcmDspSecurityRow) %}
+    {
+        .dsp_routine_use_port = (boolean){{ value["DcmDspRoutineUsePort"]["Value"]|upper }},
+        .dsp_routine_identifier = {{ "0x%X" | format(value["DcmDspRoutineIdentifier"]["Value"]) }},
+        {%- if check_key_exit(value, "DcmDspStartRoutine") %}
+        .dsp_start_routine_fnc = {{ "DCM_RoutineServices_"+key+"_Start" }},
+        .dsp_start_routine_ctrl_opt_rec_size = {% if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineIn") %}{{ get_routine_parameters_size(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"]) }}{% else %}0{% endif %}u,
+        .dsp_start_routine_sts_opt_rec_size = {% if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineOut") %}{{ get_routine_parameters_size(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) }}{% else %}0{% endif %}u,
+        {%- else %}
+        .dsp_start_routine_fnc = NULL,
+        .dsp_start_routine_ctrl_opt_rec_size = 0u,
+        .dsp_start_routine_sts_opt_rec_size = 0u,
+        {%- endif %}
+        {%- if check_key_exit(value, "DcmDspStopRoutine") %}
+        .dsp_stop_routine_fnc = {{ "DCM_RoutineServices_"+key+"_Stop" }},
+        .dsp_stop_routine_ctrl_opt_rec_size = {% if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineIn") %}{{ get_routine_parameters_size(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"]) }}{% else %}0{% endif %}u,
+        .dsp_stop_routine_sts_opt_rec_size = {% if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineOut") %}{{ get_routine_parameters_size(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) }}{% else %}0{% endif %}u,
+        {%- else %}
+        .dsp_stop_routine_fnc = NULL,
+        .dsp_stop_routine_ctrl_opt_rec_size = 0u,
+        .dsp_stop_routine_sts_opt_rec_size = 0u,
+        {%- endif %}
+        {%- if check_key_exit(value, "DcmDspRequestRoutineResults") %}
+        .dsp_request_result_routine_fnc = {{ "DCM_RoutineServices_"+key+"_RequestResults" }},
+        .dsp_req_res_rtn_ctrl_opt_rec_size = {% if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsOut") %}{{ get_routine_parameters_size(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) }}{% else %}0{% endif %}u,
+        {%- else %}
+        .dsp_request_result_routine_fnc = NULL,
+        .dsp_req_res_rtn_ctrl_opt_rec_size = 0u,
+        {%- endif %}
+        .dsp_routine_authorization = {
+            .dsp_routine_session_mask = {{ session_mask }}u, //{{ to_binary(session_mask) }}
+            .dsp_routine_security_mask = {{ security_mask }}u,  //{{ to_binary(security_mask) }}
+            .dsp_routine_mode_rule_index = {{get_moderule_ref_str(dcm_DcmDspCommonAuthorizations[routine_authorization_name]["DcmDspCommonAuthorizationModeRuleRef"]["ValueRef"], dcm_DcmModeRules)}}u,
+            .dsp_routine_vsg_ref_size = {{ vsg_ref_list|length }}u,
+            .dsp_routine_vsg_ref = {% if vsg_ref_list|length > 0 %}Dcm_DspVSG_cfg_0x31_{{ key }}{% else %}NULL{% endif %},
+        },
+    },
+{%- endfor %}
+};
+{% endif %}
+
+{% if dcm_DcmDspPids|length > 0 %}
+/* PID List 配置 */
+static CONST(dcm_dsp_pid_type, DCM_CONST) dsp_pid_list[] = {
+{%- for key, value in dcm_DcmDspPids.items() %}
+    {
+        .dcm_pid_enabled = {{ value["DcmDspPidUsed"]["Value"]|upper }},
+        .dsp_pid_identifier = {{"0x%X" | format(value["DcmDspPidIdentifier"]["Value"])}},
+        .dsp_pid_service = {{ value["DcmDspPidService"]["Value"] }},
+        .dsp_pid_size = {{ value["DcmDspPidSize"]["Value"] }},
+        .dsp_get_pid_val_fnc = {{ get_func_client_server_pid_read(value) }},
+    },
+{%- endfor %}
+};
+{% endif %}
+
+{% if dcm_DcmDspVehInfos|length > 0 %}
+/* VID 配置 */
+{%- for infoname, DcmDspVehInfo in dcm_DcmDspVehInfos.items() %}
+static CONST(dcm_dsp_veh_info_data_type, DCM_CONST) Info_{{infoname}}DataItems[] = {
+    {%- for dataname, datavalue in DcmDspVehInfo.items() %}
+        {%- if "DcmDspVehInfoDataSize" in datavalue%}
+    {
+        .dsp_get_veh_info_type_fnc = {{getVehInfoTypeFnc(dataname, datavalue)}},
+        .dsp_veh_info_size = {{getVehInfoSize(datavalue)}}
+    },
+        {%- endif %}
+    {%- endfor %}
+};
+{%- endfor %}
+
+static CONST(dcm_dsp_veh_info_type, DCM_CONST) dsp_veh_info_list[] = {
+{%- for key, value in dcm_DcmDspVehInfos.items() %}
+    {
+        .dsp_veh_info_data_items = Info_{{key}}DataItems,
+        .dsp_veh_info_total_size = {{getVehInfoTotalSize(value)}},
+        .dsp_veh_info_type = {{value["DcmDspVehInfoInfoType"]["Value"]}},
+        .dsp_veh_info_number_of_data_items = {{getVehInfoNumberOfDataItems(value)}},
+    },
+{%- endfor %}
+};
+{% endif %}
+
+/* 通信控制通道配置 */
+{% if dcm_DcmDspComControl_allChannels|length > 0 %}
+static CONST(uint8, DCM_CONST) dsp_ctrl_all_channel[{{dcm_DcmDspComControl_allChannels|length}}] = { {%- for key, value in dcm_DcmDspComControl_allChannels.items() %}{{get_elememt_index_in_list(value["DcmDspAllComMChannelRef"]["ValueRef"].split("/")[-1], dcm_DcmDspComControlList)}}, {%- endfor %} };
+{%- endif %}
+{% if dcm_DcmDspComControl_specificChannels|length > 0 %}
+static CONST(dcm_dsp_com_control_specific_channel_type, DCM_CONST) dsp_ctrl_spec_channel[{{dcm_DcmDspComControl_specificChannels|length}}] = {
+{%- if 'CONFIG_MODULE_COMM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_COMM'] == 'y' %}
+    {%- for key, value in dcm_DcmDspComControl_specificChannels.items() %}
+    {
+        .comm_channel_index = {{get_elememt_index_in_list(value["DcmDspSpecificComMChannelRef"]["ValueRef"].split("/")[-1], dcm_DcmDspComControlList)}},
+        .subnet_number = {{ value["DcmDspSubnetNumber"]["Value"] }},
+    },
+    {%- endfor %}
+{%- endif %}
+};
+{% endif %}
+{%- if dcm_DcmDspComControl_allChannels|length > 0 or dcm_DcmDspComControl_specificChannels|length > 0 %}
+static CONST(dcm_dsp_com_control_type, DCM_CONST) dsp_com_control = {
+    .dsp_control_all_channel = {% if dcm_DcmDspComControl_allChannels|length > 0 %}dsp_ctrl_all_channel{%- else %} NULL{%- endif %},
+    {%- if dcm_DcmDspComControl_specificChannels|length > 0 %}.dsp_control_specific_channel = dsp_ctrl_spec_channel,{%- endif %}
+};
+{% endif %}
+
+static CONST(dcm_comm_channel_config_type, DCM_CONST) dcm_comm_channel_cfg[{{ dcm_DcmDspComControlList|length }}] = {
+{%- if 'CONFIG_MODULE_COMM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_COMM'] == 'y' %}
+    {%- for comchannel in dcm_DcmDspComControlList %}
+    {
+        {%- if is_comchannel_in_com_control(comchannel, dcm_DcmDspComControl_allChannels) == true %}
+        .mode_switch_fnc = {%- if 'CONFIG_MODULE_RTE' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_RTE'] == 'y' %} Rte_Switch_CommunicationControlModeSwitchInterface_{{ comchannel }}_DcmCommunicationControl,{%- else %} NULL,{%- endif %}
+        {%- else %}
+        .mode_switch_fnc = NULL,
+        {%- endif %}
+        .network_handle = ComMConf_ComMChannel_{{ comchannel }},
+        .internal_index = {{ loop.index0 }},
+    },
+    {%- endfor %}
+{%- endif %}
+};
+/* 23/3D 内存读取配置 */
+{%- if dcm_DcmDspMemoryIdInfoList|length > 0 %}
+{%- for key, value in dcm_DcmDspMemoryIdInfoList.items() %}
+    {%- set read_name_list = dcm_get_Read_MemoryRange_name_list(value) %}
+    {%- set write_name_list = dcm_get_Write_MemoryRange_name_list(value) %}
+    {%- if read_name_list|length > 0 %}
+static CONST(dcm_dsp_memory_range_info, DCM_CONST) DspReadMemoryRangeInfo{{loop.index0}}[] = {
+        {%- for read_name in read_name_list %}
+        {%- set session_mask = get_session_mask(value[read_name]["DcmDspReadMemoryRangeSessionLevelRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+        {%- set security_mask = get_security_mask(value[read_name]["DcmDspReadMemoryRangeSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+    {
+        .memory_range_session_mask = {{ session_mask }}u, //{{ to_binary(session_mask) }}
+        .memory_range_security_mask = {{ security_mask }}u, //{{ to_binary(security_mask) }}
+        .memory_address_high = {{to_hex(value[read_name]["DcmDspReadMemoryRangeHigh"]["Value"])}}u,
+        .memory_address_low = {{to_hex(value[read_name]["DcmDspReadMemoryRangeLow"]["Value"])}}u,
+    },
+        {%- endfor %}
+};
+    {%- endif %}
+    {% if read_name_list|length > 0 %}
+
+static CONST(dcm_dsp_memory_range_info, DCM_CONST) DspWriteMemoryRangeInfo_{{loop.index0}}[] = {
+        {%- for write_name in write_name_list %}
+        {%- set session_mask = get_session_mask(value[write_name]["DcmDspWriteMemoryRangeSessionLevelRef"]["ValueRef"], dcm_DcmDspSessionRow) %}
+        {%- set security_mask = get_security_mask(value[write_name]["DcmDspWriteMemoryRangeSecurityLevelRef"]["ValueRef"], dcm_DcmDspSecurityRow) %}
+    {
+        .memory_range_session_mask = {{ session_mask }}u, //{{ to_binary(session_mask) }}
+        .memory_range_security_mask = {{ security_mask }}u, //{{ to_binary(security_mask) }}
+        .memory_address_high = {{to_hex(value[write_name]["DcmDspWriteMemoryRangeHigh"]["Value"])}}u,
+        .memory_address_low = {{to_hex(value[write_name]["DcmDspWriteMemoryRangeLow"]["Value"])}}u,
+    },
+        {%- endfor %}
+};
+
+    {% endif %}
+{%- endfor %}
+{% endif %}
+
+{%- if dcm_DcmDspMemoryIdInfoList|length > 0 %}
+static CONST(dcm_dsp_memory_type, DCM_CONST) dsp_memory_info_list[] = {
+{%- for key, value in dcm_DcmDspMemoryIdInfoList.items() %}
+    {%- set read_name_list = dcm_get_Read_MemoryRange_name_list(value) %}
+    {%- set write_name_list = dcm_get_Write_MemoryRange_name_list(value) %}
+    {
+        .read_memory_range_info_length = {{ read_name_list|length }}u,
+        .write_memory_range_info_length = {{ write_name_list|length }}u,
+        .read_memory_info = {% if read_name_list|length > 0 %}DspReadMemoryRangeInfo{{loop.index0}}{% else %}NULL{% endif %},
+        .write_memory_info = {% if write_name_list|length > 0 %}DspWriteMemoryRangeInfo_{{loop.index0}}{% else %}NULL{% endif %},
+    },
+{%- endfor %}
+};
+{% endif %}
+
+{% if dcm_DcmDspVehicleSystemGroupRow|length > 0 %}
+/* VehicleSystemGroup的VSGId映射到vsg_enable_state数组的Index */
+static CONST(dcm_vsg_id_type, DCM_CONST) dsp_vsg_id_map[DCM_NOF_VEHICLE_SYSTEM_GROUPS] = {
+    {%- for key, value in dcm_DcmDspVehicleSystemGroupRow.items() %}
+    [{{loop.index0}}] = DcmConf_DcmDspVSGRow_{{ dcm_get_last_str(key) }},
+    {%- endfor %}
+};
+/* VSG相关配置 */
+static CONST(dcm_dsp_vehicle_system_group_type, DCM_CONST) dsp_vsg_info = {
+   .vsg_id_map = dsp_vsg_id_map,
+   .vsg_enable_state = vsg_enable_state_list,
+};
+{%- endif %}
+
+static CONST(dcm_dsp_type, DCM_CONST) dsp = {
+    .dsp_did = {% if dcm_DcmDspDids|length > 0 %}dsp_did_list{% else %}NULL{% endif %},
+    .dsp_did_range = {% if dcm_DcmDspDidRanges|length > 0 %}dsp_did_range_list{% else %}NULL{% endif %},
+    .dsp_pid = {% if dcm_DcmDspPids|length > 0 %}dsp_pid_list{% else %}NULL{% endif %},
+    .dsp_routine = {% if dcm_DcmDspRoutines|length > 0 %}dsp_routine_list{% else %}NULL{% endif %},
+    .dsp_security = {% if dcm_DcmDspSecurityRow|length > 0 %}dsp_security_list{% else %}NULL{% endif %},
+    .dsp_session = {% if dcm_DcmDspSessionRow|length > 0 %}dsp_session_list{% else %}NULL{% endif %},
+    .dsp_veh_info = {% if dcm_DcmDspVehInfos|length > 0 %}dsp_veh_info_list{% else %}NULL{% endif %},
+    .dsp_memory = {% if dcm_DcmDspMemoryIdInfoList|length > 0 %}dsp_memory_info_list{% else %}NULL{% endif %},
+    .dsp_com_control = {% if dcm_DcmDspComControl_allChannels|length > 0 or dcm_DcmDspComControl_specificChannels|length > 0 %}&dsp_com_control {%- else %} NULL {%- endif %},
+    .dsp_vehicle_system_group = {% if dcm_DcmDspVehicleSystemGroupRow|length > 0 %}&dsp_vsg_info{%- else %}NULL{%- endif %},
+};
+
+/************************************************************************
+ *                                  DSL                                 *
+ ************************************************************************/
+
+/* DcmDslBuffers config start */
+static CONST(dcm_dsl_buffer_type, DCM_CONST) dcm_dsl_buffer_list[DCM_DSL_BUFFER_LIST_LENGTH] = {
+{%- for key, value in dcm_DcmDslBuffers.items() %}
+    {
+        .pdu_info = {
+            .SduDataPtr = dcm_dsl_buffer_{{ key }},
+            .SduLength = {{ value["DcmDslBufferSize"]["Value"] }},
+        },
+        .external_buffer_runtime_data = &dsl_buffer_runtime_{{ key }}
+    },
+{%- endfor %}
+};
+/* DcmDslBuffers config end */
+
+
+{% if dcm_DcmDslProtocolRows|length > 0 %}
+static CONST(dcm_dsl_protocol_row_type, DCM_CONST) DslProtocolRowList[] = {
+{%- for key, value in dcm_DcmDslProtocolRows.items() %}
+    {
+        /* {{ key }} */
+        .dsl_run_time_protocol_parameters = &dcm_dsl_runtime_variables[{{loop.index0}}],
+        .dsl_protocol_id = {{ value["DcmDslProtocolType"]["Value"] }},
+        .connection_count = {{ get_connection_count_in_protocol(value) }},
+        .dsl_protocol_preempt_timeout = 1000u,  //ms
+        .tim_str_p2server_adjust = {{ (value["DcmTimStrP2ServerAdjust"]["Value"] * 1000) | int }},
+        .tim_str_p2star_server_adjust = {{ (value["DcmTimStrP2StarServerAdjust"]["Value"] * 1000) | int }},
+        .tim_str_s3server = 5000u,  //ms
+        .dsl_protocol_priority = {{ value["DcmDslProtocolPriority"]["Value"] }},
+        .dsl_protocol_sid_table = {{ get_ref_from_path(value["DcmDslProtocolSIDTable"]["ValueRef"], dcm_DcmDsdServiceTable, "&dsd_service_table") if check_key_exit(value, "DcmDslProtocolSIDTable") else "NULL" }},
+        .dsl_protocol_rx_buffer = {{ get_ref_from_path(value["DcmDslProtocolRxBufferRef"]["ValueRef"], dcm_DcmDslBuffers, "&dcm_dsl_buffer_list") if check_key_exit(value, "DcmDslProtocolRxBufferRef") else "NULL" }},
+        .dsl_protocol_tx_buffer = {{ get_ref_from_path(value["DcmDslProtocolTxBufferRef"]["ValueRef"], dcm_DcmDslBuffers, "&dcm_dsl_buffer_list") if check_key_exit(value, "DcmDslProtocolTxBufferRef") else "NULL" }},
+        .dsl_main_connections = DcmDslProtocolRow{{loop.index0}}_ConnectionList,
+        .dsl_send_resp_pend_on_trans_to_boot = (boolean){{ ([value["DcmSendRespPendOnRestart"]["Value"]] | join).upper() }},
+    {%- if 'CONFIG_MODULE_DEM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_DEM'] == 'y' %}
+        .dcm_dem_client_id = DEM_CLIENT_ID_{{ dcm_get_last_str(value["DcmDemClientRef"]["ValueRef"]).upper() }},
+    {%- endif %}
+    },
+{%- endfor %}
+};
+{% endif %}
+
+{% for key, value in dcm_DcmDslProtocolRows.items() %}
+{%- if get_connection_count_in_protocol(value) > 0 %}
+static CONST(dcm_dsl_main_connection_type, DCM_CONST) DcmDslProtocolRow{{loop.index0}}_ConnectionList[] = {
+    {%- for key1, value1 in dcm_DcmDslMainConnections.items() %}
+        {%- if value1["protocol_row_index"] == value["protocol_row_index"] %}
+   {
+    {#-.DslConnectionParent = &DcmDslProtocolRow{{value["protocol_row_index"]}}_ConnectionList[{{value["connection_index"]}}],#}
+    .dsl_protocol_tx = {% if dcm_DcmDslProtocolTxs|length > 0 %}&dcm_dsl_protocol_tx_list[{{ get_protocol_tx_index_in_main_connection(value1['main_connection_index'], dcm_DcmDslProtocolTxs) }}]{% else %}NULL{% endif %},
+    .dsl_physical_protocol_rx = {% if dcm_DcmDslProtocolRxs|length > 0 %}&dcm_dsl_protocol_rx_list[{{get_protocol_phy_rx_index_in_main_connection(value1['main_connection_index'], dcm_DcmDslProtocolRxs)}}]{% else %}NULL{% endif %},
+    .connection_id = {{value1["DcmDslProtocolRxConnectionId"]["Value"]}},
+    .dsl_rx_tester_source_address = {{ "0x%.2X" | format(get_value_except_none(value1["DcmDslProtocolRxTesterSourceAddr"]["Value"])) }},
+   },
+        {%- endif %}
+   {%- endfor %}
+};
+{%- endif %}
+{%- endfor %}
+
+{% if dcm_DcmDslProtocolRxs|length > 0 %}
+static CONST(dcm_dsl_protocol_rx_type, DCM_CONST) dcm_dsl_protocol_rx_list[] = {
+{%- for key, value in dcm_DcmDslProtocolRxs.items() %}
+    {
+        .dsl_main_connection_parent = &DcmDslProtocolRow{{value["protocol_row_index"]}}_ConnectionList[{{value["connection_index"]}}],
+        .dsl_protocol_addr_type = {{ adapt_dsl_protocol_addr_type(value["DcmDslProtocolRxAddrType"]["Value"]) }},
+        .dcm_dsl_protocol_rx_pdu_id = DCM_PDU_ID_{{ dcm_get_last_str(value["DcmDslProtocolRxPduRef"]["ValueRef"]) }},
+#if (CONFIG_MODULE_COMM == 1)
+        .comm_channel_internal_index = {{ get_protocol_rx_comm_channel_index(value["main_connection_index"], dcm_DcmDslMainConnections, dcm_DcmDspComControlList) }},
+#endif
+        .dsl_protocol_row = &DslProtocolRowList[{{value["protocol_row_index"]}}],
+    },
+{%- endfor %}
+};
+{% endif %}
+
+{% if dcm_DcmDslProtocolTxs|length > 0 %}
+static CONST(dcm_dsl_protocol_tx_type, DCM_CONST) dcm_dsl_protocol_tx_list[] = {
+{%- for key, value in dcm_DcmDslProtocolTxs.items() %}
+    {
+        .dcm_dsl_protocol_tx_pdu_id = PDUR_PDU_ID_{{ dcm_get_last_str(value["DcmDslProtocolTxPduRef"]["ValueRef"]) }},
+        .dsl_protocol_row = &DslProtocolRowList[{{value["protocol_row_index"]}}],
+    },
+{%- endfor %}
+};
+{% endif %}
+
+static CONST(dcm_dsl_protocol_type, DCM_CONST) dsl_protocol = {
+    .dsl_protocol_tx_global_list = {% if dcm_DcmDslProtocolTxs|length > 0 %}dcm_dsl_protocol_tx_list{% else %}NULL{% endif %},
+    .dsl_protocol_rx_global_list = {% if dcm_DcmDslProtocolRxs|length > 0 %}dcm_dsl_protocol_rx_list{% else %}NULL{% endif %},
+    .dsl_protocol_row_list = {% if dcm_DcmDslProtocolRows|length > 0 %}DslProtocolRowList{% else %}NULL{% endif %},
+};
+
+static CONST(dcm_dsl_callback_dcm_request_service_type, DCM_CONST) dcm_request_service_list[] = {
+{%- for key, value in dcm_DcmDslCallbackDCMRequestServices.items() %}
+    {
+        .start_protocol = {%- if 'CONFIG_MODULE_RTE' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_RTE'] == 'y' %} Rte_Call_Dcm_CallbackDCMRequestServices_{{key}}_StartProtocol,{%- else %} NULL,{%- endif %}
+        .stop_protocol = {%- if 'CONFIG_MODULE_RTE' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_RTE'] == 'y' %} Rte_Call_Dcm_CallbackDCMRequestServices_{{key}}_StopProtocol,{%- else %} NULL,{%- endif %}
+    },
+{%- endfor %}
+    {
+        .start_protocol = NULL,
+        .stop_protocol = NULL,
+    }
+};
+
+static CONST(dcm_dsl_service_request_notification_type, DCM_CONST) service_request_notification[] = {
+{%- for key, value in dcm_DcmDsdServiceRequestManufacturerNotification.items() %}
+    {
+        .indication = Rte_Call_ServiceRequestManufacturerNotification_{{key}}_Indication,
+        .confirmation = Rte_Call_ServiceRequestManufacturerNotification_{{key}}_Confirmation,
+    },
+{%- endfor %}
+{%- for key, value in dcm_DcmDsdServiceRequestSupplierNotification.items() %}
+    {
+        .indication = Rte_Call_ServiceRequestSupplierNotification_{{key}}_Indication,
+        .confirmation = Rte_Call_ServiceRequestSupplierNotification_{{key}}_Confirmation,
+    },
+{%- endfor %}
+    {
+        .indication = NULL,
+        .confirmation = NULL,
+    }
+};
+
+static CONST(dcm_dsl_type, DCM_CONST) dsl = {
+    .dsl_diag_resp_max_num_resp_pend = {{ get_dsl_diag_resp_max_num_resp_pend(dcm_DcmDslDiagResp) }},
+    .dsl_buffer = dcm_dsl_buffer_list,
+    .dsl_protocol = &dsl_protocol,
+    .dsl_callback_dcm_request_service = dcm_request_service_list,
+    .dsl_service_request_notification = service_request_notification,
+{%- if get_dsl_diag_response_Indication_func(dcm_DcmDslDiagResp)[0] == "STD_ON" %}
+    .dsl_diag_response_indication = {{ get_dsl_diag_response_Indication_func(dcm_DcmDslDiagResp)[1] }},
+{%- endif %}
+};
+
+/************************************************************************
+ *                        dcm_processing_conditions                       *
+ ************************************************************************/
+{% if dcm_DcmModeConditions|length > 0 %}
+static CONST(dcm_mode_condition_type, DCM_CONST) dcm_mode_conditions[DCM_MODEMGR_CONDITIONS_SIZE] = {
+{%- for key, value in dcm_DcmModeConditions.items() %}
+    {
+        .condition = {{ value["DcmConditionType"]["Value"] }},
+        .swc_mode_ref = {{ get_function_from_str(value["DcmSwcModeRef"]["Value"]) }},
+        .dcm_processing_condition_mode = {{ value["DcmProcessingConditionMode"]["Value"] }},
+    },
+{%- endfor %}
+};
+{% endif%}
+{% for key, value in dcm_DcmModeRules.items() %}
+    {%- set modecondition_list, moderule_list = get_moderule_ref_list(value["DcmArgumentRef"]["ValueRef"], dcm_DcmModeRules, dcm_DcmModeConditions) %}
+    {%- if modecondition_list|length > 0 %}
+static CONST(uint8, DCM_CONST) {{ key }}_Condition_Index_List[{{modecondition_list|length}}] = {{ print_mode_rule_condition_list(modecondition_list) }};
+    {%- endif %}
+    {%- if moderule_list|length > 0 %}
+static CONST(uint8, DCM_CONST) {{ key }}_Rule_Index_List[{{moderule_list|length}}] = {{ print_mode_rule_condition_list(moderule_list) }};
+    {%- endif %}
+{%- endfor %}
+
+{% if dcm_DcmModeRules|length > 0 %}
+static CONST(dcm_mode_rule_type, DCM_CONST) dcm_mode_rules[DCM_MODEMGR_RULES_SIZE] = {
+{%- for key, value in dcm_DcmModeRules.items() %}
+    {%- set modecondition_list, moderule_list = get_moderule_ref_list(value["DcmArgumentRef"]["ValueRef"], dcm_DcmModeRules, dcm_DcmModeConditions) %}
+    {
+        .mode_rule_nrc_value = {{ "0x%.2X" | format(get_value_except_none(value["DcmModeRuleNrcValue"]["Value"])) }},
+        .logical_operator = {{ value["DcmLogicalOperator"]["Value"] }},
+        .nof_condition_in_rule = {{ modecondition_list|length }},
+        .nof_rule_in_rule = {{ moderule_list|length }},
+        .condition_index_list = {% if modecondition_list|length > 0 %}{{ key }}_Condition_Index_List{% else %}NULL{% endif %},
+        .rule_index_list = {% if moderule_list|length > 0 %}{{ key }}_Rule_Index_List{% else %}NULL{% endif %},
+    },
+{%- endfor %}
+};
+{%- endif %}
+
+static CONST(dcm_processing_conditions_type, DCM_CONST) dcm_processing_conditions = {
+    .mode_rule = {% if dcm_DcmModeRules|length > 0 %}dcm_mode_rules{% else %}NULL{% endif %},
+    .mode_condition = {% if dcm_DcmModeConditions|length > 0 %}dcm_mode_conditions{% else %}NULL{% endif %},
+};
+
+/*
+ * DCM configurations
+ */
+CONST(dcm_config_type, DCM_CONST) dcm_config = {
+    .dsp = &dsp,
+    .dsl = &dsl,
+    .dcm_comm_channel_cfg = dcm_comm_channel_cfg,
+    .dcm_processing_conditions = &dcm_processing_conditions,
+};
+
+#define DCM_STOP_SEC_CONST
+#include "dcm_memmap.h"
+

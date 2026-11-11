@@ -1,0 +1,40 @@
+{
+    "BSWM011001": {
+        "rule_name": "BSWM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of BswMModeRequesterId.",
+        "rule_message": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMArbitration/BswMModeRequestPort/BswMModeRequestSource/BswMGenericRequest/BswMModeRequesterId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMArbitration/BswMModeRequestPort/BswMModeRequestSource/BswMGenericRequest/BswMModeRequesterId",
+            "base_path": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMArbitration"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/BswM/BswMConfig/BswMArbitration/BswMModeRequestPort/BswMModeRequestSource/BswMGenericRequest/BswMModeRequesterId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMArbitration",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "BSWM011002": {
+        "rule_name": "BSWM011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of BswMActionListItemIndex.",
+        "rule_message": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMModeControl/BswMActionList/BswMActionListItem/BswMActionListItemIndex should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMModeControl/BswMActionList/BswMActionListItem/BswMActionListItemIndex",
+            "base_path": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMModeControl/BswMActionList"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/BswM/BswMConfig/BswMModeControl/BswMActionList/BswMActionListItem/BswMActionListItemIndex values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/BswM/BswMConfig/BswMModeControl/BswMActionList",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    }
+}

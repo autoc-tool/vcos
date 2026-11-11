@@ -1,0 +1,1607 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+/* Including File */
+#include "Platform_Types.h"
+#include "pdur.h"
+#include "com.h"
+#include "com_pbcfg.h"
+#include "com_lcfg.h"
+#include "com_types.h"
+#include "com_main.h"
+#include "SchM_Com.h"
+
+#define  COM_START_SEC_CONST
+#include "com_memmap.h"
+/**********************************************************************************************************************
+  Com_Signal init values
+**********************************************************************************************************************/
+{%- if ComGeneral.ComSignalInitValueZero == "STD_ON" %}
+static CONST(uint8, COM_CONST) com_sig_init_value_uint8_default[64] = {0u};
+{%- endif %}
+                  
+/* Signal init values from DBC */
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+        {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+            {%- if signalObj.ComSignalInitValue.Value != '0' and signalObj.ComSignalInitValue.Value != None %}
+                {%- if signalObj.ComSignalType.Value == "COM_UINT8_N" or signalObj.ComSignalType.Value == "COM_UINT8_DYN"%}
+static const {{ GetSignalVariableType(signalObj) }} Com_SignalInitValue_{{ signalObj.SignalName.Value }}[{{signalObj.ComSignalLength.Value}}] = { {%- for item in signalObj.ComSignalInitValueList %} {{item}}, {%- endfor %}};
+                {%- endif %}
+            {%- endif %}
+{%- endfor %}
+
+{%- if ComGeneral.Com_ConstValueUInt8Num != 0 %}
+/**********************************************************************************************************************
+  com_const_init_value_u8
+**********************************************************************************************************************/
+static CONST(uint8, COM_CONST) com_const_init_value_u8[{{ComGeneral.Com_ConstValueUInt8Num}}] = {
+  /* Index    ConstValueUInt8                            SignalRef                          */
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+        {%- if signalObj.ComSignalInitValue.Value != '0' and signalObj.ComSignalInitValue.Value != None %}
+            {%- if signalObj.ComSignalType.Value == "COM_UINT8" or signalObj.ComSignalType.Value == "COM_BOOLEAN" or signalObj.ComSignalType.Value == "COM_SINT8"%}
+{{ " /*  %s */  %13sU, /* %s */  " | format((signalObj.ComSignalInitValueIndex),(signalObj.ComSignalInitValue.Value),(signal))}}
+        {%- endif %}
+            {%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+
+{%- if ComGeneral.Com_ConstValueUInt16Num != 0 %}
+/**********************************************************************************************************************
+  com_const_init_value_u16
+**********************************************************************************************************************/
+static CONST(uint16, COM_CONST) com_const_init_value_u16[{{ComGeneral.Com_ConstValueUInt16Num}}] = {
+  /* Index    ConstValueUInt16                            SignalRef                          */
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+        {%- if signalObj.ComSignalInitValue.Value != '0' and signalObj.ComSignalInitValue.Value != None %}
+            {%- if signalObj.ComSignalType.Value == "COM_UINT16" or signalObj.ComSignalType.Value == "COM_SINT16"%}
+{{ " /*  %s */  %13sU, /* %s */  " | format((signalObj.ComSignalInitValueIndex),(signalObj.ComSignalInitValue.Value),(signal))}}
+        {%- endif %}
+            {%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+
+{%- if ComGeneral.Com_ConstValueUInt32Num != 0 %}
+/**********************************************************************************************************************
+  com_const_init_value_u32
+**********************************************************************************************************************/
+static CONST(uint32, COM_CONST) com_const_init_value_u32[{{ComGeneral.Com_ConstValueUInt32Num}}] = {
+  /* Index    ConstValueUInt32                            SignalRef                          */
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+        {%- if signalObj.ComSignalInitValue.Value != '0' and signalObj.ComSignalInitValue.Value != None %}
+            {%- if signalObj.ComSignalType.Value == "COM_UINT32" or signalObj.ComSignalType.Value == "COM_SINT32" or signalObj.ComSignalType.Value == "COM_FLOAT32"%}
+{{ " /*  %s */  %13sU, /* %s */  " | format((signalObj.ComSignalInitValueIndex),(signalObj.ComSignalInitValue.Value),(signal))}}
+        {%- endif %}
+            {%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+
+{%- if ComGeneral.Com_ConstValueUInt64Num != 0 %}
+/**********************************************************************************************************************
+  com_const_init_value_u64
+**********************************************************************************************************************/
+static CONST(uint64, COM_CONST) com_const_init_value_u64[{{ComGeneral.Com_ConstValueUInt64Num}}] = {
+  /* Index    ConstValueUInt64                            SignalRef                          */
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+        {%- if signalObj.ComSignalInitValue.Value != '0' and signalObj.ComSignalInitValue.Value != None %}
+            {%- if signalObj.ComSignalType.Value == "COM_UINT64" or signalObj.ComSignalType.Value == "COM_SINT64" or signalObj.ComSignalType.Value == "COM_FLOAT64"%}
+{{ " /*  %s */  %13sU, /* %s */  " | format((signalObj.ComSignalInitValueIndex),(signalObj.ComSignalInitValue.Value),(signal))}}
+        {%- endif %}
+            {%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+#define  COM_STOP_SEC_CONST
+#include "com_memmap.h"
+
+{%- if ComGeneral.Com_Support_MutiCore == "STD_OFF" %}
+/**********************************************************************************************************************
+  Com_RxSignal Buff
+**********************************************************************************************************************/
+{%- if ComGeneral.SingleCore.uint8_bool_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt8
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(uint8, COM_PRIVATE_BSS) com_rx_sig_buf_u8[{{ComGeneral.SingleCore.uint8_bool_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{{ "/* %-10s %+80s */" |  format("Index", "ComSignalName")}}
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComSignalType.Value == "COM_UINT8" or signalObj.ComSignalType.Value == "COM_BOOLEAN" or signalObj.ComSignalType.Value == "COM_SINT8"%}
+{{ "/*"~("%+04s" | format(signalObj.BufferIdx))~" */" }}
+    {{- "/*"~("%+80s" | format(signal))~" */" }}
+    {%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if ComGeneral.SingleCore.uint16_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt16
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(uint16, COM_PRIVATE_BSS) com_rx_sig_buf_u16[{{ComGeneral.SingleCore.uint16_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{{ "/* %-10s %+80s */" |  format("Index", "ComSignalName")}}
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComSignalType.Value == "COM_UINT16" or signalObj.ComSignalType.Value == "COM_SINT16"%}
+{{ "/*"~("%+04s" | format(signalObj.BufferIdx))~" */" }}
+    {{- "/*"~("%+80s" | format(signal))~" */" }}
+    {%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if ComGeneral.SingleCore.uint32_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt32
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(uint32, COM_PRIVATE_BSS) com_rx_sig_buf_u32[{{ComGeneral.SingleCore.uint32_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{{ "/* %-10s %+80s */" |  format("Index", "ComSignalName")}}
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComSignalType.Value == "COM_UINT32" or signalObj.ComSignalType.Value == "COM_SINT32" or signalObj.ComSignalType.Value == "COM_FLOAT32"%}
+{{ "/*"~("%+04s" | format(signalObj.BufferIdx))~" */" }}
+    {{- "/*"~("%+80s" | format(signal))~" */" }}
+    {%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if ComGeneral.SingleCore.uint64_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt64
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(uint64, COM_PRIVATE_BSS) com_rx_sig_buf_u64[{{ComGeneral.SingleCore.uint64_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{{ "/* %-10s %+80s */" |  format("Index", "ComSignalName")}}
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComSignalType.Value == "COM_UINT64" or signalObj.ComSignalType.Value == "COM_SINT64" or signalObj.ComSignalType.Value == "COM_FLOAT64"%}
+{{ "/*"~("%+04s" | format(signalObj.BufferIdx))~" */" }}
+    {{- "/*"~("%+80s" | format(signal))~" */" }}
+    {%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if ComGeneral.SingleCore.uint8_N_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ConstValueUInt8_N
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(uint8, COM_PRIVATE_BSS) com_rx_sig_buf_u8_n[{{ComGeneral.SingleCore.uint8_N_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{{ "/* %-10s %+80s */" |  format("Index", "ComSignalName")}}
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComSignalType.Value == "COM_UINT8_N" or signalObj.ComSignalType.Value == "COM_UINT8_DYN"%}
+{{ "/*"~("%+04s" | format(signalObj.BufferIdx))~" */" }}
+    {{- "/*"~("%+80s" | format(signal))~" */" }}
+    {%- endif %}
+{%- endfor %}
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ *  @brief  CAN单核部署 Tx IPDU Buff分配
+ **********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(com_status_type, COM_PRIVATE_BSS) com_init_status;
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+P2CONST(com_config_type, COM_PRIVATE_BSS, BSW_VAR_Class) com_config;
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(com_self_tx_ipdu_type, COM_PRIVATE_BSS) com_self_tx_ipdu[COM_MAX_N_TXIPDUS];
+VAR(com_self_rx_ipdu_type, COM_PRIVATE_BSS) com_self_rx_ipdu[COM_MAX_N_RXIPDUS];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+/*!*********************************************************************************************************************
+ *  @brief  Tx Signal管理面数据
+ **********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(com_self_tx_signal_type, COM_PRIVATE_BSS) com_self_tx_signal[COM_MAX_N_TXSIGNALS];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON" or ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+/*!*********************************************************************************************************************
+ *  @brief  Rx Signal管理面数据
+ **********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(com_self_rx_signal_type, COM_PRIVATE_BSS) com_self_rx_signal[COM_MAX_N_RXSIGNALS];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ *  @brief  Tx Rx 数据面数据
+ **********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+VAR(uint8, COM_PRIVATE_BSS) com_self_tx_buffer[COM_MAX_TXBUFFER_SIZE];
+VAR(uint8, COM_PRIVATE_BSS) com_self_rx_buffer[COM_MAX_RXBUFFER_SIZE];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+
+/*!*********************************************************************************************************************
+ *  @brief  Rx MainFunction Com_RxNotificationRecord Buffer
+ **********************************************************************************************************************/
+{% for MainFunction_rx in ComConfig.ComMainFunction_rx_totle.keys() %}
+    {%- set mainfunction_Obj = GetIPduObject(MainFunction_rx, ComConfig.ComMainFunction_rx_totle) %}
+    {%- if mainfunction_Obj.RxNotificationRecordRef != "NULL" %}
+/*!*********************************************************************************************************************
+ *  @brief  Rx MainFunction Com_RxNotificationRecord instance
+ **********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{{ ("%s" | format(mainfunction_Obj.RxNotificationRecord))~";" }}
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+    {%- endif %}
+{%- endfor %}
+
+
+{%- else %}
+
+/*!*********************************************************************************************************************
+ *  @brief  多核 Rx MainFunction Com_RxNotificationRecord Buffer
+ **********************************************************************************************************************/
+{% for MainFunction_rx in ComConfig.ComMainFunction_rx_totle.keys() %}
+{%- set mainfunction_Obj = GetIPduObject(MainFunction_rx, ComConfig.ComMainFunction_rx_totle) %}
+    {%- if mainfunction_Obj.RxNotificationRecordRef != "NULL" %}
+/*!*********************************************************************************************************************
+ *  @brief  多核 Rx MainFunction Com_RxNotificationRecord instance
+ **********************************************************************************************************************/
+{{ ("%s" | format(mainfunction_Obj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(mainfunction_Obj.RxNotificationRecord))~";" }}
+{{ ("%s" | format(mainfunction_Obj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+    {%- endif %}
+{%- endfor %}
+
+
+
+/**********************************************************************************************************************
+  CAN多核部署 信号Buff分配 分核隔离
+**********************************************************************************************************************/
+{%- for coreId in ComGeneral.CoreMapInfo.keys() %}
+    {%- set generalObj = GetGeneralObject(coreId,ComGeneral.CoreMapInfo) %}
+{%- if generalObj.uint8_bool_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt8
+**********************************************************************************************************************/
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.uint8_bool_buff))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if generalObj.uint16_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt16
+**********************************************************************************************************************/
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.uint16_buff))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if generalObj.uint32_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt32
+**********************************************************************************************************************/
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.uint32_buff))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if generalObj.uint64_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt64
+**********************************************************************************************************************/
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.uint64_buff))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if generalObj.uint8_N_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ConstValueUInt8_N
+**********************************************************************************************************************/
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.uint8_N_buff))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+{%- endfor %}
+
+/**********************************************************************************************************************
+  Com Tx buffer分核隔离
+**********************************************************************************************************************/
+{%- for coreId in ComGeneral.Txipdu_size.keys() %}
+    {%- set generalObj = GetGeneralObject(coreId,ComGeneral.Txipdu_size) %}
+{%- if generalObj.Txipdu_size > 0 %}
+/* com_self_tx_buffer */
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.com_self_tx_buffer))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+{%- endfor %}
+
+
+/**********************************************************************************************************************
+  Com Rx buffer分核隔离
+**********************************************************************************************************************/
+{%- for coreId in ComGeneral.Rxipdu_size.keys() %}
+    {%- set generalObj = GetGeneralObject(coreId,ComGeneral.Rxipdu_size) %}
+{%- if generalObj.Rxipdu_size > 0 %}
+/* com_self_rx_buffer */
+{{ ("%s" | format(generalObj.START_memmapstr)) }}
+#include "com_memmap.h"
+{{ ("%s" | format(generalObj.com_self_rx_buffer))~";" }} 
+{{ ("%s" | format(generalObj.STOP_memmapstr)) }}
+#include "com_memmap.h"
+{%- endif %}
+{%- endfor %}
+
+/*!*********************************************************************************************************************
+ *  @brief  多核场景 Tx Rx IPDU 管理面数据映射到Global
+ **********************************************************************************************************************/
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+VAR(com_status_type,COM_MULTI_APP_BSS) com_init_status[{{ComGeneral.Com_MaxCore_Idx + 1}}];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+P2CONST(com_config_type, COM_MULTI_APP_BSS, BSW_VAR_Class) com_config;
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+VAR(com_self_tx_ipdu_type, COM_MULTI_APP_BSS) com_self_tx_ipdu[COM_MAX_N_TXIPDUS];
+VAR(com_self_rx_ipdu_type, COM_MULTI_APP_BSS) com_self_rx_ipdu[COM_MAX_N_RXIPDUS];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+/*!*********************************************************************************************************************
+ *  @brief  多核场景 Tx Signal 管理面数据映射到Global
+ **********************************************************************************************************************/
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+VAR(com_self_tx_signal_type, COM_MULTI_APP_BSS) com_self_tx_signal[COM_MAX_N_TXSIGNALS];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON" or ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+/*!*********************************************************************************************************************
+ *  @brief  多核场景 Rx Signal 管理面数据映射到Global
+ **********************************************************************************************************************/
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+VAR(com_self_rx_signal_type, COM_MULTI_APP_BSS) com_self_rx_signal[COM_MAX_N_RXSIGNALS];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+#define  COM_START_SEC_CONST
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com_core_map_info_struct
+ **********************************************************************************************************************/
+CONST(com_core_map_info_struct_type, COM_CONST) com_core_map_info_struct[{{ComGeneral.Com_Core_Num}}] = {
+    {{ ("%-10s" | format("/* Index"))~" " }}
+    {{- ("%+20s" | format("coreId"))~" " -}}
+    {{- ("%+23s" | format("startTxIpduIdx"))~" " -}}
+    {{- ("%+23s" | format("endTxIpduIdx"))~" " -}}
+    {{- ("%+20s" | format("startRxIpduIdx"))~" " -}}
+    {{- ("%+20s" | format("endRxIpduIdx"))~" " -}}
+    {{- ("%+30s" | format("txBufferRef"))~" " -}}
+    {{- ("%+30s" | format("rxBufferRef"))~" " -}}
+    {{- ("%+30s" | format("com_RxSigBufferUInt8Ref"))~" " -}}
+    {{- ("%+30s" | format("com_RxSigBufferUInt16Ref"))~" " -}}
+    {{- ("%+30s" | format("com_RxSigBufferUInt32Ref"))~" " -}}
+    {{- ("%+30s" | format("com_RxSigBufferUInt64Ref"))~" " -}}
+    {{- ("%+30s" | format("Com_RxSigBufferArrayBasedRef"))~" " -}}
+
+    {{- ("%s" | format("*/")) -}}
+    
+    {% for coreId in ComGeneral.CoreMapInfo.keys() %}
+        {%- set generalObj = GetIPduObject(coreId, ComGeneral.CoreMapInfo) %}
+    {{ "{/*"~("%+04s" | format(loop.index0))~" */" }}
+        {{- ("%+20su" | format(coreId))~"," }}
+
+        {{- ("%+20su" | format(generalObj.startTxIpduIdx))~"," }}
+        
+        {{- ("%+20su" | format(generalObj.endTxIpduIdx))~"," }}
+
+        {{- ("%+20su" | format(generalObj.startRxIpduIdx))~"," }}
+
+        {{- ("%+20su" | format(generalObj.endRxIpduIdx))~"," }}
+
+        {{- ("%+30s" | format(generalObj.txBufferRef))~"," }}
+
+        {{- ("%+30s" | format(generalObj.rxBufferRef))~"," }}
+
+        {{- ("%+30s" | format(generalObj.com_RxSigBufferUInt8Ref))~"," }}
+
+        {{- ("%+30s" | format(generalObj.com_RxSigBufferUInt16Ref))~"," }}
+
+        {{- ("%+30s" | format(generalObj.com_RxSigBufferUInt32Ref))~"," }}
+
+        {{- ("%+30s" | format(generalObj.com_RxSigBufferUInt64Ref))~"," }}
+
+        {{- ("%+30s" | format(generalObj.Com_RxSigBufferArrayBasedRef))~"}," }}
+    {%- endfor %}
+};
+#define  COM_STOP_SEC_CONST
+#include "com_memmap.h"
+{%- endif %} 
+
+
+#define  COM_START_SEC_CONST
+#include "com_memmap.h"
+/**********************************************************************************************************************
+  Signal Invalid values from DBC 
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+        {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+            {%- if signalObj.ComSignalDataInvalidValue.Value != '' and signalObj.ComSignalDataInvalidValue.Value != None %}
+static CONST({{  GetSignalVariableType(signalObj) }}, COM_CONST) Com_SignalDataInvalidValue_{{ signalObj.SignalName.Value }} = {{ signalObj.ComSignalDataInvalidValue.Value }}u;
+            {%- endif %}
+{%- endfor %}
+
+
+/**********************************************************************************************************************
+  Group Signal Refs
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+        {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+    {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+        /* IPduObj.MessageName signalObj.SignalName.Value */
+static CONST(uint16, COM_CONST) ComGroupSignalRefs_{{ signalObj.SignalName.Value }}[] = {
+        {%- for group_signal in signalObj.GroupSignal.Value %}
+    ComConf_ComGroupSignal_{{group_signal}},
+        {%- endfor %}
+    COM_GROUPSIGNALREFS_END
+};
+    {%- endif %}
+{%- endfor %}
+
+
+/**********************************************************************************************************************
+  Signal Group Shadow Buffer masks
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComSignals_totle) %}
+    {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+/* IPduObj.MessageName signalObj.SignalName.Value */
+static CONST(uint8, COM_CONST) Com_ShadowBuffer_Mask_{{ signalObj.SignalName.Value }}[] = {
+    {{ signalObj.ShadowBuffer_Mask.Value }}
+};
+    {%- endif %}
+{%- endfor %}
+
+/*
+ * Tx Signal definitions
+ */
+CONST(com_tx_signal_type, COM_CONST) com_tx_signal_const[{{ComGeneral.Parameters.COM_MAX_N_TXSIGNALS + 1}}] = {
+    {{ ("%10s" | format("/* Index"))~" " }}
+    {{- ("%+80s" | format("ComSignalName"))~" " -}}
+    {{- ("%+18s" | format("com_self_eol"))~" " -}}
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+    {{- ("%+25s" | format("ComSignalSelfUseUpdateBit"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+    {{- ("%+21s" | format("Com_Self_IsSignalGroup"))~" " -}}
+    {{- ("%+21s" | format("Com_Self_IsGroupSignal"))~" " -}}
+{%- endif %} 
+    {{- ("%+21s" | format("ComSigInitValueIsZero"))~" " -}}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+    {{- ("%+20s" | format("ComDataInvalidAction"))~" " -}}
+{%- endif %} 
+
+    {{- ("%+18s" | format("ComSignalEndianess"))~" " -}}
+    {{- ("%+16s" | format("ComSignalType"))~" " -}}
+    {{- ("%+43s" | format("ComTransferProperty"))~" " -}}
+    {{- ("%+16s" | format("ComBitPosition"))~" " -}}
+    {{- ("%+16s" | format("ComEndBitPosition"))~" " -}}
+    {{- ("%+9s" | format("ComBitSize"))~" " -}}
+
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+    {{- ("%+20s" | format("ComUpdateBitPosition"))~" " -}}
+{%- endif %}
+
+    {{- ("%+80s" | format("ComIPduHandleId"))~" " -}}
+
+{%- if ComGeneral.COM_ERROR_NOTIFICATION_ENABLE == "STD_ON"%}
+    {{- ("%+81s" | format("ComErrorNotification"))~" " -}}
+{%- endif %}
+
+{%- if ComGeneral.Com_TxNotification == "STD_ON"%}
+    {{- ("%+95s" | format("ComNotification"))~" " -}}
+{%- endif %}
+
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+    {{- ("%+88s" | format("ComTimeoutNotification"))~" " -}}
+{%- endif %}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+    {{- ("%+88s" | format("ComInvalidNotification"))~" " -}}
+{%- endif %}
+    
+    {{- ("%+95s" | format("ComSignalInitValue"))~" " -}}
+
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+    {{- ("%+21s" | format("ComFirstTimeoutFactor"))~" " -}}
+    {{- ("%+16s" | format("ComTimeoutFactor"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+    {{- ("%+120s" | format("ComGroupSignal"))~" " -}}
+    {{- ("%+120s" | format("Com_Self_ShadowBuffer_Mask"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+    {{- ("%+95s" | format("ComSignalDataInvalidValue"))~" " -}}
+{%- endif %} 
+    {{- ("%s" | format("*/")) -}}
+
+    {%- for signal in ComConfig.ComTxSignals_totle.keys() %}
+        {%- set signalObj = GetSignalObject(signal,ComConfig.ComTxSignals_totle) %}
+        {%- set IPduObj = GetIPduObject(signalObj.message_name, ComConfig.ComTxIPdus_totle) %}
+    {{ "{/*"~("%+04s" | format(signalObj.signal_id_trx))~" */" }}
+        {{- "/*"~("%+80s" | format(signal))~" */" }}
+
+        {{- ("%+13su" | format("0"))~"" }}
+
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+25s" | format("(boolean)"~signalObj.UseUpdateBit))~"" -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+        {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)TRUE"))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)FALSE"))~"" -}}
+        {%- endif %}
+
+        {%- if signalObj.IsGroupSignal.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)TRUE"))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)FALSE"))~"" -}}
+        {%- endif %}
+{%- endif %} 
+
+        {%- if signalObj.ComSignalInitValue.Value != '0' %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)FALSE"))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)TRUE"))~"" -}}
+        {%- endif %}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+20s" | format(signalObj.ComDataInvalidAction.Value))~"" }}
+{%- endif %} 
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+18s" | format(signalObj.ComSignalEndianness.Value | upper))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16s" | format(signalObj.ComSignalType.Value))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+43s" | format(signalObj.ComTransferProperty.Value))~"" }}
+        
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16su" | format(signalObj.ComBitPosition.Value))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16su" | format(signalObj.ComEndBitPosition))~"" }}
+        
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+9su" | format(signalObj.ComBitSize.Value))~"" }}
+
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+20su" | format(signalObj.ComUpdateBitPosition.Value))~"" }}
+{%- endif %} 
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+80s" | format("COM_PDU_ID_"~signalObj.message_name))~"" }}
+
+{%- if ComGeneral.COM_ERROR_NOTIFICATION_ENABLE == "STD_ON"%}
+        {%- if signalObj.ComErrorNotification.Value != "COM_NO_FUNCTION_CALLOUT" %}
+            {{- ("%s" | format(",")) -}}
+            {{- "%+81s" | format("ComConf_ErrorNotification_" ~ signalObj.SignalName.Value) ~ "" }}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+81s" | format(signalObj.ComErrorNotification.Value))~"" }}
+        {%- endif %}
+{%- endif %}
+
+{%- if ComGeneral.Com_TxNotification == "STD_ON"%}
+        {%- if signalObj.ComNotification.Value != "COM_NO_FUNCTION_CALLOUT" %}
+            {{- ("%s" | format(",")) -}}
+            {{- "%+95s" | format("ComConf_Notification_" ~ signalObj.SignalName.Value) ~ "" }}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format(signalObj.ComNotification.Value))~"" }}
+        {%- endif %}
+{%- endif %}
+
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+        {%- if signalObj.ComTimeoutNotification.Value != "COM_NO_FUNCTION_CALLOUT" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("ComConf_TimeoutNotification_" ~ signalObj.SignalName.Value)) ~ ""}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("COM_NO_FUNCTION_CALLOUT"))~"" }}
+        {%- endif %}
+{%- endif %}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+        {%- if signalObj.ComInvalidNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComInvalidNotification.Value != None %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("ComConf_InvalidNotification_" ~ signalObj.SignalName.Value)) ~ ""}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("COM_NO_FUNCTION_CALLOUT"))~"" }}
+        {%- endif %}
+{%- endif %}
+        
+        {%- if signalObj.ComSignalInitValue.Value != '0' %}
+            {%- if signalObj.ComSignalType.Value == 'COM_UINT8' or signalObj.ComSignalType.Value == "COM_BOOLEAN" or signalObj.ComSignalType.Value == "COM_SINT8" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u8["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- elif signalObj.ComSignalType.Value == 'COM_UINT16' or signalObj.ComSignalType.Value == "COM_SINT16" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u16["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- elif signalObj.ComSignalType.Value == 'COM_UINT32' or signalObj.ComSignalType.Value == "COM_SINT32" or signalObj.ComSignalType.Value == "COM_FLOAT32" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u32["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- elif signalObj.ComSignalType.Value == 'COM_UINT64' or signalObj.ComSignalType.Value == "COM_SINT64" or signalObj.ComSignalType.Value == "COM_FLOAT64" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u64["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- else %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("Com_SignalInitValue_"~signalObj.SignalName.Value))~"" }}
+            {%- endif %}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format("com_sig_init_value_uint8_default"))~"" }}
+        {%- endif %}
+
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+21su" | format(signalObj.ComFirstTimeout.Value))~"" -}}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16su" | format(signalObj.ComTimeout.Value))~"" }}
+{%- endif %}
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+        {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("ComGroupSignalRefs_" ~ signalObj.SignalName.Value))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("NULL"))~"" -}}
+        {%- endif %}
+
+        {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("Com_ShadowBuffer_Mask_" ~ signalObj.SignalName.Value))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("NULL"))~"" -}}
+        {%- endif %}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+        {%- if signalObj.ComSignalDataInvalidValue.Value != '' and signalObj.ComSignalDataInvalidValue.Value != None %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format("&Com_SignalDataInvalidValue_"~signalObj.SignalName.Value))~"" }}
+        {%- else%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format("NULL"))~"" }}
+        {%- endif %}
+{%- endif %} 
+        {{- ("%s" | format("},")) -}}
+        
+
+    {%- endfor %}
+
+    /* Add ComSignal before this. */
+    {.com_self_eol = 1u }
+};
+
+/*
+ * Rx Signal definitions
+ */
+CONST(com_rx_signal_type, COM_CONST) com_rx_signal_const[{{ComGeneral.Parameters.COM_MAX_N_RXSIGNALS + 1}}] = {
+    {{ ("%10s" | format("/* Index"))~" " }}
+    {{- ("%+80s" | format("ComSignalName"))~" " -}}
+    {{- ("%+18s" | format("com_self_eol"))~" " -}}
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+    {{- ("%+25s" | format("ComSignalSelfUseUpdateBit"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+    {{- ("%+21s" | format("Com_Self_IsSignalGroup"))~" " -}}
+    {{- ("%+21s" | format("Com_Self_IsGroupSignal"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON"%}
+    {{- ("%+18s" | format("ComSigGwRoutingReq"))~" " }}
+{%- endif %} 
+    {{- ("%+21s" | format("ComSigInitValueIsZero"))~" " -}}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+    {{- ("%+20s" | format("ComDataInvalidAction"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_TIMEOUT_DATA_ACTION_REPLACE_ENABLE == "STD_ON"%}
+    {{- ("%+36s" | format("ComRxDataTimeoutAction"))~" " -}}
+{%- endif %} 
+    {{- ("%+18s" | format("ComSignalEndianess"))~" " -}}
+    {{- ("%+16s" | format("ComSignalType"))~" " -}}
+    {{- ("%+16s" | format("ComBitPosition"))~" " -}}
+    {{- ("%+16s" | format("ComEndBitPosition"))~" " -}}
+    {{- ("%+9s" | format("ComBitSize"))~" " -}}
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+    {{- ("%+20s" | format("ComUpdateBitPosition"))~" " -}}
+{%- endif %} 
+    {{- ("%+80s" | format("ComIPduHandleId"))~" " -}}
+    {{- ("%+20s" | format("BufferIdx"))~" " -}}
+{%- if ComGeneral.COM_ERROR_NOTIFICATION_ENABLE == "STD_ON"%}
+    {{- ("%+81s" | format("ComErrorNotification"))~" " -}}
+{%- endif %} 
+    {{- ("%+95s" | format("ComNotification"))~" " -}}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+    {{- ("%+88s" | format("ComInvalidNotification"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+    {{- ("%+88s" | format("ComTimeoutNotification"))~" " -}}
+{%- endif %}
+ 
+    {{- ("%+95s" | format("ComSignalInitValue"))~" " -}}
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+    {{- ("%+21s" | format("ComFirstTimeoutFactor"))~" " -}}
+    {{- ("%+16s" | format("ComTimeoutFactor"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+    {{- ("%+120s" | format("ComGroupSignal"))~" " -}}
+    {{- ("%+120s" | format("Com_Self_ShadowBuffer_Mask"))~" " -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+    {{- ("%+95s" | format("ComSignalDataInvalidValue"))~" " -}}
+{%- endif %} 
+    {{- ("%s" | format("*/")) -}}
+
+    {%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+        {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+        {%- set IPduObj = GetIPduObject(signalObj.message_name, ComConfig.ComRxIPdus_totle) %}
+    {{ "{/*"~("%+04s" | format(signalObj.signal_id_trx))~" */" }}
+        {{- "/*"~("%+80s" | format(signal))~" */" }}
+
+        {{- ("%+13su" | format("0"))~"" }}
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+25s" | format("(boolean)"~signalObj.UseUpdateBit))~"" -}}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+        {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)TRUE"))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)FALSE"))~"" -}}
+        {%- endif %}
+
+        {%- if signalObj.IsGroupSignal.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)TRUE"))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)FALSE"))~"" -}}
+        {%- endif %}
+{%- endif %} 
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+18s" | format("(boolean)"~signalObj.ComSigGwRoutingReq))~"" }}
+{%- endif %} 
+
+        {%- if signalObj.ComSignalInitValue.Value != '0' %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)FALSE"))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+21s" | format("(boolean)TRUE"))~"" -}}
+        {%- endif %}
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+20s" | format(signalObj.ComDataInvalidAction.Value))~"" }}
+{%- endif %} 
+
+{%- if ComGeneral.COM_TIMEOUT_DATA_ACTION_REPLACE_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+36s" | format(signalObj.ComRxDataTimeoutAction.Value))~"" }}
+{%- endif %} 
+    
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+18s" | format(signalObj.ComSignalEndianness.Value | upper))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16s" | format((signalObj.ComSignalType.Value)))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16su" | format(signalObj.ComBitPosition.Value))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16su" | format(signalObj.ComEndBitPosition))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+9su" | format(signalObj.ComBitSize.Value))~"" }}
+
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+20su" | format(signalObj.ComUpdateBitPosition.Value))~"" }}
+{%- endif %} 
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+80s" | format("COM_PDU_ID_"~signalObj.message_name))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+20su" | format(signalObj.BufferIdx))~"" }}
+
+{%- if ComGeneral.COM_ERROR_NOTIFICATION_ENABLE == "STD_ON"%}
+        {%- if signalObj.ComErrorNotification.Value != "COM_NO_FUNCTION_CALLOUT" %}
+            {{- ("%s" | format(",")) -}}
+            {{- "%+81s" | format("ComConf_ErrorNotification_" ~ signalObj.SignalName.Value) ~ "" }}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+81s" | format(signalObj.ComErrorNotification.Value))~"" }}
+        {%- endif %}
+{%- endif %} 
+
+        {%- if signalObj.ComNotification.Value != "COM_NO_FUNCTION_CALLOUT" %}
+            {{- ("%s" | format(",")) -}}
+            {{- "%+95s" | format("ComConf_Notification_" ~ signalObj.SignalName.Value) ~ "" }}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format(signalObj.ComNotification.Value))~"" }}
+        {%- endif %}
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+        {%- if signalObj.ComInvalidNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComInvalidNotification.Value != None %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("ComConf_InvalidNotification_" ~ signalObj.SignalName.Value)) ~ ""}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("COM_NO_FUNCTION_CALLOUT"))~"" }}
+        {%- endif %}
+{%- endif %}
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+        {%- if signalObj.ComTimeoutNotification.Value != "COM_NO_FUNCTION_CALLOUT" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("ComConf_TimeoutNotification_" ~ signalObj.SignalName.Value)) ~ ""}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+88s" | format("COM_NO_FUNCTION_CALLOUT"))~"" }}
+        {%- endif %}
+{%- endif %} 
+
+        {%- if signalObj.ComSignalInitValue.Value != '0' %}
+            {%- if signalObj.ComSignalType.Value == 'COM_UINT8' or signalObj.ComSignalType.Value == "COM_BOOLEAN" or signalObj.ComSignalType.Value == "COM_SINT8" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u8["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- elif signalObj.ComSignalType.Value == 'COM_UINT16' or signalObj.ComSignalType.Value == "COM_SINT16" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u16["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- elif signalObj.ComSignalType.Value == 'COM_UINT32' or signalObj.ComSignalType.Value == "COM_SINT32" or signalObj.ComSignalType.Value == "COM_FLOAT32" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u32["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- elif signalObj.ComSignalType.Value == 'COM_UINT64' or signalObj.ComSignalType.Value == "COM_SINT64" or signalObj.ComSignalType.Value == "COM_FLOAT64" %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("&com_const_init_value_u64["~signalObj.ComSignalInitValueIndex~"]"))~"" }}
+            {%- else %}
+                {{- ("%s" | format(",")) -}}
+                {{- ("%+95s" | format("Com_SignalInitValue_"~signalObj.SignalName.Value))~"" }}
+            {%- endif %}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format("com_sig_init_value_uint8_default"))~"" }}
+        {%- endif %}
+        
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+21su" | format(signalObj.ComFirstTimeout.Value))~"" -}}
+        
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16su" | format(signalObj.ComTimeout.Value))~"" }}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+        {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("ComGroupSignalRefs_" ~ signalObj.SignalName.Value))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("NULL"))~"" -}}
+        {%- endif %}
+
+        {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("Com_ShadowBuffer_Mask_" ~ signalObj.SignalName.Value))~"" -}}
+        {%- else %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+120s" | format("NULL"))~"" -}}
+        {%- endif %}
+{%- endif %} 
+
+{%- if ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE == "STD_ON"%}
+        {%- if signalObj.ComSignalDataInvalidValue.Value != '' and signalObj.ComSignalDataInvalidValue.Value != None %}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format("&Com_SignalDataInvalidValue_"~signalObj.SignalName.Value))~"" }}
+        {%- else%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+95s" | format("NULL"))~"" }}
+        {%- endif %}
+{%- endif %} 
+        {{- ("%s" | format("},")) -}}
+    {%- endfor %}
+
+    /* Add ComSignal before this. */
+    {.com_self_eol = 1u }
+};
+
+/*
+ * Gateway Destination signal references
+ */
+{% for route_path in ComConfig.ComGwMappings.keys() %}{% set route_pathObj = GetRoutePathObject(route_path, ComConfig.ComGwMappings) %}
+static CONST(com_gw_destn_type, COM_CONST) ComGwDestinationRef_{{route_pathObj.SourceSignalHandle}}[{{route_pathObj.NoOfDesitnation + 1}}] = {
+    {{ "/* %+4s %15s %+120s %+35s */" | format("Index", "com_self_eol", "ComGwDestinationSignalHandle", "ComGwDestinationSignalRef") }}{% for dest_signal in route_pathObj.ComGwDestination.keys() %}{% set dest_signalObj = GetDestSignalObject(dest_signal, route_pathObj.ComGwDestination) %}
+    {{ "{/* %+4s */  %11du, %+119s, %+30s}," | format(loop.index0, 0, dest_signalObj.DestSignalHandle, dest_signalObj.DestType) }} {% endfor %}
+
+    /* Add ComGwDestinationRef before this. */
+    {.com_self_eol = 1u }
+};{% endfor %}
+
+/*
+ * Gateway mappings
+ */
+static CONST(com_gw_mapping_type, COM_CONST) com_gw_mapping[{{ComGeneral.NoOfGwMappings + 1}}] = {
+    {{ "/* %+4s %+15s %+10s %+120s %+35s %+120s */" | format("Index", "com_self_eol", "ComGwNoOfDesitnationRoutes", "ComGwSourceSignalHandle", "ComGwSourceSignalRef", "ComGwDestinationRef") }}
+    {%- for route_path in ComConfig.ComGwMappings.keys() %}
+        {%- set route_pathObj = GetRoutePathObject(route_path, ComConfig.ComGwMappings) %}
+    {{ "{/* %+4s */  %11du, %+25su, %+119s, %+30s, %+119s}," | format(loop.index0, 0, route_pathObj.NoOfDesitnation, route_pathObj.SourceSignalHandle, route_pathObj.ComGwSource.SourceType, "ComGwDestinationRef_" ~ route_pathObj.SourceSignalHandle) }}
+    {%- endfor %}
+    {.com_self_eol = 1u }
+};
+
+/*
+ * I-PDU group definitions
+ */
+static CONST(com_ipg_type, COM_CONST) com_ipg[{{ComGeneral.Parameters.COM_N_SUPPORTED_IPDU_GROUPS + 1}}] = {
+    /* Index     com_self_eol                            com_ipg_handle_id */{% for IPduGroup in ComConfig.ComIPduGroups.keys() %}{% set IPduGroupObj = GetIPduGroupObject(IPduGroup, ComConfig.ComIPduGroups) %}
+    {{ "{/* %+4s */  " | format(IPduGroupObj.Id) }}{{ ("%+10su" | format(0)) }}, {{ ("%+60s" | format("ComConf_ComIPduGroup_" ~ IPduGroup)) ~ " },"  }}{% endfor %}
+
+    /* Add com_ipg before this. */
+    {.com_self_eol = 1u }
+};
+
+
+/*
+ * IPdu Counter list
+ */
+
+/*
+ * I-PDU group ref lists
+ */
+
+{% for IPdu in ComConfig.ComIPdus_totle.keys() %}{% set ipduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+static CONST(com_ipg_type, COM_CONST) ComIpduGroupRefs_{{ ipduObj.MessageName }}[{{ipduObj.ComIPduGroupNum + 1}}] = {
+    {%- for ComIPduGroupId in ipduObj.ComIPduGroupRef.ValueRef %}
+    {.com_ipg_handle_id = {{  "ComConf_ComIPduGroup_" ~ ComIPduGroupId }}, .com_self_eol = 0u },
+    {%- endfor %}
+    {.com_self_eol = 1u }
+};{% endfor %}
+
+/*
+ * ComTxModeTrue definitions
+ */
+{%- if ComGeneral.Parameters.COM_MAX_N_TXIPDUS != 0 %}
+static CONST(com_tx_mode_type, COM_CONST) comtxmode_true_cfg[{{ComGeneral.Parameters.COM_MAX_N_TXIPDUS}}] = {
+    /* Index                                                                   ComTxModeNumberOfRepetitions         ComTxModeMode         ComTxModeRepetitionPeriodFactor    ComTxModeTimeOffsetFactor    ComTxModeTimePeriodFactor */
+    {%- for IPdu in ComConfig.TxIpdus %}
+        {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+    {{ "{/*"~("%-65s" | format((" %+04s " | format(ipduObj.TxIpdu_id))~ipduObj.MessageName))~" */" }}
+    {{- ("%+20su" | format(ipduObj.ComTxIPdu.ComTxModeTrue.ComTxMode.ComTxModeNumberOfRepetitions.Value))~"," }}
+    {{- ("%+30s" |  format("COM_" ~ ipduObj.ComTxIPdu.ComTxModeTrue.ComTxMode.ComTxModeMode.Value))~"," }}
+    {{- ("%+31su" | format(ipduObj.ComTxIPdu.ComTxModeTrue.ComTxMode.ComTxModeRepetitionPeriod.Value))~"," }}
+    {{- ("%+25su" | format(ipduObj.ComTxIPdu.ComTxModeTrue.ComTxMode.ComTxModeTimeOffset.Value))~"," }}
+    {{- ("%+26su" | format(ipduObj.ComTxIPdu.ComTxModeTrue.ComTxMode.ComTxModeTimePeriod.Value))~" }," }}
+    {%- endfor %}
+};
+
+/*
+ * ComTxModeFalse definitions
+ */
+static CONST(com_tx_mode_type, COM_CONST) comtxmode_false_cfg[{{ComGeneral.Parameters.COM_MAX_N_TXIPDUS}}] = {
+     /* Index                                                                   ComTxModeNumberOfRepetitions         ComTxModeMode         ComTxModeRepetitionPeriodFactor    ComTxModeTimeOffsetFactor    ComTxModeTimePeriodFactor */
+    {%- for IPdu in ComConfig.TxIpdus %}
+        {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+    {{ "{/*"~("%-65s" | format((" %+04s " | format(ipduObj.TxIpdu_id))~ipduObj.MessageName))~" */" }}
+    {{- ("%+20su" | format(ipduObj.ComTxIPdu.ComTxModeFalse.ComTxMode.ComTxModeNumberOfRepetitions.Value))~"," }}
+    {{- ("%+30s" | format("COM_" ~ ipduObj.ComTxIPdu.ComTxModeFalse.ComTxMode.ComTxModeMode.Value))~"," }}
+    {{- ("%+31su" | format(ipduObj.ComTxIPdu.ComTxModeFalse.ComTxMode.ComTxModeRepetitionPeriod.Value))~"," }}
+    {{- ("%+25su" | format(ipduObj.ComTxIPdu.ComTxModeFalse.ComTxMode.ComTxModeTimeOffset.Value))~"," }}
+    {{- ("%+26su" | format(ipduObj.ComTxIPdu.ComTxModeFalse.ComTxMode.ComTxModeTimePeriod.Value))~" }," }}
+    {%- endfor %}
+};
+
+/*
+ * ComTxIPdu definitions
+ */
+static CONST(com_ipdu_tx_type, COM_CONST) com_tx_ipdu_cfg[{{ComGeneral.Parameters.COM_MAX_N_TXIPDUS}}] = {
+    {{ ("%+4s" | format("/* Index"))~" " }}
+    {{- ("%+70s" | format(""))~" " -}}
+    {{- ("%+38s" | format("EnableRetryFailedTransmitRequests"))~" " -}}
+    {{- ("%+27s" | format("ComTxIPduUnusedAreasDefault"))~" " -}}
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+    {{- ("%+23s" | format("ComTxIPduClearUpdateBit"))~" " -}}
+{%- endif %}    
+    {{- ("%+27s" | format("ComTxIPduMinimumDelayFactor"))~" " -}}
+    {{- ("%+50s" | format("ComTxModeTrue"))~" " -}}
+    {{- ("%+40s" | format("ComTxModeFalse"))~" " -}}
+    {{- ("%s" | format("*/")) -}}
+
+    {%- for IPdu in ComConfig.TxIpdus %}
+    {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+    {{ "{/*"~("%-70s" | format((" %+04s " | format(ipduObj.TxIpdu_id))~ipduObj.MessageName))~" */" }}
+    {{- ("%+38s" | format("(boolean)"~ipduObj.ComTxIPdu.EnableRetryFailedTransmitRequests))~"" }}
+
+    {{- ("%s" | format(",")) -}}
+    {{- ("%+27su" | format(ipduObj.ComTxIPdu.ComTxIPduUnusedAreasDefault.Value))~"" }}
+
+{%- if ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE == "STD_ON"%}
+    {{- ("%s" | format(",")) -}}
+    {{- ("%+23s" | format(ipduObj.ComTxIPdu.ComTxIPduClearUpdateBit.Value))~"" }}
+{%- endif %} 
+
+    {{- ("%s" | format(",")) -}}
+    {{- ("%+27su" | format(ipduObj.ComTxIPdu.ComMinimumDelayTime.Value))~"" }}
+
+    {{- ("%s" | format(",")) -}}
+    {{- ("%+50s" | format("&comtxmode_true_cfg["~ipduObj.TxIpdu_id))~"]" }}
+    
+    {{- ("%s" | format(",")) -}}
+    {{- ("%+40s" | format("&comtxmode_false_cfg["~ipduObj.TxIpdu_id))~"]"~"" }}
+
+    {{- ("%s" | format("},")) -}}
+    {%- endfor %}
+};
+{%- endif %} 
+
+/*
+ * Tx I-PDU definitions
+ */
+CONST(com_tx_ipdu_type, COM_CONST) com_tx_ipdu_const[{{ComGeneral.Parameters.COM_MAX_N_TXIPDUS + 1}}] = {
+    {{ ("%+4s" | format("/* Index"))~" " }}
+    {{- ("%+76s" | format(""))~" " -}}
+    {{- ("%+12s" | format("com_self_eol"))~" " -}}
+    {{- ("%+23s" | format("ComIPduSignalProcessing"))~" " -}}
+    {{- ("%+70s" | format("SelfIPduOutgoingId"))~" " -}}
+    {{- ("%+10s" | format("ComIPduSize"))~" " -}}
+    {{- ("%+10s" | format("Signal_StartIdx"))~" " -}}
+    {{- ("%+10s" | format("Signal_EndIdx"))~" " -}}
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_ON" and ComGeneral.COM_TXTOU_ENABLE == "STD_ON"%}
+    {{- ("%+30s" | format("TxToutInfoIdx"))~" " -}}
+{%- endif %}  
+    {{- ("%+90s" | format("ComTxIPduCallout"))~" " -}}
+    {{- ("%+90s" | format("ComTriggerTransmitIPduCallout"))~" " -}}
+    {{- ("%+78s" | format("ComIPduGroupRefs"))~" " -}}
+    {{- ("%+19s" | format("ComTxIPdu"))~" " -}}
+{%- if ComGeneral.COM_IPDU_DYNC_SIGNAL_ENABLE == "STD_ON"%}
+    {{- ("%+19s" | format("ComIPduDynSignalRef"))~" " -}}
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_MAX_N_SUPPORTED_IPDU_COUNTERS != 0%}
+    {{- ("%+16s" | format("ComIpduCounterRef"))~" " -}}
+{%- endif %}
+    
+    {{- ("%s" | format("*/")) -}}
+
+    {%- for IPdu in ComConfig.ComTxIPdus_totle %}
+        {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComTxIPdus_totle) %}
+    {{ "{/*"~("%-80s" | format((" %+04s " | format(ipduObj.message_id_trx))~ipduObj.MessageName))~" */" }}
+        {{- ("%+12su" | format("0"))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+23s" | format(ipduObj.ComIPduSignalProcessing.Value))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+70s" | format("PDUR_PDU_ID_"~ipduObj.MessageName))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+10su" | format(ipduObj.ComIPduSize))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+10su" | format(ipduObj.Signal_StartIdx))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+10su" | format(ipduObj.Signal_EndIdx))~"" }}
+
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_ON" and ComGeneral.COM_TXTOU_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {%- if ipduObj.TxTimeoutIndex != "COM_NO_REF_INDEX" -%}
+            {{- ("%+29su" | format(ipduObj.TxTimeoutIndex))~"" }}
+        {%- else -%}
+            {{- ("%+30s" | format(ipduObj.TxTimeoutIndex))~"" }}
+        {%- endif %} 
+{%- endif %}  
+
+        {%- if ipduObj.ComTxIPduCallout != "COM_NO_FUNCTION_CALLOUT" -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+90s" | format("ComConf_ComCallout_"~ipduObj.ComTxIPduCallout))~"" -}}
+        {%- else -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+90s" | format("COM_NO_FUNCTION_CALLOUT"))~"" -}}
+        {%- endif -%}
+        {%- if ipduObj.ComTriggerTransmitIPduCallout != "COM_NO_FUNCTION_CALLOUT" -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+90s" | format("ComConf_ComCallout_"~ipduObj.ComTriggerTransmitIPduCallout))~"" -}}
+        {%- else -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+90s" | format("COM_NO_FUNCTION_CALLOUT"))~"" -}}
+        {%- endif -%}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+78s" | format("ComIpduGroupRefs_"~ipduObj.MessageName))~"" }}
+         {%- if ipduObj.TxIpdu_id >= 0 -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+19s" | format("&com_tx_ipdu_cfg["~ipduObj.TxIpdu_id))~"]" -}}
+        {%- else -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+19s" | format("NULL"))~"" -}}
+        {%- endif -%}
+{%- if ComGeneral.COM_IPDU_DYNC_SIGNAL_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+19s" | format("NULL"))~"" }}
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_MAX_N_SUPPORTED_IPDU_COUNTERS != 0%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16s" | format("NULL"))~"" }}
+{%- endif %}
+
+        {{- ("%s" | format("},")) -}}
+    {%- endfor %}
+
+    /* Add ComIPdu before this. */
+    {.com_self_eol = 1u }
+};
+
+/**********************************************************************************************************************
+  Rx I-PDU definitions
+**********************************************************************************************************************/
+CONST(com_rx_ipdu_type, COM_CONST) com_rx_ipdu_const[{{ComGeneral.Parameters.COM_MAX_N_RXIPDUS + 1}}] = {
+    {{ ("%+4s" | format("/* Index"))~" " }}
+    {{- ("%+76s" | format(""))~" " -}}
+    {{- ("%+12s" | format("com_self_eol"))~" " -}}
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON"%}
+    {{- ("%+18s" | format("ComIPduGwRoutingReq"))~" " -}}
+{%- endif %} 
+    {{- ("%+18s" | format("ComIPduHasSignalGroup"))~" " -}}
+    {{- ("%+23s" | format("ComIPduSignalProcessing"))~" " -}}
+    {{- ("%+70s" | format("SelfIPduOutgoingId"))~" " -}}
+    {{- ("%+10s" | format("ComIPduSize"))~" " -}}
+    {{- ("%+10s" | format("Signal_StartIdx"))~" " -}}
+    {{- ("%+10s" | format("Signal_EndIdx"))~" " -}}
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_ON" and ComGeneral.COM_RXTOU_ENABLE == "STD_ON"%}
+    {{- ("%+30s" | format("RxToutInfoIdx"))~" " -}}
+{%- endif %}    
+    {{- ("%+90s" | format("ComRxIPduCallout"))~" " -}}
+    {{- ("%+78s" | format("ComIPduGroupRefs"))~" " -}}
+
+{%- if ComGeneral.COM_IPDU_DYNC_SIGNAL_ENABLE == "STD_ON"%}
+    {{- ("%+19s" | format("ComIPduDynSignalRef"))~" " -}}
+{%- endif %}  
+
+{%- if ComGeneral.Parameters.COM_MAX_N_SUPPORTED_IPDU_COUNTERS != 0%}
+    {{- ("%+16s" | format("ComIpduCounterRef"))~" " -}}
+{%- endif %}  
+  
+    {{- ("%s" | format("*/")) -}}
+
+    {%- for IPdu in ComConfig.ComRxIPdus_totle %}
+        {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComRxIPdus_totle) %}
+    {{ "{/*"~("%-80s" | format((" %+04s " | format(ipduObj.message_id_trx))~ipduObj.MessageName))~" */" }}
+        {{- ("%+12su" | format("0"))~"" }}
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+18s" | format("(boolean)"~ipduObj.ComIPduGwRoutingReq))~"" }}
+{%- endif %} 
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+18s" | format("(boolean)"~ipduObj.ComIPduHasSignalGroup))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+23s" | format(ipduObj.ComIPduSignalProcessing.Value))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+70s" | format("PDUR_PDU_ID_"~ipduObj.MessageName))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+10su" | format(ipduObj.ComIPduSize))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+10su" | format(ipduObj.Signal_StartIdx))~"" }}
+
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+10su" | format(ipduObj.Signal_EndIdx))~"" }}
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_ON" and ComGeneral.COM_RXTOU_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {%- if ipduObj.RxTimeoutIndex != "COM_NO_REF_INDEX" -%}
+            {{- ("%+29su" | format(ipduObj.RxTimeoutIndex))~"" }}
+        {%- else -%}
+            {{- ("%+30s" | format(ipduObj.RxTimeoutIndex))~"" }}
+        {%- endif %} 
+{%- endif %}    
+
+        {%- if ipduObj.ComRxIPduCallout != "COM_NO_FUNCTION_CALLOUT" -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+90s" | format("ComConf_ComCallout_"~ipduObj.ComRxIPduCallout))~"" }}
+        {%- else -%}
+            {{- ("%s" | format(",")) -}}
+            {{- ("%+90s" | format("COM_NO_FUNCTION_CALLOUT"))~"" -}}
+        {%- endif -%}
+        
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+78s" | format("ComIpduGroupRefs_"~ipduObj.MessageName))~"" }}
+
+{%- if ComGeneral.COM_IPDU_DYNC_SIGNAL_ENABLE == "STD_ON"%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+19s" | format("NULL"))~"" }}
+{%- endif %}    
+
+{%- if ComGeneral.Parameters.COM_MAX_N_SUPPORTED_IPDU_COUNTERS != 0%}
+        {{- ("%s" | format(",")) -}}
+        {{- ("%+16s" | format("NULL"))~"" }}
+{%- endif %}
+
+        {{- ("%s" | format("},")) -}}
+    {%- endfor %}
+
+    /* Add ComIPdu before this. */
+    {.com_self_eol = 1 }
+};
+
+
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF" %}
+/*
+ * Rx Signal Timeout enable definitions
+ */
+CONST(com_rx_tout_info_type, COM_CONST) com_rx_signal_tout_info[{{ComGeneral.RxToutsignal_size}}] = 
+{
+{%- if ComGeneral.COM_RXTOU_ENABLE == "STD_ON" %}
+    {{ "/* %-10s %+80s %+110s %+80s */" | format("Index", "SignalName", "ComSignalIdRef", "ComIPduIdRef") }}
+
+    {%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+        {%- set signalObj = GetSignalObject(signal,ComConfig.ComRxSignals_totle) %}
+        {%- if signalObj.isSignalTOut == "TRUE" %}
+    {{ "{/*"~("%+04s" | format(signalObj.signal_id_tout))~" */" }}
+        {{- "/*"~("%+80s" | format(signal))~" */" }}
+            {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+                {{- ("%+110s" | format("ComConf_ComSignalGroup_" ~ signalObj.SignalName.Value ~ ","))}}
+            {%- elif signalObj.IsGroupSignal.Value == "TRUE" %}
+                {{- ("%+110s" | format("ComConf_ComGroupSignal_" ~ signalObj.SignalName.Value ~ ","))}}
+            {%- else %}
+                {{- ("%+110s" | format("ComConf_ComSignal_" ~ signalObj.SignalName.Value ~ ","))}}
+            {%- endif %}
+                {{- ("%+80s" | format("COM_PDU_ID_"~signalObj.message_name))~"}," }}
+        {%- endif %} 
+    {%- endfor %}
+{%- else %}
+    {/*   0 */    NO_PDU_REFERENCE,   NO_PDU_REFERENCE    }
+{%- endif %} 
+};
+{%- endif %} 
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_ON" %}
+CONST(com_rx_tout_message_info_type, COM_CONST) com_rx_pdu_tout_struct[{{ComGeneral.RxToutmessage_size}}] =  
+{
+{%- if ComGeneral.COM_RXTOU_ENABLE == "STD_ON" %}
+    {{ "/* %-10s %+80s %+20s %+20s %+20s %+20s %s*/" | format("Index", "ComIPduIdRef", "StartTimeoutNotiIdx", "TimeoutNotiNum", "ComFirstTimeoutFactor", "ComTimeoutFactor", "IPduName") }}
+
+    {%- for IPdu in ComConfig.ComRxIPdus_totle %}
+        {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComRxIPdus_totle) %}
+        {%- if ipduObj.ISRXTIMEOUT == "TRUE" %}
+    {{ "{/*"~("%+04s" | format(ipduObj.RxTimeoutIndex))~" */" }}
+        {{- ("%+80s" | format("COM_PDU_ID_"~ipduObj.MessageName))~"," }}
+        {{- ("%+20s" | format(ipduObj.StartTimeoutNoti_id))~"," }}
+        {{- ("%+20s" | format(ipduObj.TimeoutNoti_id_num))~"," }}
+        {{- ("%+20s" | format(ipduObj.FirstTimeoutValue))~"," }}
+        {{- ("%+20s" | format(ipduObj.TimeoutValue))~"}," }}
+        {{- "/* "~("%s" | format(ipduObj.MessageName))~" */" }}
+        {%- endif %} 
+    {%- endfor %}
+{%- else %}
+    {/*   0 */    NO_PDU_REFERENCE,   NO_PDU_REFERENCE,   NO_PDU_REFERENCE, NO_PDU_REFERENCE}    
+{%- endif %} 
+};
+{%- endif %} 
+
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_ON" %}
+CONST(com_tx_tout_message_info_type, COM_CONST) com_tx_pdu_tout_struct[{{ComGeneral.TxToutmessage_size}}] =  
+{
+{%- if ComGeneral.COM_TXTOU_ENABLE == "STD_ON" %}
+    {{ "/* %-10s %+80s %+20s %+20s %+20s %+20s %s*/" | format("Index", "ComIPduIdRef", "StartTimeoutNotiIdx", "TimeoutNotiNum", "ComFirstTimeoutFactor", "ComTimeoutFactor", "IPduName") }}
+
+    {%- for IPdu in ComConfig.ComTxIPdus_totle %}
+        {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComTxIPdus_totle) %}
+        {%- if ipduObj.ISTXTIMEOUT == "TRUE" %}
+    {{ "{/*"~("%+04s" | format(ipduObj.TxTimeoutIndex))~" */" }}
+        {{- ("%+80s" | format("COM_PDU_ID_"~ipduObj.MessageName))~"," }}
+        {{- ("%+20s" | format(ipduObj.StartTimeoutNoti_id))~"," }}
+        {{- ("%+20s" | format(ipduObj.TimeoutNoti_id_num))~"," }}
+        {{- ("%+20s" | format(ipduObj.FirstTimeoutValue))~"," }}
+        {{- ("%+20s" | format(ipduObj.TimeoutValue))~"}," }}
+        {{- "/* "~("%s" | format(ipduObj.MessageName))~" */" }}
+        {%- endif %} 
+    {%- endfor %}
+{%- else %}
+    {/*   0 */    NO_PDU_REFERENCE,   NO_PDU_REFERENCE,   NO_PDU_REFERENCE, NO_PDU_REFERENCE}       
+{%- endif %} 
+};
+{%- endif %} 
+
+CONST(com_config_type, COM_CONST) com_configuration = {
+    .com_ipg = com_ipg,
+    .com_gw_mapping_ref = com_gw_mapping,
+};
+
+/**********************************************************************************************************************
+  com_tx_main_function_des
+**********************************************************************************************************************/
+CONST(com_main_function_tx_struct_type, COM_CONST) com_tx_main_function_des[{{ComGeneral.mainfunction_tx_num_totle}}] = {
+    {{ ("%-10s" | format("/* Index"))~" " }}
+    {{- ("%+20s" | format("TxComfirmationInfo"))~" " -}}
+    {{- ("%+20s" | format("StartIPduIdxOfMainFunctionTx"))~" " -}}
+    {{- ("%+20s" | format("IPduNumOfMainFunctionTx"))~" " -}}
+    {{- ("%s" | format("*/")) -}}
+    {% for MainFunction_tx in ComConfig.ComMainFunction_tx_totle.keys() %}
+        {%- set mainfunction_Obj = GetIPduObject(MainFunction_tx, ComConfig.ComMainFunction_tx_totle) %}
+    {{ "{/*"~("%+04s" | format(loop.index0))~" */" }}
+        {%- if mainfunction_Obj.TxComfirmationInfo == "TRUE" %}
+            {{- ("%+20s" | format("(boolean)TRUE"))~"," }}
+        {%- else %}
+            {{- ("%+20s" | format("(boolean)FALSE"))~"," }}
+        {%- endif %}
+        {%- if mainfunction_Obj.StartTxIPduIdx == "NO_PDU_REFERENCE" %}
+            {{- ("%+20s" | format("NO_PDU_REFERENCE"))~"," }}
+        {%- else %}
+            {{- ("%+20su" | format(mainfunction_Obj.StartTxIPduIdx))~"," }}
+        {%- endif %}
+        {{- ("%+20su" | format(mainfunction_Obj.TxIPduNum))~"}" }}
+        {%- if ComGeneral.mainfunction_tx_num_totle > 1 %}
+            {{- ("%s" | format(",")) -}}
+        {%- endif %} 
+    {%- endfor %}
+};
+
+/**********************************************************************************************************************
+  com_rx_main_function_des
+**********************************************************************************************************************/
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_ON" %}
+CONST(com_main_function_rx_struct_type, COM_CONST) com_rx_main_function_des[{{ComGeneral.mainfunction_rx_num_totle}}] = {
+    {{ ("%-10s" | format("/* Index"))~" " }}
+    {{- ("%+20s" | format("RxTimeoutInfo"))~" " -}}
+    {{- ("%+20s" | format("StartIPduIdxOfMainFunctionRx"))~" " -}}
+    {{- ("%+20s" | format("IPduNumOfMainFunctionRx"))~" " -}}
+    {{- ("%+30s" | format("RxToutmessagStartIdx"))~" " -}}
+    {{- ("%+20s" | format("RxToutmessagNum"))~" " -}}
+    {{- ("%+20s" | format("IpduMaxSigNum"))~" " -}}
+    {{- ("%+45s" | format("RxNotificationRecordRef"))~" " -}}
+    {{- ("%s" | format("*/")) -}}
+    
+    {% for MainFunction_rx in ComConfig.ComMainFunction_rx_totle.keys() %}
+        {%- set mainfunction_Obj = GetIPduObject(MainFunction_rx, ComConfig.ComMainFunction_rx_totle) %}
+    {{ "{/*"~("%+04s" | format(loop.index0))~" */" }}
+        {%- if mainfunction_Obj.RxTimeoutInfo == "TRUE" %}
+            {{- ("%+20s" | format("(boolean)TRUE"))~"," }}
+        {%- else %}
+            {{- ("%+20s" | format("(boolean)FALSE"))~"," }}
+        {%- endif %}
+
+        {%- if mainfunction_Obj.StartRxIPduIdx == "NO_PDU_REFERENCE" %}
+            {{- ("%+20s" | format("NO_PDU_REFERENCE"))~"," }}
+        {%- else %}
+            {{- ("%+20su" | format(mainfunction_Obj.StartRxIPduIdx))~"," }}
+        {%- endif %}
+        {{- ("%+20su" | format(mainfunction_Obj.RxIPduNum))~"," }}
+
+        {%- if mainfunction_Obj.RxToutmessagStartIdx == "NO_PDU_REFERENCE" %}
+            {{- ("%+30s" | format("NO_PDU_REFERENCE"))~"," }}
+        {%- else %}
+            {{- ("%+30su" | format(mainfunction_Obj.RxToutmessagStartIdx))~"," }}
+        {%- endif %}
+        {{- ("%+20su" | format(mainfunction_Obj.RxToutmessagNum))~"," }}
+        {{- ("%+20su" | format(mainfunction_Obj.Ipdu_MaxSig_Num))~"," }}
+        {{- ("%+45s" | format(mainfunction_Obj.RxNotificationRecordRef))~"}" }}
+        {%- if ComGeneral.mainfunction_rx_num_totle > 1 %}
+            {{- ("%s" | format(",")) -}}
+        {%- endif %} 
+    {%- endfor %}
+};
+{%- endif %} 
+
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF" %}
+CONST(com_main_function_rx_struct_type, COM_CONST) com_rx_main_function_des[{{ComGeneral.mainfunction_rx_num_totle}}] = {
+    {{ ("%-10s" | format("/* Index"))~" " }}
+    {{- ("%+20s" | format("RxTimeoutInfo"))~" " -}}
+    {{- ("%+20s" | format("StartIPduIdxOfMainFunctionRx"))~" " -}}
+    {{- ("%+20s" | format("IPduNumOfMainFunctionRx"))~" " -}}
+    {{- ("%+30s" | format("RxToutSignalStartIdx"))~" " -}}
+    {{- ("%+20s" | format("RxToutSignalNum"))~" " -}}
+    {{- ("%+20s" | format("IpduMaxSigNum"))~" " -}}
+    {{- ("%+45s" | format("RxNotificationRecordRef"))~" " -}}
+    {{- ("%s" | format("*/")) -}}
+    
+    {% for MainFunction_rx in ComConfig.ComMainFunction_rx_totle.keys() %}
+        {%- set mainfunction_Obj = GetIPduObject(MainFunction_rx, ComConfig.ComMainFunction_rx_totle) %}
+    {{ "{/*"~("%+04s" | format(loop.index0))~" */" }}
+        {%- if mainfunction_Obj.RxTimeoutInfo == "TRUE" %}
+            {{- ("%+20s" | format("(boolean)TRUE"))~"," }}
+        {%- else %}
+            {{- ("%+20s" | format("(boolean)FALSE"))~"," }}
+        {%- endif %}
+        {%- if mainfunction_Obj.StartRxIPduIdx == "NO_PDU_REFERENCE" %}
+            {{- ("%+20s" | format("NO_PDU_REFERENCE"))~"," }}
+        {%- else %}
+            {{- ("%+20su" | format(mainfunction_Obj.StartRxIPduIdx))~"," }}
+        {%- endif %}
+        {{- ("%+20su" | format(mainfunction_Obj.RxIPduNum))~"," }}
+
+        {%- if mainfunction_Obj.RxToutSignalStartIdx == "NO_PDU_REFERENCE" %}
+            {{- ("%+30s" | format("NO_PDU_REFERENCE"))~"," }}
+        {%- else %}
+            {{- ("%+30su" | format(mainfunction_Obj.RxToutSignalStartIdx))~"," }}
+        {%- endif %}
+        {{- ("%+20su" | format(mainfunction_Obj.RxToutSignalNum))~"," }}
+        {{- ("%+20su" | format(mainfunction_Obj.Ipdu_MaxSig_Num))~"," }}
+        {{- ("%+45s" | format(mainfunction_Obj.RxNotificationRecordRef))~"}" }}
+
+        {%- if ComGeneral.mainfunction_rx_num_totle > 1 %}
+            {{- ("%s" | format(",")) -}}
+        {%- endif %} 
+    {%- endfor %}
+};
+{%- endif %} 
+#define  COM_STOP_SEC_CONST
+#include "com_memmap.h"
+
+#define  COM_START_SEC_CODE
+#include "com_memmap.h"
+/**********************************************************************************************************************
+  Com TX MainFunction definitions
+**********************************************************************************************************************/
+{% for MainFunction_tx in ComConfig.ComMainFunction_tx_totle.keys() %}
+{{ "/*"~("%s" | format(MainFunction_tx))~" */" }}
+{{ ("%s" | format("FUNC(void, COM_CODE) " ~MainFunction_tx))~ "(void)" }}
+{
+    {{ ("%s" | format("uint8 id = "~loop.index0))~";" }}
+    com_main_function_tx_run(id);
+}
+{% endfor %}
+
+
+/**********************************************************************************************************************
+  Com RX MainFunction definitions
+**********************************************************************************************************************/
+{% for MainFunction_rx in ComConfig.ComMainFunction_rx_totle.keys() %}
+{{ "/*"~("%s" | format(MainFunction_rx))~" */" }}
+{{ ("%s" | format("FUNC(void, COM_CODE) " ~MainFunction_rx))~ "(void)" }}
+{
+    {{ ("%s" | format("uint8 id = "~loop.index0))~";" }}
+    com_main_function_rx_run(id);
+}
+{% endfor %}
+
+
+/**********************************************************************************************************************
+  Com GW MainFunction definitions
+**********************************************************************************************************************/
+{% for MainFunction_gw in ComConfig.ComMainFunction_gw_totle.keys() %}
+{{ "/*"~("%s" | format(MainFunction_gw))~" */" }}
+{{ ("%s" | format("FUNC(void, COM_CODE) " ~MainFunction_gw))~ "(void)" }}
+{
+    {{ ("%s" | format("uint8 id = "~loop.index0))~";" }}
+    com_main_function_gw_run(id);
+}
+{% endfor %}
+#define  COM_STOP_SEC_CODE
+#include "com_memmap.h"

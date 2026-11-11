@@ -1,0 +1,35 @@
+From 682f04aebebf716fdb58b9a63bad43b2bce87676 Mon Sep 17 00:00:00 2001
+From: weijiafu <weijiafu@lixiang.com>
+Date: Tue, 21 Jan 2025 10:51:34 +0800
+Subject: [PATCH] Nuttx adapt signaltest
+
+---
+ src/signaltest/signaltest.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/signaltest/signaltest.c b/src/signaltest/signaltest.c
+index 5412c50..0ead1c1 100644
+--- a/src/signaltest/signaltest.c
++++ b/src/signaltest/signaltest.c
+@@ -20,7 +20,9 @@
+ #include <sched.h>
+ #include <inttypes.h>
+ 
++#ifdef __linux__
+ #include <linux/unistd.h>
++#endif
+ 
+ #include <sys/prctl.h>
+ #include <sys/stat.h>
+@@ -325,7 +327,7 @@ static void process_options(int argc, char *argv[], unsigned int max_cpus)
+ 	if (duration < 0)
+ 		error = 1;
+ 
+-	if (priority < 0 || priority > 99)
++	if (priority < 0 || priority > 255)
+ 		error = 1;
+ 
+ 	if (num_threads == -1)
+-- 
+2.25.1
+

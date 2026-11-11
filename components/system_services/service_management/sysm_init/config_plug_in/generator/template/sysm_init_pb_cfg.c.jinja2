@@ -1,0 +1,196 @@
+{{get_copyright()}}
+/*!*********************************************************************************************************************
+ * @file		sysm_init_pb_cfg.c
+ * @brief	   	sysm_init PostBuild 配置源文件.
+ * @date		{{get_generation_time()}}
+ * @project	 	{{get_project_name()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+/* Including File */
+#include "sysm_init.h"
+#include "sysm_init_generated_types.h"
+#include "sysm_init_internals.h"
+
+{% set cores = dict_bsw["dict_ecuc"]["ActiveEcuC"]["EcuC"]["EcucHardware"].items() %}
+/*------------- Global Shared Start-----------*/
+#define ECUM_START_SEC_MULTI_APP_BSS
+#include "ecum_memmap.h"
+{%- for core_name, core_value in cores %}
+{%- if core_name != "DefinitionRef" %}
+static VAR(ecum_core_status_t,ECUM_MULTI_APP_BSS)  ecum_core_status_os_application_non_trusted_core{{loop.index0-1}};
+{%- endif %}
+{%- endfor %}
+#define ECUM_STOP_SEC_MULTI_APP_BSS
+#include "ecum_memmap.h"
+/*------------- Global Shared End-----------*/
+
+{%-set core_num = get_coreNums(cores)%}
+/*------------- Const Start-----------*/
+#define ECUM_START_SEC_CONST
+#include "ecum_memmap.h"
+CONST(ecum_core_status_array_t , ECUM_CONST) ecum_core_status[{{core_num}}] =
+{
+{%- if (cores|length) - 1 > 0 %}
+{%- for core_name, core_value in cores %}
+{%- if core_name != "DefinitionRef" %}
+	&ecum_core_status_os_application_non_trusted_core{{loop.index0-1}},
+{%- endif %}
+{%- endfor %}
+{%- else%}
+	ECUM_CORESTATUS_OFF,
+{%- endif%}
+};
+#define ECUM_STOP_SEC_CONST
+#include "ecum_memmap.h"
+/*------------- Const End-----------*/
+
+/* Local Variable Definition */
+#define  ECUM_START_SEC_CONST
+#include "ecum_memmap.h"
+
+extern CONST(postbuild_config_t, ECUM_CONST) postbuild_config;
+
+{%- set modules = get_modules(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for module in modules %}
+
+{%- if module == "ethif" or module == "stbm" or module == "eep" or module == "ethtsyn" or module == "cantsyn" %}
+extern CONST({{module}}_config_type, ECUM_CONST) {{module}}_config_data;
+{%- elif module == "dcm" or module == "dem" or  module == "ethsm"%}
+extern CONST({{module}}_config_type, ECUM_CONST) {{module}}_config;
+{%- elif module == "wdgm" %}
+extern CONST(wdgm_config_type, ECUM_CONST) wdgm_core0_config;
+{%- elif module == "tcpip" %}
+extern CONST({{module}}_config_type, ECUM_CONST) TcpIp_Config;
+{%- elif module == "nm" %}
+extern CONST(nm_cate_config, ECUM_CONST) nm_config;
+{%- elif module == "time_manager" %}
+extern CONST(tm_config_type, ECUM_CONST) tm_config_data;
+{%- else %}
+extern CONST({{module}}_config_type, ECUM_CONST) {{module}}_config;
+{%- endif %}
+
+{%- endfor %}
+#define ECUM_STOP_SEC_CONST
+#include "ecum_memmap.h"
+
+/* Local Type & Structure Definition */
+#define ECUM_START_SEC_CONST
+#include "ecum_memmap.h"
+/* 休眠模式配置 */
+{%- set sleepmodes = check_exist("EcuMSleepModes", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]) %}
+CONST(ecum_sleep_mode_t, ECUM_CONST) ecum_sleep_mode_config[] = {
+{%- if sleepmodes != "NULL" %}
+{%- for mode_name, mode_value in sleepmodes.items() %}
+{%- if mode_name != "Tag" %}
+	{
+		.ecum_sleep_mode_id = {{mode_name}},
+		.ecum_wakeup_source_mask = ({{get_mask(mode_value)}}),
+	},
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+};
+
+{% set sources = check_exist("EcuMWakeupSources", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]) %}
+/* 唤醒源配置 */
+static CONST(ecum_wakeup_source_config_t, ECUM_CONST) ecum_wakeup_source_config[] = {
+{%- if sources != "NULL" %}
+{%- for source_name, source_value in sources.items() %}
+{%- if source_name != "Tag" %}
+	{
+		.ecum_wakeup_source_id = {{source_name}},
+		.ecum_validation_timeout = {{get_timeout(source_value["EcuMValidationTimeout"]["Value"])}}u,
+#if defined(ECUM_USE_COMM)
+		.ecum_comm_channel = {{get_wakeupchannel(source_value["EcuMComMChannelRef"]["ValueRef"])}}
+#endif
+	},
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+};
+
+#if(ECUM_MCURESETREFNUM != 0)
+CONST(ecum_reset_reason_t, ECUM_CONST) ecum_reset_reasons[] = {
+{%- if sources != "NULL" %}
+{%- for source_name, source_value in sources.items() %}
+{%- if source_name != "Tag" %}
+{%- if("EcuMResetReasonRef" in source_value) %}
+{%- if("ValueRef" in source_value["EcuMResetReasonRef"]) %}
+{%- set refs = source_value["EcuMResetReasonRef"]["ValueRef"] %}
+{%- if refs != None %}
+{{get_resetReasonRef(source_name,refs)}}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+};
+#endif
+
+{% if "ActiveEcuC" in dict_bsw["dict_comm"] %}
+{%- set channels = dict_bsw["dict_comm"]["ActiveEcuC"]["ComM"]["ComMConfigSet"].items() %}
+/* EcuM 使用ComM通道配置 */
+#if (CONFIG_MODULE_COMM == 1)
+CONST(ecum_comm_config_t, ECUM_CONST) ecum_comm_config[] = {
+{%- for channel_name, channel_value in channels %}
+{%- if channel_name != "DefinitionRef" and get_key_name(channel_value["DefinitionRef"]) == "ComMChannel" %}
+	{
+		.ecum_comm_network_handle =  COMM_NETWORK_HANDLE_{{ channel_name }},
+		.ecum_com_bus_t = {{ channel_value["ComMBusType"]["Value"] }}
+	},
+{%- endif %}
+{%- endfor %}
+};
+#endif
+{%- endif %}
+
+{% set default_value = get_defautvalue(dict_config["ActiveEcuC"]["EcuM"]) %}
+/* SWS_EcuM_00793 */ /* SWS_EcuMf_00046 */
+CONST(ecum_config_t, ECUM_CONST) ecum_config = {
+	.ecum_post_build_variant = POST_BUILD_VARIANT,
+	.ecum_config_consistency_hash_low = PRE_COMPILED_DATA_HASH_LOW,
+	.ecum_config_consistency_hash_high = PRE_COMPILED_DATA_HASH_HIGH,  /* @req SWS_EcuM_02795 */
+	.ecum_default_shutdown_target = {{default_value[0]}},
+	.ecum_default_sleep_mode = {{default_value[1]}},
+	.ecum_nvram_read_all_timeout = ECUM_NVRAM_READALL_TIMEOUT,
+	.ecum_nvram_write_all_timeout = ECUM_NVRAM_WRITEALL_TIMEOUT,
+	.ecum_run_minimum_duration = ECUM_NVRAM_MIN_RUN_DURATION,
+	.ecum_sleep_mode_config = ecum_sleep_mode_config,
+	.ecum_wakeup_source_config = ecum_wakeup_source_config,
+#if(ECUM_MCURESETREFNUM != 0)
+	.ecum_reset_reason_config = ecum_reset_reasons,
+#endif
+/* SWS_EcuM_00809 */
+#if defined(ECUM_USE_DEM)
+	.ecum_dem_inconsistency_event_id			 = DEM_EVENT_ID_NULL,
+	.ecum_dem_ram_check_failed_event_id			= DEM_EVENT_ID_NULL,
+	.ecum_dem_all_run_requests_killed_event_id	  = DEM_EVENT_ID_NULL,
+#endif
+#if (CONFIG_MODULE_COMM == 1)
+	.ecum_comm_config = &ecum_comm_config[0],
+#endif
+	.post_build_config = &postbuild_config,
+
+{%- set modules = get_modules(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for module in modules %}
+
+{%- if module == "ethif" or module == "stbm" or module == "eep" or module == "ethtsyn" or module == "cantsyn" %}
+	.{{module}}_config_ptr = &{{module}}_config_data,
+{%- elif module == "dcm" or module == "dem" or module == "ethsm" %}
+	.{{module}}_config_ptr = &{{module}}_config,
+{%- elif module == "wdgm" %}
+	.wdgm_config_ptr = &wdgm_core0_config,
+{%- elif module == "tcpip" %}
+	.{{module}}_config_ptr = &TcpIp_Config,
+{%- elif module == "time_manager" %}
+	.tm_config_ptr = &tm_config_data,
+{%- else %}
+	.{{module}}_config_ptr = &{{module}}_config,
+{%- endif %}
+
+{%- endfor %}
+};
+#define ECUM_STOP_SEC_CONST
+#include "ecum_memmap.h"

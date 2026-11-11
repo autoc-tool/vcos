@@ -1,0 +1,33 @@
+From 1b93f6621662d2003dca27f089eaf69f79660719 Mon Sep 17 00:00:00 2001
+From: weijiafu <weijiafu@lixiang.com>
+Date: Mon, 20 Jan 2025 16:50:20 +0800
+Subject: [PATCH] pi_stress pthread.h header adapt
+
+---
+ src/pi_tests/pi_stress.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/pi_tests/pi_stress.c b/src/pi_tests/pi_stress.c
+index 673a7bb..d37c533 100644
+--- a/src/pi_tests/pi_stress.c
++++ b/src/pi_tests/pi_stress.c
+@@ -30,7 +30,7 @@
+ #include <errno.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
+-#include <pthread.h>
++#include "../../../../../../nuttx/include/pthread.h"
+ #include <sched.h>
+ #include <unistd.h>
+ #include <string.h>
+@@ -228,6 +228,7 @@ int main(int argc, char **argv)
+ 	int core;
+ 	int nthreads;
+ 
++	pthread_mutex_init(&shutdown_mtx, 0);
+ 	/* Make sure we see all message, even those on stdout.  */
+ 	setvbuf(stdout, NULL, _IONBF, 0);
+ 
+-- 
+2.25.1
+

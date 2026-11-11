@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Description: Hook Callout Code
+ * AutoGenerate Code, DO NOT EDIT!!!
+ * Generation Time : 2026-11-11 20:44:18
+ * Project Name    : rt_demo
+ * Tool Version    : V0.1.0-DEV
+ */
+
+#include <nuttx/config.h>
+#include "rtfw_hook.h"
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+#ifdef CONFIG_ARCH_TRICORE
+extern uint8 error_hook_is_called; // 标记错误钩子是否被调用
+extern os_status_t protection_error_type; // 标记错误钩子是否被调用
+#endif
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+
+#define OS_START_SEC_CALLOUT_CODE
+#include "rtfw_memmap.h"
+
+
+FUNC(void, OS_CALLOUT_CODE) os_errorhook(StatusType Error)
+{
+    UNUSED(Error);
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+#ifdef CONFIG_ARCH_TRICORE
+    error_hook_is_called = 1; // 标记错误钩子被调用
+#endif
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+
+}
+
+
+FUNC(protection_return_t, OS_CALLOUT_CODE) os_protectionhook(StatusType Error)
+{
+    UNUSED(Error);
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+#ifdef CONFIG_ARCH_TRICORE
+    protection_error_type = Error; // 保存错误类型
+#endif
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+    return PRO_TERMINATEAPPL;
+}
+
+
+FUNC(void, OS_CALLOUT_CODE) os_shutdownhook(StatusType Error)
+{
+    UNUSED(Error);
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+
+FUNC(void, OS_CALLOUT_CODE) os_startuphook(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+#define OS_STOP_SEC_CALLOUT_CODE
+#include "rtfw_memmap.h"
+
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/

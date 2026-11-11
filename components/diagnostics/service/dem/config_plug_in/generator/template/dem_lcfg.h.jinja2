@@ -1,0 +1,623 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        dem_lcfg.h
+ * @brief       Dem本地配置头文件
+ * @details     主要包含Dem模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+{%- set dem_general = get_dem_general_config() %}
+{%- set dem_client_config = get_dem_client_config() %}
+{%- set dem_dtc_sta_chg_cbk_config = get_dem_dtc_status_changed_cbk_config() %}
+{%- set dem_dtc_group_list_config = get_dem_dtc_group_list_config() %}
+{%- set dem_satellite_config = get_dem_satellite_config() %}
+{%- set dem_event_parameters_config = get_dem_event_parameters_config() %}
+{%- set dem_opcycles_config = get_dem_opcycles_config() %}
+{%- set dem_event_available_data_length_config = get_dem_event_available_data_length_config() %}
+{%- set dem_ext_data_max_nof_record_config = get_dem_ext_data_max_nof_record_config() %}
+{%- set dem_freeze_frame_max_nof_record_config = get_dem_freeze_frame_max_nof_record_config() %}
+{%- set dem_satellite_event_id_type_config = get_dem_satellite_event_id_type_config() %}
+{%- set dem_event_combined_groups_config = get_dem_event_combined_groups_config() %}
+{%- set dem_nvm_blocks = get_dem_nvm_blocks_config() %}
+{%- set dem_clear_dtc_notification_start_list_config = get_dem_clear_dtc_notification_start_list_config() %}
+{%- set dem_clear_dtc_notification_finish_list_config = get_dem_clear_dtc_notification_finish_list_config() %}
+{%- set dem_indicator_Attributes = get_dem_indicator_attributes_config() %}
+{%- set dem_master_memmap_tag_str = get_dem_master_memmap_tag_str() %}
+{%- set dem_master_core = get_dem_master_core() %}
+
+#ifndef DEM_LCFG_H
+#define DEM_LCFG_H
+
+#include "dem_types.h"
+#include "dem_cfg.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_id_type类型
+ **********************************************************************************************************************/
+typedef uint8 dem_satellite_id_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_event_id_type类型
+ **********************************************************************************************************************/
+typedef {{dem_satellite_event_id_type_config}} dem_satellite_event_id_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_clear_event_allowed_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_clear_event_allowed_fnc_type)(boolean allowed);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_event_data_changed_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_event_data_changed_fnc_type)(void);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_init_monitor_for_event_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_init_monitor_for_event_fnc_type)(dem_init_monitor_reason_type init_monitor_reason);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_init_monitor_for_function_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_init_monitor_for_function_fnc_type)(void);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_event_status_changed_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_event_status_changed_fnc_type)(dem_event_status_rec_type event_status_old,
+                                                                      dem_event_status_rec_type event_status_new);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_dtc_status_changed_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_dtc_status_changed_fnc_type)(uint32 dtc, uint8 dtc_status_old, uint8 dtc_status_new);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_read_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_read_data_fnc_type)(uint8 *data);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_get_fault_detection_counter_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_callback_get_fault_detection_counter_fnc_type)(sint8 *event_id_fault_detection_counter);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_clear_dtc_notification_fnc_type类型
+ **********************************************************************************************************************/
+typedef std_return_type (*dem_clear_dtc_notification_fnc_type)(uint32 dtc, dem_dtc_format_type dtc_format,
+                                                               dem_dtc_origin_type dtc_origin);
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_callback_dtc_status_changed_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    dem_callback_dtc_status_changed_fnc_type callback_dtc_status_changed_fnc; ///< DTC状态变化回调函数
+} dem_callback_dtc_status_changed_type;
+
+{%- for primary_memory_entry in range(dem_general.DemMaxNumberEventEntryPrimary | int) %}
+#define dem_get_pri_mem_idx{{primary_memory_entry}}_addr() ((uint8*)&g_dem_pri_mem_data[{{primary_memory_entry}}] ) ///< 获取基本内存事件缓存地址
+{%- endfor %}
+
+#define dem_get_status_mem_addr() ((uint8*)&g_dem_status_mem_data)///<  获取g_dem_status_mem_data地址
+#define dem_get_mgmt_mem_addr() ((uint8*)&g_dem_mgmt_mem_data)///<  获取g_dem_mgmt_mem_data地址
+{% if dem_general.DataAgedCounter == "STD_ON" -%}
+#define dem_get_aged_mem_addr() ((uint8*)&g_dem_aged_mem_data)///<  获取g_dem_aged_mem_data地址
+{%- endif %}
+{% if dem_general.OBDSupport == "STD_ON" -%}
+
+#define dem_get_perm_mem_addr() ((uint8*)&g_dem_perm_mem_data) ///< 获取永久内存事件缓存地址
+
+#define dem_get_obd_ff_mem_addr() ((uint8*)g_dem_obd_ff_mem_data) ///< 获取OBD冻结帧内存地址
+
+#define dem_get_indicator_mem_addr() ((uint8*)&g_dem_indicator_mem_data) ///< 获取Indicator状态内存地址
+{%- endif %}
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+#define dem_get_event_available_mem_addr() ((uint8*)g_dem_event_available_mem_data)///<  获取g_dem_event_available_mem_data地址
+{%- endif %}
+
+{%- if dem_general.EnableConditionSupport == "STD_ON" %}
+/*!*********************************************************************************************************************
+ * @brief   定义dem_enable_condition_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    boolean enable_condition_status; ///< 使能条件状态
+    uint8 enable_condition_id; ///< 使能条件ID
+} dem_enable_condition_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_enable_condition_group_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 nof_enable_conditions; ///< 使能条件个数
+    uint16 enable_condition_base_index; ///< 使能条件指针
+} dem_enable_condition_group_type;
+{%- endif %}
+
+{%- if dem_general.StorageConditionSupport == "STD_ON" %}
+/*!*********************************************************************************************************************
+ * @brief   定义dem_storage_condition_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    boolean storage_condition_status; ///< 储存条件状态
+    uint8 storage_condition_id; ///< 储存条件ID
+} dem_storage_condition_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_storage_condition_group_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 nof_storage_conditions; ///< 储存条件个数
+    uint16 storage_condition_base_index; ///< 储存条件指针
+} dem_storage_condition_group_type;
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_data_elem_class_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 data_size; ///< 数据大小
+    dem_data_elem_use_port_type data_elem_use_port; ///< 数据元素使用端口
+    dem_internal_data_elem_type internal_data_type; ///< 内部数据类型
+    dem_data_elem_endianness endianness; ///< 大小端
+    dem_callback_read_data_fnc_type data_elem_read_fnc; ///< 读取数据元素的功能函数
+} dem_data_elem_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_ext_data_record_class_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 recnum;  ///< 记录个数
+    uint8 data_class_ref_start; ///< 数据类引用起始
+    uint8 data_class_num; ///< 数据类数目
+    dem_update_rule_type update_rule; ///< 更新规则
+    dem_ext_data_record_trigger_type record_trigger; ///< 记录触发者
+} dem_ext_data_record_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_ext_data_class_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dem_ext_data_record_class_type *const ext_data_record_class_ref[DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA+1]; ///< 扩展数据记录引用
+} dem_ext_data_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义DemPidOrDid类型
+ **********************************************************************************************************************/
+typedef struct {
+    boolean dem_eol; ///< 结束符
+    uint8 data_class_ref_start; ///< 数据类引用起始
+    uint8 data_class_num; ///< 数据类数目
+    const uint16 identifier; ///< 标识
+} dem_pid_or_did_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_ff_class_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    dem_ff_kind_type ff_kind; ///< 冻结帧类型
+    const dem_pid_or_did_type *const *ff_id_class_ref; ///< 冻结帧类索引
+} dem_ff_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_dtc_class_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    boolean immediate_nv_storage; ///< 立即存储
+    uint8 dtc_functional_unit; ///< DTC功能单元
+    dem_dtc_severity_type dtc_severity; ///< DTC严重性
+#if (DEM_DTC_SUPPRESSION_SUPPORT == STD_ON)
+    uint16 dtc_index; ///< DTC索引
+#endif
+    uint16 obd_dtc; ///< obd_dtc
+    uint32 uds_dtc; ///< uds_dtc
+} dem_dtc_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_indicator_type类型
+ **********************************************************************************************************************/
+{%- if dem_general.DemSupportIndicator == "TRUE" %}
+typedef struct {
+    uint8 event_list_size; ///< 事件列表
+    uint8 indicator_id; ///< 指示器ID
+    const dem_event_id_type *const *event_list; ///< 事件列表
+} dem_indicator_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义Dem_IndicatorAttributeType
+ **********************************************************************************************************************/
+typedef struct {
+    boolean dem_eol; ///< 结束符
+    dem_indicator_status_type indicator_behaviour; ///< 指示器行为
+    uint8 indicator_failure_cycle_threshold; ///< 指示器失败周期阈值
+    dem_opcycle_state_type indicator_failure_cycle; ///< 指示器失败周期
+    uint8 indicator_healing_cycle_threshold; ///< 指示器自愈周期阈值
+    dem_opcycle_state_type indicator_healing_cycle; ///< 指示器自愈周期
+    dem_indicator_failure_source_type indicator_failure_cycle_source; ///< 指示器错误周期源
+    uint16 indicator_buffer_index; ///< 指示器缓存索引
+    const dem_indicator_type *indicator_ref; ///< 指示器引用
+} dem_indicator_attribute_type;
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_indicator_info_type
+ **********************************************************************************************************************/
+{%- if dem_indicator_Attributes | length %}
+typedef struct {
+    uint8 failure_counter; ///< 失败计数
+    uint8 healing_counter; ///< 自愈计数
+    uint8 opcycle_status; ///< 操作周期状态
+    uint16 internal_indicator_id; ///< 内部指示器ID
+} dem_indicator_info_type;
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_opcycle_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean opcycle_autostart; ///< 操作周期自动启动
+    uint8 opcycle_id; ///< 操作周期ID
+} dem_opcycle_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_debounce_counter_based_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean jump_up; ///< jump_up
+    boolean jump_down; ///< jump_down
+    uint16 increment_step_size; ///< 增长步长
+    uint16 decrement_step_size; ///< 减少步长
+    sint16 jump_down_value; ///< JumpDown值
+    sint16 jump_up_value; ///< JumpUp值
+    sint16 failed_threshold; ///< 失败阈值
+    sint16 passed_threshold; ///< 成功阈值
+} dem_debounce_counter_based_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_debounce_time_based_type
+ **********************************************************************************************************************/
+typedef struct{
+    uint16 index; ///< 标号
+    uint32 time_failed_threshold; ///< 失败时间阈值
+    uint32 time_passed_threshold; ///< 成功时间阈值
+} dem_debounce_time_based_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_debounce_algorithm_class_type
+ **********************************************************************************************************************/
+typedef struct {
+    dem_debounce_name_type debounce_name; ///< 预去抖名
+    union {
+        const dem_debounce_counter_based_type *debounce_counter_based; ///< 基于计数预去抖
+        const dem_debounce_time_based_type *debounce_time_based; ///< 基于时间预去抖
+    } debounce_algorithm;
+} dem_debounce_algorithm_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义DemEventClass
+ **********************************************************************************************************************/
+typedef struct {
+    boolean ff_prestorage_supported; ///< 是否支持冻结帧预存储
+    boolean aging_allowed; ///< 是否支持老化
+    const uint8 failure_cycle_counter_threshold; ///< 确认Event转为Confirmed的门限值，操作周期计数failureCounter需要大于等于该值
+    const uint8 aging_cycle_counter_threshold; ///< 确认Event老化的门限值，操作周期计数agingCounter需要大于等于该值
+    uint8 event_priority; ///<  事件优先级
+    dem_opcycle_id_type opcycle_ref; ///< 操作周期更新触发周期
+    dem_opcycle_id_type aging_cycle_ref; ///< 老化计数更新触发周期
+    dem_opcycle_id_type failure_cycle_ref; ///< 确认失效计数更新触发周期
+    dem_dtc_origin_type event_destination; ///< 事件目标缓存区域（DemMemoryDestination）
+{%- if dem_general.StorageConditionSupport == "STD_ON" %}
+    const uint16 storage_condition_group_ref_index; ///< Event关联的StorageConditionGroup
+{%- endif %}
+{%- if dem_general.EnableConditionSupport == "STD_ON" %}
+    const uint16 enable_condition_group_ref_index; ///< Event关联的EnableConditionGroup索引
+{%- endif %}
+{%- if dem_indicator_Attributes | length %}
+    const uint16 indicator_attribute_index; ///< 指示器属性，用于警告灯
+{%- endif %}
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+    const dem_debounce_algorithm_class_type *debounce_algorithm_class; ///< 故障状态的预去抖算法
+{%- endif %}
+} dem_event_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_ff_recnum_class_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 ff_recnum[DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS + 1]; ///< 冻结帧数
+} dem_ff_recnum_class_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_event_parameter_type
+ **********************************************************************************************************************/
+typedef struct {
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+    const boolean event_available; ///< 事件可用性
+{%- endif %}
+{%- if dem_general.DemEventKindSupport == "STD_ON" -%}
+    dem_event_kind_type event_kind; ///< 事件类型
+{%- endif %}
+    uint8 max_number_ff_records; ///< 最大冻结帧记录个数
+    dem_dtc_kind_type event_dtc_kind; ///< 事件DTC类型
+    uint8 satellite_id; ///< 卫星ID
+{%- if dem_satellite_event_id_type_config == "uint8" %}
+    dem_satellite_event_id_type satellite_event_idx; ///< 卫星事件索引
+{%- endif %}
+{%- if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}
+    uint8 event_combined_groups_index;///< 事件组合组索引
+{%- endif %}
+    uint16 event_id; ///< 事件ID
+{%- if dem_satellite_event_id_type_config == "uint16" %}
+    dem_satellite_event_id_type satellite_event_idx; ///< 卫星事件索引
+{%- endif %}
+{%- if dem_general.DataAgedCounter == "STD_ON" %}
+    uint16 event_aged_data_index; ///< 事件老化数据索引
+{%- endif %}
+    const uint16 ext_data_class_ref_index; ///< 扩展数据类引用索引
+    const uint16 ff_class_ref_index; ///< 冻结帧类引用索引
+    const uint16 ff_recnum_class_ref_index; ///< 冻结帧记录类索引
+    const uint16 dtc_class_ref_index; ///< DTC类索引
+    const dem_event_class_type *event_class_ref; ///< 事件类引用
+{%- if dem_general.DemCallbackInitMforESupport == "STD_ON" %}
+    const dem_callback_init_monitor_for_event_fnc_type callback_init_m_for_e; ///< 初始化监控器回调
+{%- endif %}
+{%- if dem_general.DemCallbackEventUdsStatusChangedSupport == "STD_ON" %}
+    const dem_callback_event_status_changed_fnc_type callback_event_status_changed; ///< 事件状态变化回调
+{%- endif %}
+{%- if dem_general.DemCallbackClearEventAllowedSupport == "STD_ON" %}
+    const dem_callback_clear_event_allowed_fnc_type callback_clear_event_allowed; ///< 事件是否允许清除回调
+{%- endif %}
+{%- if dem_general.DemCallbackEventDataChangedSupport == "STD_ON" %}
+    const dem_callback_event_data_changed_fnc_type callback_event_data_changed; ///< 事件数据改变回调
+{%- endif %}
+} dem_event_parameter_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_group_of_dtc_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean dem_eol; ///< 结束符
+    uint32 dem_group_dtcs; ///< 组DTC
+} dem_group_of_dtc_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_cfg_helper_type
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 *ext_data_data_elem_map; ///< 扩展数据数据元素Map
+    const uint8 *did_data_elem_map; ///< Did数据元素Map
+    const dem_callback_dtc_status_changed_fnc_type *dtc_status_changed_cbk_map; ///< DTC状态变化回调Map
+} dem_cfg_helper_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_config_set_type
+ **********************************************************************************************************************/
+typedef struct {
+    const dem_event_parameter_type *event_parameter; ///< 事件参数
+    const dem_dtc_class_type *dtc_class; ///< DTC类
+    const dem_group_of_dtc_type *group_of_dtc; ///< DTC组
+{%- if dem_clear_dtc_notification_start_list_config | length %}
+    const dem_clear_dtc_notification_fnc_type *clear_dtc_notification_start_fnc; ///< 开始清除DTC通知函数
+{%- endif %}
+{%- if dem_clear_dtc_notification_finish_list_config | length %}
+    const dem_clear_dtc_notification_fnc_type *clear_dtc_notification_finish_fnc; ///< 完成清除DTC通知函数
+{%- endif %}
+{%- if dem_general.EnableConditionSupport == "STD_ON" %}
+    const dem_enable_condition_type *enable_condition; ///< 使能条件
+{%- endif %}
+{%- if dem_general.StorageConditionSupport == "STD_ON" %}
+    const dem_storage_condition_type *storage_condition; ///< 储存条件
+{%- endif %}
+    const dem_ff_class_type *global_obd_ff_class_ref; ///< 全局冻结帧
+    const dem_data_elem_class_type *data_elem; ///< 数据元素
+} dem_config_set_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_cfg_primary_memory_type
+ **********************************************************************************************************************/
+typedef struct {
+    const dem_environment_data_capture_type environment_data_capture; ///< 抓取环境数据
+    const dem_event_displacement_strategy_type event_displacement_strategy; ///< 事件替换策略
+    const dem_occctr_processing_type occctr_processing; ///< 发生计数器处理
+    const dem_ff_recnum_type ff_recnum_type; ///< 记录冻结帧类型计数
+} dem_cfg_primary_memory_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_event_memory_set_type
+ **********************************************************************************************************************/
+typedef struct {
+    const dem_cfg_primary_memory_type *primary_memory; ///< 基本内存指针
+{%- if dem_general.DemSupportIndicator == "TRUE" %}
+    const dem_indicator_type *mil_indicator_ref; ///< MIL指示器指针
+{%- endif %}
+} dem_event_memory_set_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_client_type
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 client_id; ///< 用户ID
+    const uint8 cbk_dtc_status_changed_start; ///< DTC状态变化回调开始
+    const uint8 cbk_dtc_status_changed_num; ///< DTC状态变化回调个数
+    const dem_event_memory_set_type *event_memory_set_ref; ///< 事件内存集合指针
+} dem_client_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_general_type
+ **********************************************************************************************************************/
+typedef struct {
+    const boolean status_bit_storage_test_failed; ///< 是否存储测试失败状态位
+    const boolean storage_condition_support; ///< 是否支持存储条件
+    const dem_suppression_type suppression_support; ///< 支持抑制的类型
+    const dem_ff_recnum_type ff_recnum_type; ///< 冻结帧记录类型计数
+    const nvram_block_id_index *nvram_block_id; ///< Nvram块索引
+    const dem_event_memory_set_type *event_memory_set; ///< 事件内存集合指针
+    const dem_client_type *client; ///< 用户指针
+    const dem_ff_class_type *ff_class; ///< 冻结帧类指针
+    const dem_ff_recnum_class_type *ff_recnum_class; ///< 冻结帧记录数指针
+{%- if dem_general.DemSupportIndicator == "TRUE" %}
+    const dem_indicator_type *indicator; ///< 指示器指针
+{%- endif %}
+    const dem_opcycle_type *opcycle; ///< 操作周期指针
+} dem_general_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_config_type
+ **********************************************************************************************************************/
+typedef struct {
+    const dem_config_set_type *config_set; ///< 配置集指针
+    const dem_cfg_helper_type *cfg_helper; ///< 辅助容器指针
+    const dem_general_type *general; ///< 通用配置指针
+} dem_config_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_primary_mem_type
+ **********************************************************************************************************************/
+typedef struct {
+{%- if dem_general.DataOccurCounter == "STD_ON" %}
+    uint8  occctr; ///< 发生计数
+{%- endif %}
+{%- if dem_freeze_frame_max_nof_record_config > 0 %}
+    uint8  ff_data[DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS][DEM_MAX_SIZE_FF_DATA]; ///< 快照数据
+{%- endif %}
+{%- if dem_ext_data_max_nof_record_config > 0 %}
+    uint8  ext_data[DEM_MAX_RECORD_NUMBERS_IN_EXD_REC_NUM_CLASS][DEM_MAX_SIZE_EXT_DATA]; ///< 扩展数据
+{%- endif %}
+    uint16 aging_cnt; ///< 老化计数
+    uint16 event_id; ///< 事件ID
+    uint32 timestamp; ///< 时间戳
+} dem_primary_mem_type;
+
+/*!*********************************************************************************************************************
+ * @brief   声明dem_config
+ **********************************************************************************************************************/
+#define  DEM_START_SEC_CONST
+#include "dem_memmap.h"
+extern CONST(dem_config_type, DEM_CONST) dem_config;
+#define  DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_pri_mem_data
+ **********************************************************************************************************************/
+#if (DEM_USE_PRIMARY_MEMORY_SUPPORT == STD_ON)
+extern dem_primary_mem_type         g_dem_pri_mem_data[];
+#endif
+
+{% if dem_general.DataAgedCounter == "STD_ON" -%}
+/*!*********************************************************************************************************************
+ * @brief   声明dem_aged_mem_type
+ **********************************************************************************************************************/
+typedef struct { /* DEM_CFG_DTC_AGED_COUNTER == STD_ON */
+    uint8 aged_cnt[{{ dem_general.dem_max_number_aged_dtcs }} /*DEM_CFG_MAX_NUMBER_AGED_DTCS*/]; ///< 已老化计数
+} dem_aged_mem_type;
+
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_aged_mem_data
+ **********************************************************************************************************************/
+extern dem_aged_mem_type g_dem_aged_mem_data;
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_status_mem_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 trip_cnt[DEM_MAX_NUMBER_EVENT]; ///< 连续失败的周期次数
+    volatile uint8 event_status[DEM_MAX_NUMBER_EVENT]; ///< 事件状态
+} dem_status_mem_type;
+
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_status_mem_data
+ **********************************************************************************************************************/
+extern dem_status_mem_type           g_dem_status_mem_data;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_mgmt_mem_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint16 cfg_id; ///< 配置ID
+{%- if dem_general.DataOverflow == "STD_ON" %}
+    uint8 memory_overflow;                                         ///< 内存溢出
+{%- endif %}
+} dem_mgmt_mem_type;
+
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_mgmt_mem_data
+ **********************************************************************************************************************/
+extern dem_mgmt_mem_type    g_dem_mgmt_mem_data;
+
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_event_available_mem_data
+ **********************************************************************************************************************/
+extern uint8 g_dem_event_available_mem_data[{{ dem_event_available_data_length_config }} /* DEM_CFG_EVENT_AVAILABLE_DATA_LENGTH */]; ///< 可用数据
+{%- endif %}
+
+{% if dem_general.OBDSupport == "STD_ON" %}
+/*!*********************************************************************************************************************
+ * @brief   定义dem_perm_data_entry_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 status; ///< 状态
+    uint16 event_id; ///< 事件ID
+} dem_perm_data_entry_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_perm_mem_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint16 cfg_id;  ///< 配置ID
+    dem_perm_data_entry_type perm_data_entry[ {{ dem_general.DemMaxNumberEventEntryPermanent }} /*DEM_MAX_NUMBER_EVENT_PERM_MEM*/]; ///< 永久数据条目
+} dem_perm_mem_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_obd_ff_mem_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean is_visible; ///< 可见性
+    uint8 ff_data[{{ dem_general.DemMaxSizeOBDFFData }} /*DEM_CFG_MAX_SIZE_OBDFREEZEFRAME*/]; ///< 冻结帧数据
+    volatile uint16 event_id; ///< 事件ID
+    uint32 timestamp; ///< 时间戳
+} dem_obd_ff_mem_type;
+
+#if (DEM_USE_PERMANENT_MEMORY_SUPPORT == STD_ON)
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_perm_mem_data
+ **********************************************************************************************************************/
+extern dem_perm_mem_type            g_dem_perm_mem_data;
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_obd_ff_mem_data
+ **********************************************************************************************************************/
+extern dem_obd_ff_mem_type          g_dem_obd_ff_mem_data[1];
+#endif
+{%- endif %}
+
+#if defined(DEM_USE_INDICATORS)
+extern dem_indicator_info_type g_dem_indicator_mem_data[DEM_NOF_EVENT_INDICATORS];
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DEM_LCFG_H */

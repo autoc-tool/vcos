@@ -1,0 +1,116 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        ethif_cfg.h
+ * @brief       EthIf配置头文件
+ * @details     主要包含EthIf模块的配置相关相关信息
+ * @date        {{get_generation_time_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef ETHIF_CFG_H
+#define ETHIF_CFG_H
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+{{""}}
+
+#define ETHIF_ETH_ICMP_CHECKSUMOFFLOAD_ENABLE       ({{  EthGeneral["EnableOffloadChecksumICMP"] }})    ///< 使能/关闭硬件ICMP校验
+#define ETHIF_ETH_IPV4_CHECKSUMOFFLOAD_ENABLE       ({{  EthGeneral["EnableOffloadChecksumIPv4"] }})    ///< 使能/关闭硬件IPv4校验
+#define ETHIF_ETH_UDP_CHECKSUMOFFLOAD_ENABLE       ({{  EthGeneral["EnableOffloadChecksumUDP"] }})    ///< 使能/关闭硬件UDP校验
+#define ETHIF_ETH_TCP_CHECKSUMOFFLOAD_ENABLE       ({{  EthGeneral["EnableOffloadChecksumTCP"] }})    ///< 使能/关闭硬件TCP校验
+
+{%- if EthGeneral["EthVersion"] == "ETHMCAL_AUTOSAR_VERSION_422"%}
+#define ETHIF_GET_COUNTER_VALUES_ENABLE STD_OFF
+{%- elif EthGeneral["EthVersion"] == "ETHMCAL_AUTOSAR_VERSION_431"%}
+#define ETHIF_GET_COUNTER_VALUES_ENABLE STD_OFF
+{%- elif EthGeneral["EthVersion"] == "ETHMCAL_AUTOSAR_VERSION_440"%}
+#define ETHIF_GET_COUNTER_VALUES_ENABLE STD_OFF
+{%- else %}
+#define ETHIF_GET_COUNTER_VALUES_ENABLE STD_OFF
+{%- endif %}
+#if defined ({{  EthIfGeneral["EthIfMapMcalApiPrefix"]  | upper }}_CNTRL0_TXBUFFER_COUNT)
+#define ETHIf_MAX_TXBUFSTOTAL                   ({{  EthIfGeneral["EthIfMapMcalApiPrefix"]  | upper }}_CNTRL0_TXBUFFER_COUNT)   ///< 最大TXBUF数量
+#else
+#define ETHIf_MAX_TXBUFSTOTAL                   ({{ EthIfControllers[0]["EthIfMaxTxBufsTotal"] }}u)    ///< 最大TXBUF数量
+#endif
+{%- if EthIfGeneral["EthIfDevErrorDetect"] != "" %}
+#define ETHIF_DEV_ERROR_DETECT                  ({{  EthIfGeneral["EthIfDevErrorDetect"] }})    ///< 使能/关闭错误检测
+{%- endif %}
+{%- if EthIfGeneral["EthIfEnableRxInterrupt"] != "" %}
+#define ETHIF_ENABLE_RX_INTERRUPT               ({{  EthIfGeneral["EthIfEnableRxInterrupt"] }})    ///< 使能/关闭RX中断
+{%- endif %}
+{%- if EthIfGeneral["EthIfEnableTxInterrupt"] != "" %}
+#define ETHIF_ENABLE_TX_INTERRUPT               ({{  EthIfGeneral["EthIfEnableTxInterrupt"] }})    ///< 使能/关闭TX中断
+{%- endif %}
+{%- if EthIfGeneral["EthIfGetBaudRate"] != "" %}
+#define ETHIF_GET_BAUDRATE                      ({{  EthIfGeneral["EthIfGetBaudRate"] }})    ///< 使能/关闭获取波特率
+{%- endif %}
+{%- if EthIfGeneral["EthIfGetCounterState"] != "" %}
+#define ETHIF_GET_COUNTER_STATE                 ({{  EthIfGeneral["EthIfGetCounterState"] }})    ///< 使能/关闭获取计数器状态
+{%- endif %}
+#define ETHIF_GET_TRCV_WAKEUP_MODE_API          (STD_OFF)    ///< 使能/关闭获取收发器唤醒模式
+{%- if EthIfGeneral["EthIfGlobalTimeSupport"] != "" %}
+#define ETHIF_GLOBAL_TIME_SUPPORT               ({{  EthIfGeneral["EthIfGlobalTimeSupport"] }})    ///< 使能/关闭全局时间支持
+{%- endif %}
+#define ETHIF_MAIN_FUNCTION_PERIOD              ({{  EthIfGeneral["EthIfMainFunctionPeriod"] }}u)    ///< 定义主函数执行周期
+#define ETHIF_MAIN_FUNCTION_RX_TIMEOUT          (0.005u)    ///< 定义主函数RX超时时间
+#define ETHIF_MAX_TRCV_TOTAL                    (1u)    ///< 定义最大收发器总数
+{%- if EthIfGeneral["EthIfRxIndicationIterations"] != "" %}
+#define ETHIF_RX_INDICATION_ITERATIONS          ({{  EthIfGeneral["EthIfRxIndicationIterations"] }}u)   ///< 定义接收迭代次数
+{%- endif %}
+#define ETHIF_START_AUTO_NEGOTIATION            ({{  EthIfGeneral["EthIfStartAutoNegotiation"] }})    ///< 使能/关闭启动自动协商
+#define ETHIF_TRCV_LINK_STATECHG_MAIN_RELOAD    ({{  EthIfGeneral["EthIfTrcvLinkStateChgMainReload"] }}u)   ///< 定义接收器链路状态变化主函数重载
+#define ETHIF_VERSION_INFO_API                  ({{  EthIfGeneral["EthIfVersionInfoApi"] }})    ///< 使能/关闭获取版本信息
+#define ETHIF_VERSION_INFO_API_MACRO            ({{  EthIfGeneral["EthIfVersionInfoApiMacro"] }})   ///< 使能/关闭获取版本信息宏
+#define ETHIF_WAKE_UP_SUPPORT                   ({{  EthIfGeneral["EthIfWakeUpSupport"] }})    ///< 使能/关闭唤醒支持
+#define ETHIF_MAX_FRAME_OWNER_CFG               ({{  EthIfFrameOwnerConfigs|length }}u)    ///< 定义最大帧所有者配置数
+#define INVALID_VLAN_ID                         (0u)    ///< 定义无效VLAN ID值
+#define INVALID_TRCV_ID                         (0xFFu)  ///< 定义无效收发器ID值
+#define INVALID_SWTGROUP_ID                     (0xFFu)  ///< 定义无效交换组ID值
+#define INVALID_ETHIF_HANDLE                    (0xFFu)  ///< 定义无效函数句柄
+
+#define ETHSWT_HOST_PORT                        (0X00u)      ///< 定义主机端口类型
+#define ETHSWT_UP_LINK_PORT                     (0X01u)      ///< 定义上行链路端口类型
+#define ETHSWT_NO_ROLE_PORT                     (0X02u)      ///< 定义无角色端口类型
+
+#define ETHIF_TRCV_SUPPORT                      (STD_ON)    ///< 使能/关闭收发器
+#define ETHIF_SWITCH_SUPPORT                    (STD_OFF)   ///< 使能/关闭交换机
+
+#define ETHIF_CTRLS_CNT                         ({{  EthIfControllers|length }}u)   ///< EthIf控制器总数
+#define ETHIF_SWITCHS_CNT                       (0u)    ///< EthIf交换机总数
+#define ETHIF_PHYS_ADRS_FILTER_API              (STD_ON)    ///< 使能/关闭物理地址过滤
+#define ETHIF_ENABLE_MAIN_FUNCTION_STATE        ({{  EthIfGeneral["EthIfMainFunctionStateEnable"] }})   ///< 使能/关闭MainFunctionState
+#define ETHIF_ULLINKSTATECHG_CNT                ({{ EthIfTrcvLinkStateChgConfigs|length }}u)    ///< EthIf链路状态变化需要通知的上层对象总数
+
+{%- for controller in EthIfControllers %}
+{{  ("%-80s" | format("#define EthIfConf_EthIfController_" ~ controller["ShortName"]))}}({{ controller["EthIfCtrlIdx"] }}u)  ///< 定义EthIf控制器ID
+{%- endfor %}
+
+{%- for swi in EthIfSwitchs %}
+{{  ("%-80s" | format("#define EthIfConf_EthIfSwitch_" ~ swi["ShortName"]))}}({{ swi["EthIfSwitchIdx"] }}u)    ///< 定义EthIf交换机ID
+{%- endfor %}
+
+#if (ETHIF_MAX_FRAME_OWNER_CFG < 2)
+#error "The number of configured EthIfFrameOwnerConfigs containers must be less than ArcEthIfMaxFrameOwnerConfig"
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ETHIF_CFG_H */

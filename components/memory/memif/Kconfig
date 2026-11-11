@@ -1,0 +1,5 @@
+config MODULE_MEMIF
+    bool "mem memif support"
+    default n
+	---help---
+		Enable the MODULE_MEMIF

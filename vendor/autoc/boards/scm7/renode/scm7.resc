@@ -1,0 +1,23 @@
+:name: autoc scm7
+:description: Single Cortex-M7. Console is Segger RTT.
+
+using sysbus
+
+$name?="scm7"
+$bin?=@D:/code/haloos/output/rt_demo_scm7_gcc/rt_demo.elf
+
+include @D:/code/haloos/vcos/vendor/autoc/renode/rtt_console.py
+
+mach create $name
+machine LoadPlatformDescription @D:/code/haloos/vcos/vendor/autoc/boards/scm7/renode/scm7.repl
+machine CreateVirtualConsole "rtt"
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    sysbus.cpu Reset
+    setup_rtt_console sysbus.rtt
+"""
+runMacro $reset
+
+showAnalyzer sysbus.rtt

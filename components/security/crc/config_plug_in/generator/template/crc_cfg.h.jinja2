@@ -1,0 +1,46 @@
+/*!*********************************************************************************************************************
+ * @file        Crc_Cfg.h
+ * @brief       CRC 配置头文件
+ * @details     主要包含 CRC 动态配置项
+ * @date        {{get_generation_time()}}
+ * @project     {{get_project_name()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+#ifndef CRC_CFG_H
+#define CRC_CFG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+{%- set CrcGeneral = Crc_Config["CrcGeneral"] %}
+
+{% if CrcGeneral.Crc8Mode["Value"] != "" %}
+#define CRC_8_Mode        ({{ CrcGeneral.Crc8Mode["Value"] }})       ///< CRC8 模式配置
+{% endif %}
+{% if CrcGeneral.Crc8H2FMode["Value"] != "" %}
+#define CRC_8_8H2FMode    ({{ CrcGeneral.Crc8H2FMode["Value"] }})    ///< CRC8H2F 模式配置
+{% endif %}
+{% if CrcGeneral.Crc16Mode["Value"] != "" %}
+#define CRC_16_Mode       ({{ CrcGeneral.Crc16Mode["Value"] }})      ///< CRC16 模式配置
+{% endif %}
+{% if CrcGeneral.Crc16ARCMode["Value"] != "" %}
+#define CRC_16ARC_Mode    ({{ CrcGeneral.Crc16ARCMode["Value"] }})   ///< CRC16 ARC 模式配置
+{% endif %}
+{% if CrcGeneral.Crc32Mode["Value"] != "" %}
+#define CRC_32_Mode       ({{ CrcGeneral.Crc32Mode["Value"] }})      ///< CRC32 模式配置
+{% endif %}
+{% if CrcGeneral.Crc32P4Mode["Value"] != "" %}
+#define CRC_32P4_Mode     ({{ CrcGeneral.Crc32P4Mode["Value"] }})    ///< CRC32P4 模式配置
+{% endif %}
+{% if CrcGeneral.Crc64Mode["Value"] != "" %}
+#define CRC_64_Mode       ({{ CrcGeneral.Crc64Mode["Value"] }})      ///< CRC64 模式配置
+{% endif %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CRC_CFG_H */

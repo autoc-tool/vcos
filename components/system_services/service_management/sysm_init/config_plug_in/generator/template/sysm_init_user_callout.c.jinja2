@@ -1,0 +1,840 @@
+{{get_copyright()}}
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  sysm_init 模块中所有Callout函数的源文件.
+ */
+
+/* Including File */
+#if (VCOS_MODULE_CONFIG_VCOSMTNCE == 1)
+#include "vcosMtnce_Cfg.h"
+#endif
+#include "sysm_init.h"
+#include "sysm_init_generated_types.h"
+#if (CONFIG_RT_FRAMEWORK == 1)
+#include "Os.h"
+#include "rtfw_atomic.h"
+#include "core_cfg.h"
+#endif
+#include "vcos_log.h"
+#include "sysm_init_vcos_log.h"
+#include "sysm_init_internals.h"
+#include "SchM_EcuM.h"
+{%- set user_codes = get_bsw_callout_user_code_list() %}
+
+/* Modules from UI */
+{%- set modules = get_init_modules(dict_config["ActiveEcuC"]["EcuM"]) %}
+{%- for module in modules %}
+#include "{{module}}.h"
+{%- endfor %}
+
+/* Other Modules */
+{%- if 'Rte' in sys_cfg['modules_info']['enabled_module_list']%}
+#include "Rte_Main.h"
+{%- endif %}
+#include "SchM_EcuM.h"
+#if defined(CONFIG_SERVM_BSWM)
+#include "bswm.h"
+#endif
+#if (VCOS_MODULE_CONFIG_SHELL == 1)
+#include "Shell.h"
+#endif
+
+#ifdef INFRA_TEST_ENABLED
+#if (VCOS_MODULE_CONFIG_AUTOTEST == 1)
+#include "startup.h"
+#include "sleep.h"
+#endif
+#endif
+
+/* Version check */
+#if !(((ECUM_CALLOUT_SW_MAJOR_VERSION == 3) && (ECUM_CALLOUT_SW_MINOR_VERSION == 0)) )
+#error EcuM: Configuration file expected EcuM Callout version to be 3.0.X*
+#endif
+
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "head_usercode" in user_codes.keys() and user_codes["head_usercode"] != {} and user_codes["head_usercode"] != [] %}
+{%- for value in user_codes["head_usercode"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+
+/* Local Variable Definition */
+
+#define  ECUM_START_SEC_CONST
+#include "ecum_memmap.h"
+extern CONST(ecum_config_t, ECUM_CONST) ecum_config;
+#define  ECUM_STOP_SEC_CONST
+#include "ecum_memmap.h"
+
+#define ECUM_START_SEC_CODE
+#include "ecum_memmap.h"
+#if (VCOS_CONSOLE_CONFIG_UART == 1)
+extern FUNC(void, ECUM_CODE) sys_io_init(void);
+#endif
+#if (VCOS_MODULE_CONFIG_SHELL == 1)
+extern int shell_init(void);
+#endif
+#define ECUM_STOP_SEC_CODE
+#include "ecum_memmap.h"
+
+/* Local Macro Definition */
+#define ECUM_START_SEC_MULTI_APP_BSS
+#include "ecum_memmap.h"
+volatile VAR(uint32, ECUM_MULTI_APP_BSS)  rte_sync_state;
+#if(EcuM_INITPHASEDOT == 1u)
+VAR(ecum_init_zero_time_t,ECUM_MULTI_APP_BSS)  ecum_init_zero_time;
+VAR(ecum_init_one_time_t,ECUM_MULTI_APP_BSS)   ecum_init_one_time;
+VAR(ecum_init_two_time_t,ECUM_MULTI_APP_BSS)   ecum_init_two_time;
+VAR(ecum_init_three_time_t,ECUM_MULTI_APP_BSS) ecum_init_three_time;
+
+#if (ECUM_NUMBER_OF_CORES > 1)
+{% set cores = dict_bsw["dict_ecuc"]["ActiveEcuC"]["EcuC"]["EcucHardware"].items() %}
+{% set core_num = get_coreNums(cores)%}
+VAR(ecum_init_core1_time_struct_t,ECUM_MULTI_APP_BSS) ecum_core1_start_up_two_time;
+
+{%- for i in range(2,core_num) %}
+VAR({{"ecum_init_core"~ i ~ "_time_struct_t"}},ECUM_MULTI_APP_BSS) {{"ecum_core" ~ i ~ "_start_up_two_time"}};
+{%- endfor %}
+#endif
+#endif
+#define ECUM_STOP_SEC_MULTI_APP_BSS
+#include "ecum_memmap.h"
+
+#define ECUM_START_SEC_CODE
+#include "ecum_memmap.h"
+static FUNC(void, ECUM_CODE) set_initsync_state(uint8 core_id){
+	uint8 ret = 0u;
+	uint8 retry_times  = 0u;
+	while((retry_times < (ECUM_NUMBER_OF_CORES + 1u)) && (ret == 0u)){
+		uint32 old_value = rte_sync_state;
+		uint32 new_value = rte_sync_state | ((uint32)(1u) << (core_id));
+		ret = (uint8)Os_AtomicCmpSwap((Atomic *)&rte_sync_state, (sint32)old_value, (sint32)new_value);
+		retry_times ++;
+	}
+}
+
+FUNC(void, ECUM_CODE) sync_on_rte_init_state(uint8 core_id){
+	set_initsync_state(core_id);
+	while(
+		(((uint32)rte_sync_state) != ECUM_STARTSYNC)
+		)
+		{
+		}
+	if (core_id == ECUM_CORE_ID_BSW) {
+		ecum_get_timmertick(ecum_rte_sync_time_value);
+	} else {
+#if (VCOS_MODULE_CONFIG_AUTOTEST == 1) && defined(INFRA_TEST_ENABLED)
+		ecum_get_timmertick(get_rte_sync_core(core_id));
+#else
+		/* If not AUTOTEST or INFRA_TEST is not enabled */
+#endif
+	}
+}
+
+/* Local Fuction Implementation */
+
+FUNC(void, ECUM_CODE) ecum_error_hook(uint16 reason)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_error_hook" in user_codes.keys() and user_codes["ecum_error_hook"] != {} and user_codes["ecum_error_hook"] != [] %}
+{%- for value in user_codes["ecum_error_hook"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)reason;
+#if (MCU_PERFORM_RESET_API == STD_ON)
+	Mcu_PerformReset();
+#else
+	ASSERT(0);
+#endif
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+struct FUNC(ecum_config_s*, ECUM_CODE)  ecum_determine_pb_configuration(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_determine_pb_configuration" in user_codes.keys() and user_codes["ecum_determine_pb_configuration"] != {} and user_codes["ecum_determine_pb_configuration"] != [] %}
+{%- for value in user_codes["ecum_determine_pb_configuration"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	return (ecum_config_t*)&ecum_config;
+}
+
+{%- set initcontent = get_initfunc_name("test",-1) %}
+/* Part of STARTUP I */
+FUNC(void, ECUM_CODE) ecum_al_driver_init_zero(void)
+{
+#if (CONFIG_RT_FRAMEWORK == 1)
+	uint8 core_id = (uint8)GetCoreID();
+#else
+	uint8 core_id = 0u;
+#endif
+	if (core_id == ECUM_CORE_ID_BSW) {
+
+	/* sysm_init module initialization started */
+	ecum_get_timmertick(ecum_init_start_time);
+{%- if "EcuMDriverInitListZero" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListZero"] %}
+
+{%- set init_zero_one_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListZero"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_zero_one_items %}
+{%- if item_name != "Tag" %}
+
+	{{ gen_init_func(item_name, item_value) }}
+	ecum_get_timmertick(ecum_init_zero_time.m_{{ get_initfunc_name(gen_init_func(item_name, item_value), 0)}});
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+	}
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_driver_init_zero" in user_codes.keys() and user_codes["ecum_al_driver_init_zero"] != {} and user_codes["ecum_al_driver_init_zero"] != [] %}
+{%- for value in user_codes["ecum_al_driver_init_zero"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	ecum_get_timmertick(ecum_init_zero_end_time);
+}
+
+FUNC(void, ECUM_CODE) ecum_al_driver_init_one(const ecum_config_t *config_ptr)
+{
+	(void)config_ptr;
+	ecum_get_timmertick(ecum_init_one_start_time);
+{%- if "EcuMDriverInitListOne" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListOne"] %}
+
+{%- set init_one_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListOne"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_one_items %}
+{%- if item_name != "Tag" %}
+
+	{{ gen_init_func(item_name, item_value) }}
+	ecum_get_timmertick(ecum_init_one_time.m_{{ get_initfunc_name(gen_init_func(item_name, item_value),1) }});
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_driver_init_one" in user_codes.keys() and user_codes["ecum_al_driver_init_one"] != {} and user_codes["ecum_al_driver_init_one"] != [] %}
+{%- for value in user_codes["ecum_al_driver_init_one"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	ecum_get_timmertick(ecum_init_one_end_time);
+}
+
+/* Part of STARTUP II */
+FUNC(void, ECUM_CODE) ecum_al_driver_init_two(const ecum_config_t* config_ptr)
+{
+	(void)config_ptr;
+	ecum_get_timmertick(ecum_init_two_start_time);
+{%- if "EcuMDriverInitListTwo" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListTwo"] %}
+
+{%- set init_two_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListTwo"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_two_items %}
+{%- if item_name != "Tag" %}
+
+	{{ gen_init_func(item_name, item_value) }}
+	ecum_get_timmertick(ecum_init_two_time.m_{{ get_initfunc_name(gen_init_func(item_name, item_value),2) }});
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_driver_init_two" in user_codes.keys() and user_codes["ecum_al_driver_init_two"] != {} and user_codes["ecum_al_driver_init_two"] != [] %}
+{%- for value in user_codes["ecum_al_driver_init_two"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	ecum_get_timmertick(ecum_init_two_end_time);
+}
+
+/* Part of STARTUP II */
+FUNC(void, ECUM_CODE) ecum_al_driver_init_three(const ecum_config_t* config_ptr)
+{
+	(void)config_ptr;
+	ecum_get_timmertick(ecum_init_three_start_time);
+{%- if "EcuMDriverInitListThree" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListThree"] %}
+
+{%- set init_three_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListThree"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_three_items %}
+{%- if item_name != "Tag" %}
+
+	{{ gen_init_func(item_name, item_value) }}
+	ecum_get_timmertick(ecum_init_three_time.m_{{ get_initfunc_name(gen_init_func(item_name, item_value),3)}});
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_driver_init_three" in user_codes.keys() and user_codes["ecum_al_driver_init_three"] != {} and user_codes["ecum_al_driver_init_three"] != [] %}
+{%- for value in user_codes["ecum_al_driver_init_three"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	ecum_get_timmertick(ecum_init_three_end_time);
+}
+
+/* Multi-core initialization */
+#if (ECUM_NUMBER_OF_CORES > 1)
+FUNC(void, ECUM_CODE) ecum_al_driver_init_multi_core(void)
+{
+	uint32 core_id = (uint32)GetCoreID();
+	if (core_id == OS_CORE_ID_0){
+#if ((CONFIG_RT_FRAMEWORK == 1) && (EcuM_INITPHASEDOT == 1u))
+		(void)VCOS_LOG(ECUM_MODULE_ID, VCOS_LOG_INFO, ECUM_DLT_STARTUP_TIME_DEFAULT,
+				   ecum_startup_two_start_time,
+				   ecum_calculate_time(ecum_rte_end_time_value, ecum_startup_two_start_time));
+		(void)VCOS_LOG(ECUM_MODULE_ID, VCOS_LOG_INFO, ECUM_DLT_INITTWO_TIME_DEFAULT, ecum_init_two_start_time,
+				   ecum_calculate_time(ecum_init_two_end_time, ecum_init_two_start_time));
+		(void)VCOS_LOG(ECUM_MODULE_ID, VCOS_LOG_INFO, ECUM_DLT_INITTHREE_TIME_DEFAULT,
+				   ecum_init_three_start_time,
+				   ecum_calculate_time(ecum_init_three_end_time, ecum_init_three_start_time));
+		(void)VCOS_LOG(ECUM_MODULE_ID, VCOS_LOG_INFO, ECUM_DLT_RTESYNC_TIME_DEFAULT, ecum_rte_sync_time_value,
+				   ecum_calculate_time(ecum_rte_sync_time_value, ecum_init_three_end_time));
+#endif
+	}
+	else if (core_id == OS_CORE_ID_1){
+		ecum_get_timmertick(ecum_core1_start_up_two_time.core1_begin);
+{%- if "EcuMDriverInitListCore1" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListCore1"] %}
+
+{%- set core_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListCore1"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in core_items %}
+{%- if item_name != "Tag" %}
+
+{%- if get_module_name(item_value) == "wdgm" %}
+#if (WDGM_CORE1_USED == STD_ON)
+		{{ gen_init_func(item_name, item_value) }}
+#endif
+{%- else %}
+		{{ gen_init_func(item_name, item_value) }}
+{%- endif %}
+		ecum_get_timmertick(ecum_core1_start_up_two_time.m_{{ get_initfunc_name(gen_init_func(item_name, item_value),10) }});
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+	}
+{%- for i in range(2,core_num) %}
+	else if (core_id == {{"OS_CORE_ID_" ~ i}}){
+		ecum_get_timmertick({{" ecum_core" ~ i ~ "_start_up_two_time"}}.{{"core" ~ i ~ "_begin"}});
+{%- if get_index("EcuMDriverInitListCore", i) in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"][get_index("EcuMDriverInitListCore", i)] %}
+
+{%- set core_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"][get_index("EcuMDriverInitListCore", i)]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in core_items %}
+{%- if item_name != "Tag" %}
+
+{%- if get_module_name(item_value) == "wdgm" %}
+#if ({{get_index("WDGM_CORE", i)}}_USED == STD_ON)
+		{{ gen_init_func(item_name, item_value) }}
+#endif
+{%- else %}
+		{{ gen_init_func(item_name, item_value) }}
+{%- endif %}
+		ecum_get_timmertick({{"ecum_core" ~ i ~ "_start_up_two_time"}}.m_{{ get_initfunc_name(gen_init_func(item_name, item_value), 10+i) }});
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+	}
+{%- endfor-%}
+	else
+	{
+		/* do nothing */
+	}
+/*the module cannot be initialized through UI configuration */
+#if (VCOS_CONSOLE_CONFIG_UART == 1)
+	Sys_IO_Init();
+#endif
+
+#if (VCOS_MODULE_CONFIG_SHELL == 1)
+	(void)shell_init();
+#endif
+	set_initsync_state((uint8)core_id);
+}
+
+{%- set initcontent = get_initfunc_name("test",-1) %}
+
+FUNC(void, ECUM_CODE) print_multicore_startup_dot(void)
+{
+#if(EcuM_INITPHASEDOT == 1u)
+{%- if "EcuMDriverInitListCore1" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListCore1"] %}
+	SHELL_PRINT("--------------EcuMCore1StartUpPhase-------------\r\n");
+	SHELL_PRINT("core1_begin = %lu \r\n", ecum_core1_start_up_two_time.core1_begin);
+{%- set core_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListCore1"]["EcuMDriverInitItems"].items() %}
+{%- for item_name, item_value in core_items %}
+{%- if item_name != "Tag" %}
+{%- set initcontent = get_initfunc_name(gen_init_func(item_name, item_value),10) %}
+	SHELL_PRINT("{{initcontent}} = %lu \r\n", ecum_core1_start_up_two_time.m_{{initcontent}});
+{%- set last = Getlast_initfunc(initcontent)%}
+{%- endif %}
+{%- endfor %}
+	SHELL_PRINT("core1 totle = %f ms \r\n",ecum_calculate_time( ecum_core1_start_up_two_time.m_{{getlast_initfunc('')}} , ecum_core1_start_up_two_time.core1_begin));
+{%- endif %}
+{%- endif %}
+
+{%- for i in range(2,core_num) %}
+
+{%- if get_index("EcuMDriverInitListCore", i) in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"][get_index("EcuMDriverInitListCore", i)] %}
+	SHELL_PRINT("--------------{{"EcuMCore" ~ i ~ "StartUpPhase"}}-------------\r\n");
+	SHELL_PRINT("{{"Core"~ i ~ "Begin"}} = %lu \r\n", {{"EcuMCore" ~ i ~ "StartUpTwoTime"}}.{{"Core"~ i ~ "Begin"}});
+{%- set core_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"][get_index("EcuMDriverInitListCore", i)]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in core_items %}
+{%- if item_name != "Tag" %}
+{%- set initcontent = get_initfunc_name(gen_init_func(item_name, item_value),10+i) %}
+	SHELL_PRINT("{{initcontent}} = %lu \r\n", {{"EcuMCore" ~ i ~ "StartUpTwoTime"}}.m_{{initcontent}});
+{%- set last = Getlast_initfunc(initcontent)%}
+{%- endif %}
+{%- endfor %}
+	SHELL_PRINT("{{"Core"~ i ~ " Totle"}} = %f ms \r\n",ecum_calculate_time({{"EcuMCore" ~ i ~ "StartUpTwoTime"}}.m_{{getlast_initfunc('')}} ,{{"EcuMCore" ~ i ~ "StartUpTwoTime"}}.{{"Core"~ i ~ "Begin"}}));
+{%- endif %}
+{%- endif %}
+{%- endfor%}
+#endif
+}
+
+#endif
+
+
+FUNC(void, ECUM_CODE) print_master_startup_dot(void)
+{
+#if(EcuM_INITPHASEDOT == 1u)
+{%- if "EcuMDriverInitListZero" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListZero"] %}
+	SHELL_PRINT("--------------EcuMInitPhase_Zero-------------\r\n");
+	SHELL_PRINT("ecum_init_zero_begin = %lu \r\n", ecum_init_start_time);
+{%- set init_zero_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListZero"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_zero_items %}
+{%- if item_name != "Tag" %}
+
+{%- set initcontent = get_initfunc_name(gen_init_func(item_name, item_value),0) %}
+	SHELL_PRINT("{{initcontent}} = %lu \r\n", ecum_init_zero_time.m_{{initcontent}});
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if "EcuMDriverInitListOne" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListOne"] %}
+	SHELL_PRINT("--------------EcuMInitPhase_One-------------\r\n");
+	SHELL_PRINT("ecum_init_one_begin = %lu \r\n", ecum_init_one_start_time);
+{%- set init_one_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListOne"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_one_items %}
+{%- if item_name != "Tag" %}
+
+{%- set initcontent = get_initfunc_name(gen_init_func(item_name, item_value),1) %}
+	SHELL_PRINT("{{initcontent}} = %lu \r\n", ecum_init_one_time.m_{{initcontent}});
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+
+{%- if "EcuMDriverInitListTwo" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListTwo"] %}
+	SHELL_PRINT("--------------EcuMInitPhase_Two-------------\r\n");
+	SHELL_PRINT("ecum_init_two_begin = %lu \r\n", ecum_init_two_start_time);
+{%- set init_two_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListTwo"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_two_items %}
+{%- if item_name != "Tag" %}
+	{%- set initcontent = get_initfunc_name(gen_init_func(item_name, item_value),2) %}
+	SHELL_PRINT("{{initcontent}} = %lu \r\n", ecum_init_two_time.m_{{initcontent}});
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if "EcuMDriverInitListThree" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListThree"] %}
+	SHELL_PRINT("--------------EcuMInitPhase_Three-------------\r\n");
+	SHELL_PRINT("ecum_init_three_begin = %lu \r\n", ecum_init_three_start_time);
+{%- set init_three_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListThree"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_three_items %}
+{%- if item_name != "Tag" %}
+	{%- set initcontent = get_initfunc_name(gen_init_func(item_name, item_value),3) %}
+	SHELL_PRINT("{{initcontent}} = %lu \r\n", ecum_init_three_time.m_{{initcontent}});
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+#endif
+}
+
+
+FUNC(void, ECUM_CODE) ecum_on_go_off_one(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_on_go_off_one" in user_codes.keys() and user_codes["ecum_on_go_off_one"] != {} and user_codes["ecum_on_go_off_one"] != [] %}
+{%- for value in user_codes["ecum_on_go_off_one"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_on_go_off_two(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_on_go_off_two" in user_codes.keys() and user_codes["ecum_on_go_off_two"] != {} and user_codes["ecum_on_go_off_two"] != [] %}
+{%- for value in user_codes["ecum_on_go_off_two"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_loop_detection(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_loop_detection" in user_codes.keys() and user_codes["ecum_loop_detection"] != {} and user_codes["ecum_loop_detection"] != [] %}
+{%- for value in user_codes["ecum_loop_detection"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+/**
+ * This function should be the last this called before reset.
+ * Normally this manipulates some pin that controls DC to power off
+ * the board (ie it will never get to mcu_perform_reset())
+ */
+FUNC(void, ECUM_CODE) ecum_al_switch_off(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_switch_off" in user_codes.keys() and user_codes["ecum_al_switch_off"] != {} and user_codes["ecum_al_switch_off"] != [] %}
+{%- for value in user_codes["ecum_al_switch_off"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_al_reset(ecum_reset_t reset)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_reset" in user_codes.keys() and user_codes["ecum_al_reset"] != {} and user_codes["ecum_al_reset"] != [] %}
+{%- for value in user_codes["ecum_al_reset"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)reset;
+
+	if(reset == ECUM_RESET_MCU) {
+#if (MCU_PERFORM_RESET_API == STD_ON)
+		mcu_perform_reset();
+#endif
+	}
+	else if(reset == ECUM_RESET_WDG) {
+#if 0
+		wdg_m_perform_reset();
+#endif
+	}
+	else {
+		/* Do Nothing */
+	}
+
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_check_wakeup(ecum_wakeup_source_t wakeup_source)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_check_wakeup" in user_codes.keys() and user_codes["ecum_check_wakeup"] != {} and user_codes["ecum_check_wakeup"] != [] %}
+{%- for value in user_codes["ecum_check_wakeup"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)wakeup_source;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_enable_wakeup_sources(ecum_wakeup_source_t wakeup_source)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_enable_wakeup_sources" in user_codes.keys() and user_codes["ecum_enable_wakeup_sources"] != {} and user_codes["ecum_enable_wakeup_sources"] != [] %}
+{%- for value in user_codes["ecum_enable_wakeup_sources"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)wakeup_source;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_disable_wakeup_sources(ecum_wakeup_source_t wakeup_source)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_disable_wakeup_sources" in user_codes.keys() and user_codes["ecum_disable_wakeup_sources"] != {} and user_codes["ecum_disable_wakeup_sources"] != [] %}
+{%- for value in user_codes["ecum_disable_wakeup_sources"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)wakeup_source;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_start_wakeup_sources(ecum_wakeup_source_t wakeup_source)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_start_wakeup_sources" in user_codes.keys() and user_codes["ecum_start_wakeup_sources"] != {} and user_codes["ecum_start_wakeup_sources"] != [] %}
+{%- for value in user_codes["ecum_start_wakeup_sources"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)wakeup_source;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_stop_wakeup_sources(ecum_wakeup_source_t wakeup_source)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_stop_wakeup_sources" in user_codes.keys() and user_codes["ecum_stop_wakeup_sources"] != {} and user_codes["ecum_stop_wakeup_sources"] != [] %}
+{%- for value in user_codes["ecum_stop_wakeup_sources"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void)wakeup_source;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_check_validation(ecum_wakeup_source_t wakeup_source)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_check_validation" in user_codes.keys() and user_codes["ecum_check_validation"] != {} and user_codes["ecum_check_validation"] != [] %}
+{%- for value in user_codes["ecum_check_validation"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	(void) wakeup_source;
+	SHELL_PRINT(ECUM_DLT_WAKEUPSOURCE_ID, wakeup_source);
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+/**
+ * Restart drivers. Have no restart list, instead the
+ * drivers restarted are drivers that have had it's hardware
+ * registers reset.  If memory is also lost (=all memory is not
+ * powered during sleep), this strategy does not work.
+ *
+ * This calls:
+ * - ecum_al_driver_init_one()
+ * - ecum_al_driver_init_two()
+ * - ecum_al_driver_init_three()
+ *
+ */
+FUNC(void, ECUM_CODE) ecum_al_driver_restart(const struct ecum_config_s *config_ptr)
+{
+	(void) *config_ptr;
+	SHELL_PRINT(ECUM_DLT_DRIVER_RESTART);
+{%- if "EcuMDriverRestartList" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverRestartList"] %}
+
+{%- set init_restart_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverRestartList"]["EcuMDriverInitItems"].items() %}
+
+{%- for item_name, item_value in init_restart_items %}
+{%- if item_name != "Tag" %}
+{%- set funcname = gen_init_func(item_name, item_value) %}
+{%- if funcname != None %}
+	{{ funcname }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+{%- endif %}
+
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_al_driver_restart" in user_codes.keys() and user_codes["ecum_al_driver_restart"] != {} and user_codes["ecum_al_driver_restart"] != [] %}
+{%- for value in user_codes["ecum_al_driver_restart"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(ecum_wakeup_reaction_t, ECUM_CODE) ecum_on_wakeup_reaction(ecum_wakeup_reaction_t wact)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_on_wakeup_reaction" in user_codes.keys() and user_codes["ecum_on_wakeup_reaction"] != {} and user_codes["ecum_on_wakeup_reaction"] != [] %}
+{%- for value in user_codes["ecum_on_wakeup_reaction"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	return wact;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_generate_ram_hash(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_generate_ram_hash" in user_codes.keys() and user_codes["ecum_generate_ram_hash"] != {} and user_codes["ecum_generate_ram_hash"] != [] %}
+{%- for value in user_codes["ecum_generate_ram_hash"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(uint8, ECUM_CODE) ecum_check_ram_hash(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_check_ram_hash" in user_codes.keys() and user_codes["ecum_check_ram_hash"] != {} and user_codes["ecum_check_ram_hash"] != [] %}
+{%- for value in user_codes["ecum_check_ram_hash"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	return (1u);
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_sleep_activity(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_sleep_activity" in user_codes.keys() and user_codes["ecum_sleep_activity"] != {} and user_codes["ecum_sleep_activity"] != [] %}
+{%- for value in user_codes["ecum_sleep_activity"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	SHELL_PRINT(ECUM_DLT_SLEEP);
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_remember_wakeup_event(uint32 reset_reason)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_remember_wakeup_event" in user_codes.keys() and user_codes["ecum_remember_wakeup_event"] != {} and user_codes["ecum_remember_wakeup_event"] != [] %}
+{%- for value in user_codes["ecum_remember_wakeup_event"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	switch (reset_reason) {
+		// Handling of additional user defined wakeup sources can be added here
+		default:
+			ecum_validate_wakeup_event(ECUM_WKSOURCE_RESET); /* SWS_EcuM_02601 ECUM_WKSOURCE_RESET shall be reported if no specific wk source detected  */
+			break;
+	}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+
+FUNC(void, ECUM_CODE) ecum_start_os(ecum_app_mode_t appMode)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_start_os" in user_codes.keys() and user_codes["ecum_start_os"] != {} and user_codes["ecum_start_os"] != [] %}
+{%- for value in user_codes["ecum_start_os"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+
+FUNC(void, ECUM_CODE) ecum_shutdown_os(Std_ReturnType ErrCode)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_shutdown_os" in user_codes.keys() and user_codes["ecum_shutdown_os"] != {} and user_codes["ecum_shutdown_os"] != [] %}
+{%- for value in user_codes["ecum_shutdown_os"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+#if (ECUM_NUMBER_OF_CORES > 1u)
+FUNC(void, ECUM_CODE) ecum_wait_for_slave_cores(void)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "ecum_wait_for_slave_cores" in user_codes.keys() and user_codes["ecum_wait_for_slave_cores"] != {} and user_codes["ecum_wait_for_slave_cores"] != [] %}
+{%- for value in user_codes["ecum_wait_for_slave_cores"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- else %}
+	return;
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+FUNC(void, ECUM_CODE) ecum_shutdown_synchronization(ecum_core_status_t shutdown_state)
+{
+	uint8_least loop_count;
+	boolean ecum_wait_for_slaves;
+
+  /* Wait till all Slave Cores have switched back to the requested state. */
+	do
+	{
+		ecum_wait_for_slave_cores();
+
+		ecum_wait_for_slaves = FALSE;
+
+		SchM_Enter_ECUM_EXCLUSIVE_AREA_0();
+
+		/* Iterate over all cores and check for each core if it has reached the requested state. */
+		for (loop_count = 0u; loop_count < ECUM_NUMBER_OF_CORES; loop_count++) {
+			if (ecum_get_core_status_value(loop_count) != shutdown_state) {
+				ecum_wait_for_slaves = TRUE;
+				break;
+			}
+		}
+
+		SchM_Exit_ECUM_EXCLUSIVE_AREA_0();
+	}
+	while (ecum_wait_for_slaves == TRUE);
+}
+
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "tail_usercode" in user_codes.keys() and user_codes["tail_usercode"] != {} and user_codes["tail_usercode"] != [] %}
+{%- for value in user_codes["tail_usercode"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+#endif
+#define ECUM_STOP_SEC_CODE
+#include "ecum_memmap.h"

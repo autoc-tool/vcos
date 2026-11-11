@@ -1,0 +1,197 @@
+{
+    "COMM011001": {
+        "rule_name": "COMM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComMChannelId.",
+        "rule_message": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMChannelId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMChannelId",
+            "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMChannelId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "COMM011002": {
+        "rule_name": "COMM011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComMUserIdentifier.",
+        "rule_message": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMUser/ComMUserIdentifier should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMUser/ComMUserIdentifier",
+            "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMUser/ComMUserIdentifier values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "COMM011003": {
+        "rule_name": "COMM011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComMPncId.",
+        "rule_message": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncId",
+            "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+                "value": "8"
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "COMM011004": {
+        "rule_name": "COMM011004",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of ComMUserIdentifier.",
+        "rule_message": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMUser/ComMUserIdentifier should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMUser/ComMUserIdentifier",
+            "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+            "disable_sort": true
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMUser/ComMUserIdentifier values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "COMM011005": {
+        "rule_name": "COMM011005",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of ComMChannelId.",
+        "rule_message": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMChannelId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMChannelId",
+            "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+            "disable_sort": true
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMChannelId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "COMM012003": {
+        "rule_name": "COMM012003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of ComMPncNmRequest and ComMNmVariant",
+        "rule_message": "ComMNmVariant should be 'FULL' or 'PASSIVE' if ComMPncNmRequest is set to true.",
+        "rule_ruleset": {
+            "ruleset_01":
+            {
+                "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMNetworkManagement",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMNetworkManagement/ComMPncNmRequest",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMNetworkManagement/ComMNmVariant",
+                        "value_operator": "==",
+                        "value": "FULL",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMChannel/ComMNetworkManagement/ComMNmVariant",
+                        "value_operator": "==",
+                        "value": "PASSIVE",
+                        "logical_operator": "or"
+                    }
+                ]
+            }
+        }
+    },
+    "COMM012005": {
+        "rule_name": "COMM012005",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of ComMPncComSignalChannelRef, ComMPncComSignalDirection and ComMPncComSignalKind",
+        "rule_message": "ComMPncComSignalChannelRef should not be empty if ComMPncComSignalDirection is not 'RX' or ComMPncComSignalKind is not 'EIRA.",
+        "rule_ruleset": {
+            "ruleset_01":
+            {
+                "base_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncComSignal",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncComSignal/ComMPncComSignalDirection",
+                        "value_operator": "!=",
+                        "value": "RX",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncComSignal/ComMPncComSignalKind",
+                        "value_operator": "!=",
+                        "value": "EIRA",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncComSignal/ComMPncComSignalChannelRef",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPnc/ComMPncComSignal/ComMPncComSignalChannelRef",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "COMM012004": {
+        "rule_name": "COMM012004",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of ComMPncSupport and ComMPncEnabled.",
+        "rule_message": "ComMPncSupport should be true, if ComMPncEnabled is true.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/ComM/ComMConfigSet/ComMPncEnabled"],
+                    "judge_expression": "%0 == True"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/ComM/ComMGeneral/ComMPncSupport"],
+                    "judge_expression": "%0 == True"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/ComM/ComMGeneral/ComMPncSupport to true.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/ComM/ComMGeneral/ComMPncSupport",
+                    "value": true
+                }]
+            }
+        }
+    }
+}

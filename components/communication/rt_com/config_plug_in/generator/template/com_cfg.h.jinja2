@@ -1,0 +1,329 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**********************************************************************************************************************
+ * @file        com_cfg.h
+ * @brief       Com配置头文件
+ * @details     主要包含Com模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef COM_CFG_H
+#define COM_CFG_H
+
+#ifdef __cplusplus
+extern "C"  
+{
+#endif
+
+#define COM_DEV_ERROR_DETECT                         ({{ComGeneral.ComConfigurationUseDet.Value}})
+#define COM_SIG_GATEWAY_ENABLE                       ({{ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE}})
+#define COM_DEBUG_SUPPORT                            (STD_OFF)
+#define COM_TXTOU_ENABLE                               ({{ComGeneral.COM_TXTOU_ENABLE}})
+#define COM_RXTOU_ENABLE                               ({{ComGeneral.COM_RXTOU_ENABLE}})
+#define COM_TXNOTIFICATION                           ({{ComGeneral.Com_TxNotification}})
+#define COM_SIGNAL_GROUP_ENABLE                      ({{ComGeneral.COM_SIGNAL_GROUP_ENABLE}})
+#define COM_SIGNAL_UPDATEBIT_ENABLE                  ({{ComGeneral.COM_SIGNAL_UPDATEBIT_ENABLE}})
+#define COM_IPDU_ALL_DEFERRED                        ({{ComGeneral.COM_IPDU_ALL_DEFERRED}})
+#define COM_RXIPDU_ALL_IMMEDIATE                     ({{ComGeneral.COM_RXIPDU_ALL_IMMEDIATE}})
+
+#define COM_IPDU_RETRYFAILEDTRANS_ENABLE             ({{ComGeneral.COM_IPDU_RETRYFAILEDTRANS_ENABLE}})
+
+#define COM_TIMEOUT_DATA_ACTION_REPLACE_ENABLE       ({{ComGeneral.COM_TIMEOUT_DATA_ACTION_REPLACE_ENABLE}})
+
+#define COM_SIGNAL_DATAINVALIDVALUE_ENABLE           ({{ComGeneral.COM_SIGNAL_DATAINVALIDVALUE_ENABLE}})
+
+
+#define COM_RXIPDU_SAME_TIMEOUT_ENABLE               ({{ComGeneral.COM_RXIPDU_SAME_TIMEOUT}})
+
+#define COM_TXIPDU_SAME_TIMEOUT_ENABLE               ({{ComGeneral.COM_TXIPDU_SAME_TIMEOUT}})
+
+#define COM_ERROR_NOTIFICATION_ENABLE                ({{ComGeneral.COM_ERROR_NOTIFICATION_ENABLE}})
+
+#define COM_SIGNAL_ONCHANGE_ENABLE                   ({{ComGeneral.COM_SIGNAL_ONCHANGE_ENABLE}})
+
+#define COM_MAINFUNCTION_RX_NUM                      ({{ComGeneral.mainfunction_rx_num_totle}}u)
+
+#define COM_MAINFUNCTION_TX_NUM                      ({{ComGeneral.mainfunction_tx_num_totle}}u)
+
+#define COM_SUPPORTED_TXSIGNALPROX                   ({{ComGeneral.ComSupportedTxSignalProx}})
+
+#define COM_FIFO_DEQUEUECNT_CNT_MAX                  ({{ComGeneral.MaxDequeueCntOneCycle}})
+
+#define COM_UINT8_FIFONUMBER                         ({{ComGeneral.Uint8FifoDepth}}u)
+
+#define COM_UINT16_FIFONUMBER                        ({{ComGeneral.Uint16FifoDepth}}u)
+
+#define COM_UINT32_FIFONUMBER                        ({{ComGeneral.Uint32FifoDepth}}u)
+
+#define COM_UINT8_NFIFONUMBER                        ({{ComGeneral.Uint8_NFifoDepth}}u)
+
+#define COM_UINT8_NFIFO_ELEMENTSIZE                  ({{ComGeneral.Uint8_NFifoSize}}u)
+
+
+#define COM_UINT8_FIFOENABLE                         ({{ComGeneral.COM_TXSIGNAL_UINT8_FIFO}})
+
+#define COM_UINT16_FIFOENABLE                        ({{ComGeneral.COM_TXSIGNAL_UINT16_FIFO}})
+
+#define COM_UINT32_FIFOENABLE                        ({{ComGeneral.COM_TXSIGNAL_UINT32_FIFO}})
+
+#define COM_UINT8_NFIFOENABLE                        ({{ComGeneral.COM_TXSIGNAL_UINT8_N_FIFO}})
+
+#define COM_RUN_COREID                               ({{ComGeneral.Com_CoreId}}u)
+
+#define COM_MAX_COREID                               ({{ComGeneral.Com_MaxCore_Idx}}u)
+
+#define COM_SUPPORT_MUTICORE                         ({{ComGeneral.Com_Support_MutiCore}})
+
+#define COM_CORE_NUM                                 ({{ComGeneral.Com_Core_Num}})
+
+{%- if ComGeneral.Com_Support_MutiCore == "STD_OFF" %}
+#define COM_MAX_BUFFER_SIZE                          ({{ComGeneral.SingleCore.ipdu_size}}u)
+{%- if ComGeneral.SingleCore.Txipdu_size != 0 %}
+#define COM_MAX_TXBUFFER_SIZE                        ({{ComGeneral.SingleCore.Txipdu_size}}u)
+{%- else %}
+#define COM_MAX_TXBUFFER_SIZE                        (1u)
+{%- endif %}
+
+{%- if ComGeneral.SingleCore.Rxipdu_size != 0 %}
+#define COM_MAX_RXBUFFER_SIZE                        ({{ComGeneral.SingleCore.Rxipdu_size}}u)
+{%- else %}
+#define COM_MAX_RXBUFFER_SIZE                        (1u)
+{%- endif %}
+{%- endif %}
+
+#define COM_MAX_N_IPDUS                              ({{ComGeneral.Parameters.COM_MAX_N_IPDUS}}u)
+
+{%- if ComGeneral.Parameters.COM_MAX_N_TXIPDUS != 0 %}
+#define COM_MAX_N_TXIPDUS                            ({{ComGeneral.Parameters.COM_MAX_N_TXIPDUS}}u)
+{%- else %}
+#define COM_MAX_N_TXIPDUS                            (1u)
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_MAX_N_RXIPDUS != 0 %}
+#define COM_MAX_N_RXIPDUS                            ({{ComGeneral.Parameters.COM_MAX_N_RXIPDUS}}u)
+{%- else %}
+#define COM_MAX_N_RXIPDUS                            (1u)
+{%- endif %}
+
+#define COM_MAX_N_SIGNALS                            ({{ComGeneral.Parameters.COM_MAX_N_SIGNALS}}u)
+
+{%- if ComGeneral.Parameters.COM_MAX_N_TXSIGNALS != 0 %}
+#define COM_MAX_N_TXSIGNALS                          ({{ComGeneral.Parameters.COM_MAX_N_TXSIGNALS}}u)
+{%- else %}
+#define COM_MAX_N_TXSIGNALS                          (1u)
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_MAX_N_RXSIGNALS != 0 %}
+#define COM_MAX_N_RXSIGNALS                          ({{ComGeneral.Parameters.COM_MAX_N_RXSIGNALS}}u)
+{%- else %}
+#define COM_MAX_N_RXSIGNALS                          (1u)
+{%- endif %}
+
+#define RXIPDU_MAXSIG_NUM                            ({{ComGeneral.Ipdu_MaxSig_Num}}u)
+
+{%- if ComGeneral.uint8_bool_signal_num_totle != 0 %}
+#define COM_HAVE_UINT8_TYPE                        (STD_ON)
+{%- else %}
+#define COM_HAVE_UINT8_TYPE                        (STD_OFF)
+{%- endif %}
+
+{%- if ComGeneral.uint16_signal_num_totle != 0 %}
+#define COM_HAVE_UINT16_TYPE                       (STD_ON)
+{%- else %}
+#define COM_HAVE_UINT16_TYPE                       (STD_OFF)
+{%- endif %}
+
+
+{%- if ComGeneral.uint32_signal_num_totle != 0 %}
+#define COM_HAVE_UINT32_TYPE                       (STD_ON)
+{%- else %}
+#define COM_HAVE_UINT32_TYPE                       (STD_OFF)
+{%- endif %}
+
+{%- if ComGeneral.uint64_signal_num_totle != 0 %}
+#define COM_HAVE_UINT64_TYPE                       (STD_ON)
+{%- else %}
+#define COM_HAVE_UINT64_TYPE                       (STD_OFF)
+{%- endif %}
+
+{%- if ComGeneral.uint8_N_signal_num_totle != 0 %}
+#define COM_HAVE_UINT8_N_TYPE                      (STD_ON)
+{%- else %}
+#define COM_HAVE_UINT8_N_TYPE                      (STD_OFF)
+{%- endif %}
+
+#define COM_MAX_N_RXTOUTSIGNALS                      ({{ComGeneral.RxToutsignal_size}}u)
+#define COM_MAX_N_TXNOTIFICATION                     ({{ComGeneral.TxNotification_size}}u)
+
+#define COM_MAX_N_RXTOUTMESSAGES                     ({{ComGeneral.RxToutmessage_size}}u)
+
+#define COM_MAX_N_GWMAPPINGS                         ({{ComGeneral.NoOfGwMappings}}u)
+
+
+/**********************************************************************************************************************
+  Rx Signal Notifications Idx
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_Notification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComNotification_id_rx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+
+/**********************************************************************************************************************
+  Rx Signal Timeout Notifications Idx
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComTimeoutNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComTimeoutNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_TimeoutNotification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComTimeoutNotification_id_rx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+/**********************************************************************************************************************
+  Rx InvalidNotification
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComInvalidNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComInvalidNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_InvalidNotification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComInvalidNotification_id_rx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+/**********************************************************************************************************************
+  Rx Error Notification
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComRxSignals_totle) %}
+    {%- if signalObj.ComErrorNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComErrorNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_ErrorNotification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComErrorNotification_id_rx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+
+/**********************************************************************************************************************
+  Tx Signal Notifications Idx
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComTxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComTxSignals_totle) %}
+    {%- if signalObj.ComNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_Notification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComNotification_id_tx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+
+
+/**********************************************************************************************************************
+  Tx Signal Timeout Notifications Idx
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComTxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComTxSignals_totle) %}
+    {%- if signalObj.ComTimeoutNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComTimeoutNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_TimeoutNotification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComTimeoutNotification_id_tx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+
+/**********************************************************************************************************************
+  Tx InvalidNotification
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComTxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComTxSignals_totle) %}
+    {%- if signalObj.ComInvalidNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComInvalidNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_InvalidNotification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComInvalidNotification_id_tx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+/**********************************************************************************************************************
+  Tx Error Notification
+**********************************************************************************************************************/
+{%- for signal in ComConfig.ComTxSignals_totle.keys() %}
+    {%- set signalObj = GetSignalObject(signal, ComConfig.ComTxSignals_totle) %}
+    {%- if signalObj.ComErrorNotification.Value != "COM_NO_FUNCTION_CALLOUT" and signalObj.ComErrorNotification.Value != None %}
+{{ "%-100s" | format("#define ComConf_ErrorNotification_" ~ signalObj.SignalName.Value) }}  ({{ "%s" | format(signalObj.ComErrorNotification_id_tx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+
+// TX COM SIGNAL IDs
+{# {%- for signal in ComConfig.ComTxSignals.keys() %}
+{%- set signalObj = (GetSignalObject(signal, ComConfig.ComTxSignals)) %}
+{{ ("%-120s" | format("#define ComConf_ComSignal_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+{%- endfor %} #}
+
+// Tx GROUPS and SIGNAL
+{%- for signal in ComConfig.ComTxSignals_totle.keys() %}
+    {%- set signalObj = (GetSignalObject(signal, ComConfig.ComTxSignals_totle)) %}
+    {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+{{ ("%-120s" | format("#define ComConf_ComSignalGroup_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+    {%- elif signalObj.IsGroupSignal.Value == "TRUE" %}
+{{ ("%-120s" | format("#define ComConf_ComGroupSignal_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+    {%- else %}
+{{ ("%-120s" | format("#define ComConf_ComSignal_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+// RX COM SIGNAL IDs
+{# {%- for signal in ComConfig.ComRxSignals.keys() %}
+{%- set signalObj = (GetSignalObject(signal, ComConfig.ComRxSignals)) %}
+{{ ("%-120s" | format("#define ComConf_ComSignal_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+{%- endfor %} #}
+
+// Rx GROUPS and SIGNAL
+{%- for signal in ComConfig.ComRxSignals_totle.keys() %}
+    {%- set signalObj = (GetSignalObject(signal, ComConfig.ComRxSignals_totle)) %}
+    {%- if signalObj.IsSignalGroup.Value == "TRUE" %}
+{{ ("%-120s" | format("#define ComConf_ComSignalGroup_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+    {%- elif signalObj.IsGroupSignal.Value == "TRUE" %}
+{{ ("%-120s" | format("#define ComConf_ComGroupSignal_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+    {%- else %}
+{{ ("%-120s" | format("#define ComConf_ComSignal_" ~ signalObj.SignalName.Value ))}}  ({{ "%s" | format(signalObj.signal_id_trx ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+// Rx callouts
+{%- for IPdu in ComConfig.ComIPdus_totle.keys() %}
+    {%- set IPduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+    {%- if IPduObj.ComRxIPduCallout != "COM_NO_FUNCTION_CALLOUT" and IPduObj.ComRxIPduCallout != None %}
+/* {{ IPduObj.MessageName}} */
+{{ ("%-120s" | format("#define ComConf_ComCallout_" ~ IPduObj.ComRxIPduCallout ))}}  ({{ "%s" | format(IPduObj.ComRxIPduCalloutId ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+// Tx callouts
+{%- for IPdu in ComConfig.ComIPdus_totle.keys() %}
+    {%- set IPduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+    {%- if IPduObj.ComTxIPduCallout != "COM_NO_FUNCTION_CALLOUT" and IPduObj.ComTxIPduCallout != None %}
+/* {{ IPduObj.MessageName}} */
+{{ ("%-120s" | format("#define ComConf_ComCallout_" ~ IPduObj.ComTxIPduCallout ))}}  ({{ "%s" | format(IPduObj.ComTxIPduCalloutId ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+// Trigger transmit callouts
+{%- for IPdu in ComConfig.ComIPdus_totle.keys() %}
+    {%- set IPduObj = GetIPduObject(IPdu, ComConfig.ComIPdus_totle) %}
+    {%- if IPduObj.ComTriggerTransmitIPduCallout != "COM_NO_FUNCTION_CALLOUT" and IPduObj.ComTriggerTransmitIPduCallout != None %}
+/* {{ IPduObj.MessageName}} */
+{{ ("%-120s" | format("#define ComConf_ComCallout_" ~ IPduObj.ComTriggerTransmitIPduCallout ))}}  ({{ "%s" | format(IPduObj.ComTriggerTransmitIPduCalloutId ~ "U") }})
+    {%- endif %}
+{%- endfor %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* COM_CFG_H */

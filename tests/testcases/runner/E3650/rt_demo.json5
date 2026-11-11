@@ -1,0 +1,33 @@
+{
+    "radius0": [
+        {
+            "name": "basic_tests",
+            "tests": "interaction/basic_tests",
+            "markers": "R0",
+            "type": "interaction",
+            "group": ""
+        }
+    ],
+    "radius1": [
+        {
+            "name": "eth_daily",
+            "tests": "interaction/eth",
+            "markers": "R1",
+            "type": "interaction",
+            "group": ""
+        },
+        {
+            "name": "kernel_daily",
+            "tests": "interaction/kernel",
+            "markers": "R1",
+            "type": "interaction",
+            "group": ""
+        }
+    ],
+    "radius2": [
+
+    ],
+    "radius3": [
+
+    ]
+}

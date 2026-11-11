@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        pdur_bufferpoolcfg.h
+ * @brief       PduR缓存池配置头文件
+ * @details     主要包含PduR模块的缓存池配置
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef PDUR_BUFFERCFG_H
+#define PDUR_BUFFERCFG_H
+
+#include "pdur_buffermanager.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#define PDUR_BUFFER_LENGTH_INVALID 0u
+#define PDUR_INVALID_BUFFER_POOL_IDX 0xFFu
+{%- set pdur_buffer_pool_list = get_pdur_bufferpool() %}
+{%- set mempool_idx = namespace(value = 0) %}
+{%- for buffer_pool in pdur_buffer_pool_list %}
+{%- set block_size = buffer_pool["block_size"] %}
+{%- if block_size != 0 %}
+{%- set mempool_idx.value = mempool_idx.value + 1 %}
+{%- endif %}
+{%- endfor %}
+#define PDUR_BUFFER_POOL_MEMPOOL_IDX {{mempool_idx.value}}u
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+ /*!*********************************************************************************************************************
+ * @brief          获取PduR缓存管理链表的起始地址
+ * @details        获取PduR缓存管理链表的起始地址
+ * @retval         pdur_buffer_manager_header_type   pdur_buffer_manager_header_list地址
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC_P2VAR(pdur_buffer_manager_header_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_header_list_addr(void);
+
+
+ /*!*********************************************************************************************************************
+ * @brief          获取PduR忙碌缓存管理链表的起始地址
+ * @details        获取PduR忙碌缓存管理链表的起始地址
+ * @retval         pdur_buffer_manager_header_type   pdur_buffer_manager_busy_list地址
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC_P2VAR(pdur_buffer_manager_header_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_busy_header_addr(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取PduR缓存管理列表的起始地址
+ * @details        获取PduR缓存管理列表的起始地址
+ * @retval         pdur_buffer_manager_type         pdur_buffer_manager_list地址
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC_P2VAR(pdur_buffer_manager_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_list_addr(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取PduR缓存管理列表的长度
+ * @details        直接返回pdur_buffer_manager_header_list的长度
+ * @retval         0-255         数值
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(uint8, PDUR_CODE) pdur_get_buffer_manager_header_len(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取PduR缓存管理节点的长度
+ * @details        直接返回pdur_buffer_manager_list的长度
+ * @retval         0-255         数值
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(uint8, PDUR_CODE) pdur_get_buffer_manager_len(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取TxBuffer使用的PduR缓存管理列表的起始地址
+ * @details        获取TxBuffer使用的PduR缓存管理列表的起始地址
+ * @retval         地址指针
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC_P2VAR(pdur_buffer_manager_type, AUTOMATIC, PDUR_CODE) pdur_get_tx_buffer_manager_list_addr(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取TxBuffer使用的PduR缓存管理节点的长度
+ * @details        获取TxBuffer使用的PduR缓存管理节点的长度
+ * @retval         0-255         数值
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(uint8, PDUR_CODE) pdur_get_tx_buffer_manager_len(void);
+
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PDUR_BUFFERCFG_H */
+{{ "" }}

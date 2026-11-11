@@ -1,0 +1,87 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        com_lcfg.h
+ * @brief       Com本地配置头文件
+ * @details     主要包含Com模块的本地配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef COM_LCFG_H
+#define COM_LCFG_H
+
+#include "com_types.h"
+
+#ifdef __cplusplus
+extern "C"  
+{
+#endif
+
+#define COM_N_SUPPORTED_IPDU_GROUPS                  ({{ComGeneral.Parameters.COM_N_SUPPORTED_IPDU_GROUPS}}u) ///< 支持IPDU组
+/*!*********************************************************************************************************************
+ *  @brief  IPDU组向量类型
+ **********************************************************************************************************************/
+typedef uint8 com_ipg_vec[((COM_N_SUPPORTED_IPDU_GROUPS - 1) / 8) + 1];
+#define  COM_START_SEC_CONST
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  接收信号通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_signal_notification_callout_type, COM_CONST) com_rx_signal_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  接收信号超时通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_signal_timeout_notification_callout_type, COM_CONST) com_rx_signal_timeout_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  接收信号无效通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_signal_invalid_notification_callout_type, COM_CONST) com_rx_signal_invalid_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  接收信号错误通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_signal_error_notification_callout_type, COM_CONST) com_rx_signal_error_notification[];
+extern CONST(com_tx_signal_notification_callout_type, COM_CONST) com_tx_signal_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  发送信号超时通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_signal_timeout_notification_callout_type, COM_CONST) com_tx_signal_timeout_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  发送信号无效通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_signal_invalid_notification_callout_type, COM_CONST) com_tx_signal_invalid_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  发送信号错误通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_signal_error_notification_callout_type, COM_CONST) com_tx_signal_error_notification[];
+/*!*********************************************************************************************************************
+ *  @brief  接收IPDU回调类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_ipdu_callout_type, COM_CONST) com_rx_ipdu_callouts[];
+/*!*********************************************************************************************************************
+ *  @brief  发送IPDU通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_ipdu_callout_type, COM_CONST) com_tx_ipdu_callouts[];
+/*!*********************************************************************************************************************
+ *  @brief  触发发送IPDU通知回调类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_ipdu_callout_type, COM_CONST) com_trigger_transmit_ipdu_callouts[];
+#define  COM_STOP_SEC_CONST
+#include "com_memmap.h"
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* COM_LCFG_H */

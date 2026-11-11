@@ -1,0 +1,131 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  NM 配置源文件.
+ */
+
+#include "nm.h"
+#include "comm.h"
+#include "cannm.h"
+{%- for FileName in get_nm_includefiles(nm_config) %}
+#include "{{FileName}}"
+{%- endfor %}
+
+#if (CANNM_MULTICORE_ENABLED == STD_ON)
+#define NM_START_SEC_MULTI_APP_BSS
+#include "nm_memmap.h"
+VAR(boolean, NM_MULTI_APP_BSS) nm_init_status;
+#define NM_STOP_SEC_MULTI_APP_BSS
+#include "nm_memmap.h"
+#else
+#define NM_START_SEC_MULTI_APP_BSS
+#include "nm_memmap.h"
+VAR(boolean, NM_MULTI_APP_BSS) nm_init_status;
+#define NM_STOP_SEC_MULTI_APP_BSS
+#include "nm_memmap.h"
+#endif
+
+#define  NM_START_SEC_CODE
+#include "nm_memmap.h"
+
+FUNC(void, NM_CODE) nm_state_chg_cbk(const network_handle_type id_net,
+                             const nm_state_type      nm_pre_state,
+                             const nm_state_type      nm_cur_state)
+{
+    (void)id_net;
+    (void)nm_pre_state;
+    (void)nm_cur_state;
+
+{%- if nm_config["NmGlobalConfig"]["NmGlobalFeatures"]["NmStateChangeIndCallback"]["Value"] %}
+    {{nm_config["NmGlobalConfig"]["NmGlobalFeatures"]["NmStateChangeIndCallback"]["Value"]}};
+{%- endif %}
+}
+
+{%- set indications = gen_pdurxindication(nm_config) %}
+{%- set NmPduRxCallbackNum = namespace(value = 0) %}
+FUNC(void, NM_CODE) nm_pdu_rx_cbk(network_handle_type id_net , const PduInfoType *pdu_info_ptr)
+{
+    (void)id_net;
+    (void)pdu_info_ptr;
+
+{%- for channel, callback in indications.items() %}
+{%- if callback %}
+{%- set NmPduRxCallbackNum.value = NmPduRxCallbackNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if NmPduRxCallbackNum.value > 0 %}
+    switch (id_net) {
+{%- for channel, callback in indications.items() %}
+{%- if callback %}
+        case COMM_NETWORK_HANDLE_{{channel}}:
+            {{callback}};
+            break;
+{%- endif %}
+{%- endfor %}
+        default:
+            break;
+    }
+{%- endif %}
+}
+
+FUNC(void, NM_CODE) nm_pdu_rx_total_ind(network_handle_type id_net)
+{
+    (void)id_net;
+    {%-if(get_nmpduRxIndication(nm_config)!="")%}
+    {{ get_nmpduRxIndication(nm_config)}}(id_net);
+    {%-endif%}
+}
+
+#define  NM_STOP_SEC_CODE
+#include "nm_memmap.h"
+
+{%- if (ComM_Channel | length) != 0 %}
+{%- set res = nm_comm_compare(ComM_Channel, NM_General, ComM_Confg["ComMConfigSet"]) %}
+#define  NM_START_SEC_CONST
+#include "nm_memmap.h"
+CONST(nm_line_channel_cate, NM_CONST) nm_channels[NM_CHANNEL_COUNT] = {
+{%- for index , value in res[1].items() %}
+	{
+{%- if value == "NM_BUSNM_CANNM" %}
+		.line_cate = NM_BUSNM_CANNM,
+{%- elif value == "NM_BUSNM_UDPNM" %}
+		.line_cate = NM_BUSNM_UDPNM,
+{%- elif value == "NM_BUSNM_LINNM" %}
+		.line_cate = NM_BUSNM_LINNM,
+{%- else %}     
+        .line_cate = NM_BUSNM_UNDEF,
+{%- endif %}
+	},
+{%- endfor %}
+};
+
+CONST(network_handle_type, NM_CONST) nm_comm_handle_to_nm_index[{{ ComM_Channel | length }}] =
+{
+{%- for index , value in res[0].items() %}
+	[{{index}}u] = {{value}},
+{%- endfor %}
+};
+
+CONST(nm_cate_config, NM_CONST) nm_config = {
+	.nm_tunnel = nm_channels,
+	.tunnel_trans = nm_comm_handle_to_nm_index,
+	.tunnel_trans_len= {{ ComM_Channel | length }},
+};
+#define  NM_STOP_SEC_CONST
+#include "nm_memmap.h"
+{%- endif %}

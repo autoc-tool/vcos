@@ -1,0 +1,114 @@
+{
+    "ETHIF011001": {
+        "rule_name": "ETHIF011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EthIfCtrlIdx.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfCtrlIdx should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfCtrlIdx",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfCtrlIdx values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ETHIF011002": {
+        "rule_name": "ETHIF011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EthIfVlanId.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfVlanId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfVlanId",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "ETHIF011003": {
+        "rule_name": "ETHIF011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EthIfOwner.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfFrameOwnerConfig/EthIfOwner should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfFrameOwnerConfig/EthIfOwner",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfFrameOwnerConfig/EthIfOwner values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ETHIF011004": {
+        "rule_name": "ETHIF011004",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EthIfFrameType.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfFrameOwnerConfig/EthIfFrameType should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfFrameOwnerConfig/EthIfFrameType",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "ETHIF011005": {
+        "rule_name": "ETHIF011005",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EthIfTransceiverIdx.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfTransceiver/EthIfTransceiverIdx should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfTransceiver/EthIfTransceiverIdx",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "ETHIF016001": {
+        "rule_name": "ETHIF016001",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of EthIfCtrlIdx.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfCtrlIdx should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfCtrlIdx",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfController/EthIfCtrlIdx values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ETHIF016003": {
+        "rule_name": "ETHIF016003",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of EthIfSwitchPortGroupIdx.",
+        "rule_message": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfSwitchPortGroup/EthIfSwitchPortGroupIdx should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfSwitchPortGroup/EthIfSwitchPortGroupIdx",
+            "base_path": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EthIf/EthIfConfigSet/EthIfSwitchPortGroup/EthIfSwitchPortGroupIdx values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EthIf/EthIfConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    }
+}

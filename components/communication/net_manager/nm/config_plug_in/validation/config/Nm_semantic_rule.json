@@ -1,0 +1,14 @@
+{
+    "NM011001": {
+        "rule_name": "NM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of NmComMChannelRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/Nm/NmChannelConfig/NmComMChannelRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Nm/NmChannelConfig/NmComMChannelRef",
+            "base_path": "/AUTOSAR/EcucDefs/Nm"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    }
+}

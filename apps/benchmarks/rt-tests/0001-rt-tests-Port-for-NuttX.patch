@@ -1,0 +1,68 @@
+diff --git a/src/cyclictest/cyclictest.c b/src/cyclictest/cyclictest.c
+index c5c3389..e2aa126 100644
+--- a/src/cyclictest/cyclictest.c
++++ b/src/cyclictest/cyclictest.c
+@@ -167,7 +167,7 @@ static int trigger_init();
+ static void trigger_print();
+ static void trigger_update(struct thread_param *par, int diff, int64_t ts);
+ 
+-static int shutdown;
++static int shutdown = 0;
+ static int tracelimit = 0;
+ static int trace_marker = 0;
+ static int verbose = 0;
+@@ -847,7 +847,11 @@ static void display_help(int error)
+ static int use_nanosleep = MODE_CLOCK_NANOSLEEP;
+ static int timermode = TIMER_ABSTIME;
+ static int use_system;
++#ifdef RTTESTS_PRIORITY
++static int priority = RTTESTS_PRIORITY;
++#else
+ static int priority;
++#endif
+ static int policy = SCHED_OTHER;	/* default policy if not specified */
+ static int num_threads = 1;
+ static int max_cycles;
+@@ -1224,7 +1228,7 @@ static void process_options(int argc, char *argv[], int max_cpus)
+ 	if (distance == -1)
+ 		distance = DEFAULT_DISTANCE;
+ 
+-	if (priority < 0 || priority > 99)
++	if (priority < 0 || priority > 255)
+ 		error = 1;
+ 
+ 	if (num_threads == -1)
+@@ -1743,6 +1747,7 @@ int main(int argc, char **argv)
+ 	int i, ret = -1;
+ 	int status;
+ 
++	shutdown = 0;
+ 	rt_init(argc, argv);
+ 	process_options(argc, argv, max_cpus);
+ 
+diff --git a/src/include/rt-get_cpu.h b/src/include/rt-get_cpu.h
+index 74bf8f0..2cde869 100644
+--- a/src/include/rt-get_cpu.h
++++ b/src/include/rt-get_cpu.h
+@@ -25,6 +25,9 @@ static inline int get_cpu(void)
+ #include <utmpx.h>
+ static inline int get_cpu_setup(void) { return 0; }
+ static inline int get_cpu(void) { return sched_getcpu(); }
++#elif defined __NuttX__
++static inline int get_cpu_setup(void) { return 0; }
++static inline int get_cpu(void) { return sched_getcpu(); }
+ #else
+ extern int get_cpu_setup(void);
+ extern int (*get_cpu)(void);
+diff --git a/src/lib/rt-get_cpu.c b/src/lib/rt-get_cpu.c
+index 608cd9b..bf68aa4 100644
+--- a/src/lib/rt-get_cpu.c
++++ b/src/lib/rt-get_cpu.c
+@@ -6,6 +6,7 @@
+ #ifdef __NR_getcpu
+ #elif defined(__GLIBC__) && defined(__GLIBC_MINOR__)	\
+ 	&& __GLIBC__>=2 && __GLIBC_MINOR__>=6
++#elif defined __NuttX__
+ #else
+ int (*get_cpu)(void);
+ int (*get_cpu_vdsop)(unsigned int *, unsigned int *, void *);

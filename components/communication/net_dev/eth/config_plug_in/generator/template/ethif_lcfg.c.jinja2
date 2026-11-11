@@ -1,0 +1,246 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  EthIf 模块配置文件.
+ */
+
+#include "ethif_types.h"
+#include "ethif_cfg.h"
+#include "ethif_internal.h"
+
+#include "Compiler.h"
+#if (CONFIG_MODULE_TCPIP == 1)
+#include "tcpip_cbk.h"
+#endif
+
+#include "Eth_GEthMac.h"
+{% if EthIfGeneral.get("EthIfPublicCddHeaderFile") %}
+{% for headerfile in EthIfGeneral["EthIfPublicCddHeaderFile"] %}
+#include "{{ headerfile }}"
+{% endfor %}
+{% endif %}
+
+#define ETHIF_START_SEC_CODE
+#include "ethif_memmap.h"
+
+weak_function FUNC(void, ETHIF_CODE) EthIf_EthMac_GetControllerConfig(const uint8 ctrl_idx, ethif_controller_cfg* const ctrl_cfg)
+{
+    (void)ctrl_idx;
+    (void)ctrl_cfg;
+}
+
+weak_function FUNC(Std_ReturnType, ETHIF_CODE) ethif_ethtrcv_set_linkstate(uint8 trcv_idx, eth_trcv_linkstate_type link_state)
+{
+    (void)trcv_idx;
+    (void)link_state;
+    return E_OK;
+}
+
+weak_function FUNC(Std_ReturnType, ETHIF_CODE) ethtrcv_update_linkstate(void)
+{
+    return E_OK;
+}
+
+#define ETHIF_STOP_SEC_CODE
+#include "ethif_memmap.h"
+
+#define ETHIF_START_SEC_CONST
+#include "ethif_memmap.h"
+
+CONST(ethif_ethdrv_api_type, ETHIF_CONST) ethif_ethdrv_api[1] = {
+    {
+    {{  EthIfGeneral["EthIfMapMcalApiPrefix"] }}_GetPhysAddr,
+    NULL_PTR,
+    {{  EthIfGeneral["EthIfMapMcalApiPrefix"] }}_ProvideTxBuffer,
+    {{  EthIfGeneral["EthIfMapMcalApiPrefix"] }}_Transmit,
+#if (STD_OFF == ETHIF_ENABLE_TX_INTERRUPT)
+    {{  EthIfGeneral["EthIfMapMcalApiPrefix"] }}_TxConfirmation,
+#endif
+    NULL_PTR,
+#if (STD_OFF == ETHIF_ENABLE_RX_INTERRUPT)
+    NULL_PTR,
+#endif
+    NULL_PTR,
+#if (STD_ON == ETHIF_GLOBAL_TIME_SUPPORT)
+    {{  EthIfGeneral["EthIfMapMcalApiPrefix"] }}_GetCurrentTime,
+    NULL_PTR,
+    NULL_PTR,
+    NULL_PTR,
+{%- if EthIfGeneral["EthIfEthSetCorrectionTimeApi"] != None%}
+    {{  EthIfGeneral["EthIfEthSetCorrectionTimeApi"] }},
+{%- else %}
+    NULL_PTR,
+{%- endif %}
+{%- if EthIfGeneral["EthIfEthSetGlobalTimeApi"] != None%}
+    {{  EthIfGeneral["EthIfEthSetGlobalTimeApi"] }},
+{%- else %}
+    NULL_PTR,
+{%- endif %}
+#endif
+{%- if EthIfTransceivers|length > 0 %}
+    NULL_PTR,
+{%- else %}
+    NULL_PTR,
+{%- endif %}
+{%- if EthIfSwitchPortGroups|length > 0 %}
+    {{  EthIfGeneral["EthIfSwtGetLinkStateApi"]  }}
+{%- else %}
+    NULL_PTR
+{%- endif %}
+    }
+};
+#define ETHIF_STOP_SEC_CONST
+#include "ethif_memmap.h"
+
+
+#define ETHIF_START_SEC_CODE
+#include "ethif_memmap.h"
+FUNC(void, ETHIF_CODE) IpV4_Arp_RxIndication ( uint8 ctrl_idx, eth_frame_type frame_type, boolean is_broadcast, const uint8* phys_addr_ptr, uint8* data_ptr, uint16 len_byte )
+{
+#if (CONFIG_MODULE_TCPIP == 1)
+    tcpip_rx_indication(ctrl_idx, frame_type, is_broadcast, phys_addr_ptr, data_ptr, len_byte);
+#endif
+}
+
+FUNC(void, ETHIF_CODE) IpV4_Ip_RxIndication ( uint8 ctrl_idx, eth_frame_type frame_type, boolean is_broadcast, const uint8* phys_addr_ptr, uint8* data_ptr, uint16 len_byte )
+{
+#if (CONFIG_MODULE_TCPIP == 1)
+    tcpip_rx_indication(ctrl_idx, frame_type, is_broadcast, phys_addr_ptr, data_ptr, len_byte);
+#endif
+}
+
+FUNC(void, ETHIF_CODE) IpV4_Ip_TxConfirmation(uint8 EthIfCtrlIdx, eth_buf_idx_type EthBufIdx)
+{
+#if (CONFIG_MODULE_TCPIP == 1)
+    tcpip_tx_confirmation(EthIfCtrlIdx, EthBufIdx);
+#endif
+}
+#define ETHIF_STOP_SEC_CODE
+#include "ethif_memmap.h"
+
+
+#define ETHIF_START_SEC_CONST
+#include "ethif_memmap.h"
+CONST(ethif_ul_rxindication_type, ETHIF_CONST)  ethif_ul_rxIndication[{{ EthIfRxIndicationConfigs|length }}] = {
+{%- for EthIfRxIndication in EthIfRxIndicationConfigs %}
+    {{"%s" | format(EthIfRxIndication["EthIfRxIndicationFunction"]) }}{{ "," if not loop.last }}
+{% endfor %}
+};
+
+CONST(ethif_ul_txconfirmation_type, ETHIF_CONST)  ethif_ul_txconfirmation[{{ EthIfTxConfirmationConfigs|length }}] = {
+{%- for cfg in EthIfTxConfirmationConfigs %}
+    {{ cfg["EthIfTxConfirmationFunction"] }}{{ "," if not loop.last }}
+{% endfor %}
+};
+
+CONST(ethif_frame_owner_type, ETHIF_CONST) ethif_owner_cfg[{{ EthIfFrameOwnerConfigs|length }}] = {
+    /* Frame Type */   /* RxIndication handle */   /* TxConfirmation handle */
+{%- for frame in EthIfFrameOwnerConfigs %}
+    {{"{0x%xu,            %s,                          %s }" | format(frame["EthIfFrameType"],frame["EthIfRxIndicationHandle"],frame["EthIfTxConfirmationHandle"])}}{{ "," if not loop.last }}
+{% endfor %}
+};
+
+/** EthIf Controller Specific configuration data **/
+CONST(ethif_controller_type, ETHIF_CONST) EthIf_Controllers[] = {
+{%- for controller in EthIfControllers | sort(attribute='EthIfCtrlIdx') %}
+    {
+        {{".ethif_ctrl_id             = (uint8)%s" | format(controller["EthIfCtrlIdx"]) }}UL,
+#if defined (ETHIf_MAX_TXBUFSTOTAL)
+        .ethif_max_tx_bufs_total     = (uint8)ETHIf_MAX_TXBUFSTOTAL,
+#else
+        {{".ethif_max_tx_bufs_total     = (uint8)%s" | format(controller["EthIfMaxTxBufsTotal"]) }},
+#endif
+        {{".ethif_ctrl_mtu            = (uint16)%s" | format(controller["EthIfCtrlMtu"]) }}UL,
+        {{".ethif_eth_ctrl_id          = (uint8)%s" | format(controller["EthIfEthCtrlIdx"]) }}UL,
+        {{".ethif_eth_trcv_id          = (uint8)%s" | format(controller["EthIfEthTrcvIdx"]) }},
+        {{".ethif_switch_port_group_id  = (uint8)%s" | format(controller["EthIfSwitchPortGroupIdx"]) }},
+        {{".ethif_vlan_id             = (uint16)%s" | format(controller["EthIfVlanId"]) }},
+        {{".ethif_link_aggr_threshold  = (uint8)%s" | format(controller["EthIfLinkAggrThreshold"]) }},
+        .eth_drv_api_idx            = (uint8)0UL,
+    },
+{% endfor %}
+};
+
+{%- if EthIfSwitchPortGroups|length > 0 %}
+CONST(ethif_switch_port_group_type, ETHIF_CONST) EthIf_SwitchPortGroup[] = {
+{%- for SwitchPortGroup in EthIfSwitchPortGroups | sort(attribute='EthIfSwitchPortGroupIdx') %}
+    {
+        .port_count = {{ SwitchPortGroup["EthIfSwitchPortlist"]|length }},
+        .ethif_switch_portlist = (ethif_switch_port_type[]){
+            {%- for switchport in SwitchPortGroup["EthIfSwitchPortlist"] %}
+            {
+                .ethif_swt_port_id = {{ switchport["EthIfSwtPortIdx"] }},
+                .ethif_swt_port_role  = {{ switchport["EthIfSwtPortRole"] }},
+                .ethif_swt_id   = {{ switchport["EthIfSwtIdx"] }},
+            }{%- if not loop.last %},{% endif %}
+            {%- endfor %}
+        }
+    }{%- if not loop.last %},{% endif %}
+{% endfor %}
+};
+{%- endif %}
+
+/** EthIf configuration data initialization **/
+CONST(ethif_config_type, ETHIF_CONST) ethif_config_data = {
+    .ethif_ctrl_cfg  = EthIf_Controllers,                                                         /* pointer to hold controller config data*/
+    .ethif_owner_cfg = ethif_owner_cfg,                                                             /* pointer to hold Owner config data */
+#if defined(ETHIF_SWITCH_SUPPORT) && (ETHIF_SWITCH_SUPPORT == 1)
+    .ethif_switch_cfg = NULL_PTR,                                                                 /* pointer to hold switches config data */
+#endif
+    .ethif_ul_txconfirmation = ethif_ul_txconfirmation,                                             /* pointer to hold Tx confirmation functions list */
+    .ethif_ul_rxIndication = ethif_ul_rxIndication,                                                 /* Ptr to Rx indication function list */
+    .ethif_ul_linkstate_chg = NULL_PTR,
+    {{".ethif_ctrl_count = (uint8)%sUL" | format(EthIfControllers|length)}},                                                                      /* Number of Controllers configure */
+    {{".ethif_trcv_count = (uint8)%sUL" | format(EthIfTransceivers|length)}},                                                                     /* Number of Trcv configured */
+    .ethif_switch_count = (uint8)0UL,                                                                    /* Number of Switches configured */
+    {{".ethif_owners_count = (uint8)%sUL" | format(EthIfFrameOwnerConfigs|length)}},                                                                    /* Number fo Owners configured */
+    .ethdrv_api_of_pcconfig_ptr = ethif_ethdrv_api,                                                  /* pointer to eth driver api config data */
+{%- if EthIfSwitchPortGroups|length > 0 %}
+    .ethif_swt_port_group_cfg = EthIf_SwitchPortGroup                                                 /* pointer to hold switch port group config data */
+{%- else %}
+    .ethif_swt_port_group_cfg = NULL_PTR
+{%- endif %}
+};
+#define ETHIF_STOP_SEC_CONST
+#include "ethif_memmap.h"
+
+#define ETH_START_SEC_PRIVATE_DATA
+#include "eth_memmap.h"
+VAR(ethif_internal_type, ETH_PRIVATE_DATA) ethif_internal = {
+        .init_status = ETHIF_STATE_UNINIT,
+        .trcv_linkstate_check_count = TRCV_LINKSTATECHECK_TIMES * ETHIF_CTRLS_CNT,
+};
+#define ETH_STOP_SEC_PRIVATE_DATA
+#include "eth_memmap.h"
+
+#define ETH_START_SEC_PRIVATE_BSS
+#include "eth_memmap.h"
+P2CONST(ethif_config_type, ETH_PRIVATE_BSS, EthIf_VAR_Class) ethif_config_pointer;
+#define ETH_STOP_SEC_PRIVATE_BSS
+#include "eth_memmap.h"
+
+#define ETH_START_SEC_PRIVATE_BSS
+#include "eth_memmap.h"
+#if (ETHIF_GET_STATS_INFO == STD_ON)
+VAR(ethif_stats_type, ETH_PRIVATE_BSS) ethif_stats;
+#endif
+#if (ETHIF_GET_COUNTER_VALUES_ENABLE == STD_ON)
+VAR(uint32, ETH_PRIVATE_BSS) ethif_eth_dropcount[ETHIF_ETH_MAX_DROP_COUNTER_NUM];
+#endif
+#define ETH_STOP_SEC_PRIVATE_BSS
+#include "eth_memmap.h"

@@ -1,0 +1,111 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        cantp_cfg.h
+ * @brief       CanTp配置头文件
+ * @details     主要包含CanTp模块的配置相关相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef CANTP_CFG_H
+#define CANTP_CFG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define CANTP_VERSION_INFO_API              ({{ get_enable_value_from_boolean(CanTpGeneral["CanTpVersionInfoApi"]["Value"]) }})   ///< 版本信息接口
+#define CANTP_DEV_ERROR_DETECT              ({{ get_enable_value_from_boolean(CanTpGeneral["CanTpDevErrorDetect"]["Value"]) }})   ///< 开发错误探测
+#define CANTP_SYNC_TRANSMIT                 ({{ get_enable_value_from_boolean(CanTpGeneral["CanTpEnableSynchronousTransmit"]["Value"]) }})   ///< 同步发送
+#define CANTP_CHANGE_PARAMETER_API          ({{ get_enable_value_from_boolean(CanTpGeneral["CanTpChangeParameterApi"]["Value"]) }})   ///< 改变参数接口
+#define CANTP_READ_PARAMETER_API            ({{ get_enable_value_from_boolean(CanTpGeneral["CanTpReadParameterApi"]["Value"]) }})   ///< 读取参数接口
+#define CANTP_RECEIVE_CANCEL_API            (STD_ON)   ///< 取消接收
+#define CANTP_TRANSMIT_CANCEL_API           ({{ get_cantp_transmit_cancel_state(CanTpChannels) }})   ///< 取消发送
+#define CANTP_CANFD_SUPPORT                 ({{ get_enable_value_from_boolean(CanTpGeneral["CanTpFlexibleDataRateSupport"]["Value"]) }})  ///< 支持CanFD
+#define CANTP_LONG_FF_SUPPORT               (STD_ON)    ///< 支持长首帧
+#define CANTP_NO_REFERRING_TX_INDEX         (0xFFFFu)    ///< 没有引用发送索引
+
+{%- set mainfunction_cfg = get_mainfunction_config(CanTpConfig) %}
+{%- if mainfunction_cfg | length == 0 %}
+#define CANTP_MAIN_FUNCTION_PERIOD_TIME_MS  (5u)    ///< 主函数周期毫秒
+{%- else %}
+
+{%- for _, mainfuncInfo in CanTpMainFunc.items() %}
+#define {{ mainfuncInfo[0]["name"] | upper }}_PERIOD_TIME_MS  ({{ convert_from_s_to_ms(mainfuncInfo[0]["period"]) }}u)    ///< Core{{mainfuncInfo[0]["coreid"]}}主函数周期毫秒
+{%- endfor %}
+{%- endif %}
+
+#define INVAILD_PERIOD_TIME_MS                (0u)    ///< 无效周期时间
+
+{%- set sdu_id = namespace(value = 0) %}
+{%- for _, cantp_channel in CanTpChannels.items() %}
+{%- for _, RxNSdu in cantp_channel["CanTpRxNSdus"].items() %}
+#define CANTP_PDU_ID_{{"%-60s (%su)" | format(get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]) + "_oCanTp_PduR_Rx", sdu_id.value) }}  ///< 接收ID
+#define CANTP_PDU_ID_{{"%-60s (%su)" | format(get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]) + "_oCanIf_CanTp_Rx", sdu_id.value) }}   ///< 接收ID
+#define CANTP_PDU_ID_{{"%-60s (%su)" | format(get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]), sdu_id.value) }}  ///< 接收ID
+#define CANTP_SDU_ID_{{"%-60s (%su)" | format(get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]), sdu_id.value) }}  ///< 接收ID
+{%- set sdu_id.value = sdu_id.value + 1  %}
+{% endfor %}
+
+{%- for _, TxNSdu in cantp_channel["CanTpTxNSdus"].items() %}
+#define CANTP_PDU_ID_{{"%-60s (%su)" | format(get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]) + "_oPduR_CanTp_Tx", sdu_id.value) }}  ///< 发送ID
+#define CANTP_PDU_ID_{{"%-60s (%su)" | format(get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]) + "_oCanTp_CanIf_Tx", sdu_id.value) }}  ///< 发送ID
+#define CANTP_PDU_ID_{{"%-60s (%su)" | format(get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]), sdu_id.value) }}  ///< 发送ID
+#define CANTP_SDU_ID_{{"%-60s (%su)" | format(get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]), sdu_id.value) }}  ///< 发送ID
+{%- set sdu_id.value = sdu_id.value + 1  %}
+{% endfor %}
+{%- endfor %}
+
+#define CANTP_PDU_ID_INVALID_PDU_ID         (0xFFFFu)  ///< 无效PduId
+{%- set txextended = namespace(count = 0) %}
+{%- set rxextended = namespace(count = 0) %}
+{%- for cantp_channel_name, cantp_channel in CanTpChannels.items() %}
+{%- for _, RxNSdu in cantp_channel["CanTpRxNSdus"].items() %}
+{%- if RxNSdu["CanTpRxAddressingFormat"]["Value"] == "CANTP_EXTENDED" %}
+{%- set rxextended.count = rxextended.count + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- for _, TxNSdu in cantp_channel["CanTpTxNSdus"].items() %}
+{%- if TxNSdu["CanTpTxAddressingFormat"]["Value"] == "CANTP_EXTENDED" %}
+{%- set txextended.count = txextended.count + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- endfor %}
+
+{%- if rxextended.count != 0 %}
+#define CANTP_EXTENDED_ADDR_RX_CFG          (STD_ON)  ///< Rx扩展寻址
+{%- else %}
+#define CANTP_EXTENDED_ADDR_RX_CFG          (STD_OFF)  ///< Rx扩展寻址
+{%- endif %}
+{%- if txextended.count != 0 %}
+#define CANTP_EXTENDED_ADDR_TX_CFG          (STD_ON)  ///< Tx扩展寻址
+{%- else %}
+#define CANTP_EXTENDED_ADDR_TX_CFG          (STD_OFF)  ///< Tx扩展寻址
+{%- endif %}
+
+#define CANTP_MULTICORE_CORE_NUMBER {{CanTpMaxCore + 1}}u
+{%- for _, coreinfo in CanTpChannelByCoreId.items() %}
+#define CANTP_CHANNEL_CORE_TABLE_LEN_CORE{{coreinfo["CanCoreId"]}} {{coreinfo["ChannelLen"]}}u
+{%- endfor %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CANTP_CFG_H */
+

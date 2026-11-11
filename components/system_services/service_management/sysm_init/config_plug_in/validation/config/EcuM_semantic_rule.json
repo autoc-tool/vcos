@@ -1,0 +1,475 @@
+{
+    "ECUM011001": {
+        "rule_name": "ECUM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcuMResetModeId.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMResetMode/EcuMResetModeId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMResetMode/EcuMResetModeId",
+            "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMResetMode/EcuMResetModeId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ECUM011002": {
+        "rule_name": "ECUM011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcuMShutdownCauseId.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMShutdownCause/EcuMShutdownCauseId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMShutdownCause/EcuMShutdownCauseId",
+            "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMShutdownCause/EcuMShutdownCauseId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ECUM011003": {
+        "rule_name": "ECUM011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcuMWakeupSourceId.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMWakeupSource/EcuMWakeupSourceId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMWakeupSource/EcuMWakeupSourceId",
+            "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMWakeupSource/EcuMWakeupSourceId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ECUM011004": {
+        "rule_name": "ECUM011004",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcuMSleepModeId.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMSleepMode/EcuMSleepModeId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMSleepMode/EcuMSleepModeId",
+            "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMSleepMode/EcuMSleepModeId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ECUM011005": {
+        "rule_name": "ECUM011005",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of EcuMFlexUser.",
+        "rule_message": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUserConfig/EcuMFlexUser should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUserConfig/EcuMFlexUser",
+            "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUserConfig/EcuMFlexUser values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "ECUM012001": {
+        "rule_name": "ECUM012001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMDefaultShutdownTarget and EcuMDefaultResetModeRef.",
+        "rule_message": "EcuMDefaultResetModeRef should be configured if EcuMDefaultShutdownTarget is 'EcuMShutdownTargetReset'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultShutdownTarget",
+                        "value_operator": "==",
+                        "value": "EcuMShutdownTargetReset",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultResetModeRef",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultResetModeRef",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012002": {
+        "rule_name": "ECUM012002",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMDefaultShutdownTarget and EcuMDefaultSleepModeRef.",
+        "rule_message": "EcuMDefaultSleepModeRef should be configured if EcuMDefaultShutdownTarget is 'EcuMShutdownTargetReset'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultShutdownTarget",
+                        "value_operator": "==",
+                        "value": "EcuMShutdownTargetSleep",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultSleepModeRef",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDefaultShutdownTarget/EcuMDefaultSleepModeRef",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012003": {
+        "rule_name": "ECUM012003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMAdditionalInitCode.",
+        "rule_message": "EcuMAdditionalInitCode should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012004": {
+        "rule_name": "ECUM012004",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMMoudleHeader.",
+        "rule_message": "EcuMMoudleHeader should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListZero/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012005": {
+        "rule_name": "ECUM012005",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMAdditionalInitCode.",
+        "rule_message": "EcuMAdditionalInitCode should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012006": {
+        "rule_name": "ECUM012006",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMMoudleHeader.",
+        "rule_message": "EcuMMoudleHeader should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverInitListOne/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012007": {
+        "rule_name": "ECUM012007",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMAdditionalInitCode.",
+        "rule_message": "EcuMAdditionalInitCode should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012008": {
+        "rule_name": "ECUM012008",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMMoudleHeader.",
+        "rule_message": "EcuMMoudleHeader should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMDriverInitListBswM/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012009": {
+        "rule_name": "ECUM012009",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMAdditionalInitCode.",
+        "rule_message": "EcuMAdditionalInitCode should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMAdditionalInitCode",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "ECUM012010": {
+        "rule_name": "ECUM012010",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of EcuMModuleRef and EcuMMoudleHeader.",
+        "rule_message": "EcuMMoudleHeader should be defined if EcuMModuleRef is not configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMModuleRef",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/EcuM/EcuMConfiguration/EcuMCommonConfiguration/EcuMDriverRestartList/EcuMDriverInitItem/EcuMMoudleHeader",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    }
+}

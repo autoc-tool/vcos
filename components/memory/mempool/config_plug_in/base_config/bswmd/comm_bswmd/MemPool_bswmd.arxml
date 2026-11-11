@@ -1,0 +1,303 @@
+<?xml version="1.0"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00046.xsd">
+ <ADMIN-DATA>
+  <DOC-REVISIONS>
+   <DOC-REVISION>
+    <REVISION-LABEL>4.4.0</REVISION-LABEL>
+    <ISSUED-BY>AUTOSAR</ISSUED-BY>
+   </DOC-REVISION>
+  </DOC-REVISIONS>
+ </ADMIN-DATA>
+ <AR-PACKAGES>
+  <AR-PACKAGE UUID="ECUC:AUTOSAR">
+   <SHORT-NAME>AUTOSAR</SHORT-NAME>
+   <AR-PACKAGES>
+    <AR-PACKAGE UUID="ECUC:ECUCDEFS">
+     <SHORT-NAME>EcucDefs</SHORT-NAME>
+     <ELEMENTS>
+      <ECUC-MODULE-DEF UUID="ECUC:6f8c16f8-2680-4ddd-9b38-31fd814152b8">
+       <SHORT-NAME>MemPool</SHORT-NAME>
+       <DESC>
+        <L-2 L="EN">Configuration of the MemPool (Memory Pool) module.</L-2>
+        <L-2 L="ZH">概述：MemPool是AUTOSAR软件架构中的一个核心组件，负责给底层基础软件提供内存分配功能</L-2>
+       </DESC>
+       <ADMIN-DATA>
+        <DOC-REVISIONS>
+         <DOC-REVISION>
+          <REVISION-LABEL>4.4.0</REVISION-LABEL>
+          <ISSUED-BY>AUTOSAR</ISSUED-BY>
+         </DOC-REVISION>
+        </DOC-REVISIONS>
+       </ADMIN-DATA>
+       <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_EthSM_00108</RELATED-TRACE-ITEM-REF>
+       <LOWER-MULTIPLICITY>0</LOWER-MULTIPLICITY>
+       <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+       <POST-BUILD-VARIANT-SUPPORT>false</POST-BUILD-VARIANT-SUPPORT>
+       <SUPPORTED-CONFIG-VARIANTS>
+        <SUPPORTED-CONFIG-VARIANT>VARIANT-PRE-COMPILE</SUPPORTED-CONFIG-VARIANT>
+       </SUPPORTED-CONFIG-VARIANTS>
+       <CONTAINERS>
+        <ECUC-PARAM-CONF-CONTAINER-DEF UUID="ECUC:fc6e0617-8c73-4b71-b09e-dfb10b76e50d">
+            <SHORT-NAME>MemModule</SHORT-NAME>
+            <DESC>
+            <L-2 L="EN">This container consists of mempool modules' configuration and subcontainer.</L-2>
+            <L-2 L="ZH">概述：该容器包含了内存池模块的配置及其子容器。它用于管理和配置内存池相关的参数，并为其他模块提供必要的资源和功能支持。通过该模块，可以有效地优化内存使用，并提高系统性能。</L-2>
+            <L-2 L="ZH">注意：在配置模块时，务必确保模块名称具有唯一性和标识性，以避免在软件架构中引发混淆。</L-2>
+            </DESC>
+            <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Adc_00390</RELATED-TRACE-ITEM-REF>
+            <LOWER-MULTIPLICITY>0</LOWER-MULTIPLICITY>
+            <UPPER-MULTIPLICITY-INFINITE>true</UPPER-MULTIPLICITY-INFINITE>
+            <REFERENCES>
+                <ECUC-FOREIGN-REFERENCE-DEF UUID="ECUC:c45f91df-a9d3-e5c4-ef5c-076df7908fa3">
+                    <SHORT-NAME>BswModuleRef</SHORT-NAME>
+                    <DESC>
+                        <L-2 L="EN">Foreign reference to the configuration of a module instance which shall be initialized by EcuM</L-2>
+                        <L-2 L="ZN">概述：BswModuleRef用于定义Bsw模块实例，它指定了基础软件模块实例的配置，包括其名称和相关属性，以便在运行时环境中进行管理和调度。</L-2>
+                        <L-2 L="ZH">注意：在配置BswModuleRef时，确保模块实例名称的唯一性，避免与其他Bsw模块实例名称冲突；在多模块系统中，合理规划每个模块实例的资源和优先级，以保证系统的稳定性和性能。</L-2>
+                    </DESC>
+                    <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_EcuM_00223</RELATED-TRACE-ITEM-REF>
+                    <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                    <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+                    <SCOPE>LOCAL</SCOPE>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                    <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                    <VALUE-CONFIG-CLASSES>
+                        <ECUC-VALUE-CONFIGURATION-CLASS>
+                        <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                        <CONFIG-VARIANT>VARIANT-POST-BUILD</CONFIG-VARIANT>
+                        </ECUC-VALUE-CONFIGURATION-CLASS>
+                    </VALUE-CONFIG-CLASSES>
+                    <DESTINATION-TYPE>ECUC-MODULE-CONFIGURATION-VALUES</DESTINATION-TYPE>
+                </ECUC-FOREIGN-REFERENCE-DEF>
+                <ECUC-REFERENCE-DEF UUID="ECUC:7fe87d8e-e45a-4ce7-a368-b19db06f21cf">
+                    <SHORT-NAME>OsApplicationRef</SHORT-NAME>
+                    <DESC>
+                    <L-2 L="EN">The owner application of the current isolate module.</L-2>
+                    <L-2 L="ZH">概述：OsApplicationRef配置项用于指定当前软件组件所部署的OsApplication的引用。</L-2>
+                    <L-2 L="ZH">注意：在配置OsApplicationRef时，需要确保引用的OS应用程序已经在系统中定义；此外，该引用必须符合操作系统的隔离和保护级别要求；在多核系统中，还需考虑应用程序与特定核心的绑定关系。</L-2>
+                    </DESC>
+                    <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_00004</RELATED-TRACE-ITEM-REF>
+                    <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                    <UPPER-MULTIPLICITY>31</UPPER-MULTIPLICITY>
+                    <MULTIPLICITY-CONFIG-CLASSES>
+                    <ECUC-MULTIPLICITY-CONFIGURATION-CLASS>
+                        <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                        <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                    </ECUC-MULTIPLICITY-CONFIGURATION-CLASS>
+                    </MULTIPLICITY-CONFIG-CLASSES>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                    <POST-BUILD-VARIANT-MULTIPLICITY>false</POST-BUILD-VARIANT-MULTIPLICITY>
+                    <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                    <VALUE-CONFIG-CLASSES>
+                    <ECUC-VALUE-CONFIGURATION-CLASS>
+                        <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                        <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                    </ECUC-VALUE-CONFIGURATION-CLASS>
+                    </VALUE-CONFIG-CLASSES>
+                    <DESTINATION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF">/AUTOSAR/EcucDefs/Os/OsApplication</DESTINATION-REF>
+                </ECUC-REFERENCE-DEF>
+                <ECUC-REFERENCE-DEF UUID="ECUC:7fe87d8e-e45a-4ce7-a368-b19db06f21cf">
+                    <SHORT-NAME>MemPoolRef</SHORT-NAME>
+                    <DESC>
+                    <L-2 L="EN">The MemPoolRef configuration is used to reference already created memory pools, enabling easier management and operation of the memory pool within the application.</L-2>
+                    <L-2 L="ZH">概述：MemPoolRef 配置用于引用已创建的内存池，便于在应用中进行内存池的管理与操作。</L-2>
+                    <L-2 L="ZH">注意：在配置 MemPoolRef 时，需确保被引用的内存池 (mempool) 满足当前模块的业务需求，以保证系统的正常运行和性能优化。</L-2>
+                    </DESC>
+                    <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_00004</RELATED-TRACE-ITEM-REF>
+                    <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                    <UPPER-MULTIPLICITY>31</UPPER-MULTIPLICITY>
+                    <MULTIPLICITY-CONFIG-CLASSES>
+                    <ECUC-MULTIPLICITY-CONFIGURATION-CLASS>
+                        <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                        <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                    </ECUC-MULTIPLICITY-CONFIGURATION-CLASS>
+                    </MULTIPLICITY-CONFIG-CLASSES>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                    <POST-BUILD-VARIANT-MULTIPLICITY>false</POST-BUILD-VARIANT-MULTIPLICITY>
+                    <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                    <VALUE-CONFIG-CLASSES>
+                    <ECUC-VALUE-CONFIGURATION-CLASS>
+                        <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                        <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                    </ECUC-VALUE-CONFIGURATION-CLASS>
+                    </VALUE-CONFIG-CLASSES>
+                    <DESTINATION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF">/AUTOSAR/EcucDefs/MemPool/MemPool</DESTINATION-REF>
+                </ECUC-REFERENCE-DEF>
+            </REFERENCES>
+        </ECUC-PARAM-CONF-CONTAINER-DEF>
+        <ECUC-PARAM-CONF-CONTAINER-DEF UUID="ECUC:fc6e0617-8c73-4b71-b09e-dfb10b76e50d">
+            <SHORT-NAME>MemPool</SHORT-NAME>
+            <DESC>
+            <L-2 L="EN">This container consists of mempool modules' configuration and subcontainer.</L-2>
+            <L-2 L="ZH">概述：Module配置项在AUTOSAR中用于定义软件模块的属性，包括模块的名称、供应商信息、版本号等，是软件组件描述文件中的一个基本构成部分。</L-2>
+            <L-2 L="ZH">注意：在配置Module时，确保模块名称的唯一性和标识性，以避免在软件架构中产生混淆；遵循AUTOSAR规定的版本号格式，以确保兼容性和追溯性；供应商信息应准确无误，以便于模块的管理和维护。</L-2>
+            </DESC>
+            <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Adc_00390</RELATED-TRACE-ITEM-REF>
+            <LOWER-MULTIPLICITY>0</LOWER-MULTIPLICITY>
+            <UPPER-MULTIPLICITY-INFINITE>true</UPPER-MULTIPLICITY-INFINITE>
+            <PARAMETERS>
+              <ECUC-INTEGER-PARAM-DEF UUID="ECUC:deceab52-a44e-40eb-9737-8eea4e860802">
+                  <SHORT-NAME>MemBlockCount</SHORT-NAME>
+                  <DESC>
+                  <L-2 L="EN">MemBlockCount is used to define the number of memory blocks.</L-2>
+                  <L-2 L="ZH">概述：MemBlockCount 用于定义内存块的数量。</L-2>
+                  <L-2 L="ZH">注意：MemBlockCount 和 MemBlockSize 一起决定了内存的总大小。因此，在配置时，需要根据实际物理内存大小进行评估和调整。</L-2>
+                  </DESC>
+                  <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_00027</RELATED-TRACE-ITEM-REF>
+                  <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                  <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+                  <SCOPE>LOCAL</SCOPE>
+                  <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                  <VALUE-CONFIG-CLASSES>
+                  <ECUC-VALUE-CONFIGURATION-CLASS>
+                      <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                      <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                  </ECUC-VALUE-CONFIGURATION-CLASS>
+                  </VALUE-CONFIG-CLASSES>
+                  <SYMBOLIC-NAME-VALUE>false</SYMBOLIC-NAME-VALUE>
+                  <DEFAULT-VALUE>0</DEFAULT-VALUE>
+                  <MAX>65536</MAX>
+                  <MIN>0</MIN>
+              </ECUC-INTEGER-PARAM-DEF>
+              <ECUC-INTEGER-PARAM-DEF UUID="ECUC:deceab52-a44e-40eb-9737-8eea4e860802">
+                  <SHORT-NAME>MemBlockSize</SHORT-NAME>
+                  <DESC>
+                  <L-2 L="EN">MemBlockSize is used to define the size of a single memory block.</L-2>
+                  <L-2 L="ZH">概述：MemBlockSize 用于定义单个内存块的大小。</L-2>
+                  <L-2 L="ZH">注意：MemBlockCount 和 MemBlockSize 一起决定了内存的总大小。因此，在配置时，需要根据实际物理内存大小进行评估和调整。</L-2>
+                  </DESC>
+                  <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_00027</RELATED-TRACE-ITEM-REF>
+                  <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                  <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+                  <SCOPE>LOCAL</SCOPE>
+                  <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                  <VALUE-CONFIG-CLASSES>
+                  <ECUC-VALUE-CONFIGURATION-CLASS>
+                      <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                      <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                  </ECUC-VALUE-CONFIGURATION-CLASS>
+                  </VALUE-CONFIG-CLASSES>
+                  <SYMBOLIC-NAME-VALUE>false</SYMBOLIC-NAME-VALUE>
+                  <DEFAULT-VALUE>0</DEFAULT-VALUE>
+                  <MAX>65536</MAX>
+                  <MIN>0</MIN>
+              </ECUC-INTEGER-PARAM-DEF>
+              <ECUC-INTEGER-PARAM-DEF UUID="ECUC:deceab52-a44e-40eb-9737-8eea4e860802">
+                  <SHORT-NAME>MemAlignment</SHORT-NAME>
+                  <DESC>
+                  <L-2 L="EN">MemAlignment is used to define the memory alignment method. Proper configuration of MemAlignment ensures that memory is allocated according to specific alignment rules, improving memory access efficiency and avoiding potential performance issues.</L-2>
+                  <L-2 L="ZH">概述：MemAlignment 用于定义内存对齐的方式。通过合理配置 MemAlignment，可以确保内存按特定的对齐规则进行分配，从而提升内存访问效率并避免潜在的性能问题。</L-2>
+                  <L-2 L="ZH">注意：MemAlignment 用于定义内存对齐的方式。通常，MemAlignment 最好是 4 的倍数，因为 4 字节对齐可以减少内存空间的浪费，优化内存的使用效率，避免不必要的内存碎片。</L-2>
+                  </DESC>
+                  <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_00027</RELATED-TRACE-ITEM-REF>
+                  <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                  <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+                  <SCOPE>LOCAL</SCOPE>
+                  <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                  <VALUE-CONFIG-CLASSES>
+                  <ECUC-VALUE-CONFIGURATION-CLASS>
+                      <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                      <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                  </ECUC-VALUE-CONFIGURATION-CLASS>
+                  </VALUE-CONFIG-CLASSES>
+                  <SYMBOLIC-NAME-VALUE>false</SYMBOLIC-NAME-VALUE>
+                  <DEFAULT-VALUE>4</DEFAULT-VALUE>
+                  <MAX>65536</MAX>
+                  <MIN>0</MIN>
+              </ECUC-INTEGER-PARAM-DEF>
+              <ECUC-ENUMERATION-PARAM-DEF UUID="ECUC:a6a46311-b3c8-4178-acab-c75fa0d24275">
+                <SHORT-NAME>MemType</SHORT-NAME>
+                <DESC>
+                  <L-2 L="EN">MemType is used to define the type of the memory pool. By configuring MemType, the specific type of the memory pool can be specified to meet the requirements of different application scenarios, enabling more efficient memory management and resource utilization.</L-2>
+                  <L-2 L="ZH">概述：MemType 用于定义内存池的类型。通过配置 MemType，可以指定内存池的具体类型，以满足不同应用场景的需求，从而实现更高效的内存管理和资源利用。</L-2>
+                  <L-2 L="ZH">注意：MemType 用于定义内存池的类型，配置项的值通常包括 AUTOMATIC、GLOBAL 和 CORE，当值为 AUTOMATIC 时，系统会自动判断是 GLOBAL 还是 PRIVATE 模式；PRIVATE 模式下仅关联相同应用的模块能访问，GLOBAL 模式下所有模块可访问，CORE 模式下仅在同一核心上的关联应用模块可访问。</L-2>
+                </DESC>
+                <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_01038</RELATED-TRACE-ITEM-REF>
+                <LOWER-MULTIPLICITY>1</LOWER-MULTIPLICITY>
+                <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+                <SCOPE>LOCAL</SCOPE>
+                <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                <VALUE-CONFIG-CLASSES>
+                  <ECUC-VALUE-CONFIGURATION-CLASS>
+                    <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                    <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                  </ECUC-VALUE-CONFIGURATION-CLASS>
+                </VALUE-CONFIG-CLASSES>
+                <SYMBOLIC-NAME-VALUE>false</SYMBOLIC-NAME-VALUE>
+                <DEFAULT-VALUE>AUTOMATIC</DEFAULT-VALUE>
+                <LITERALS>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:31acd999-e8a4-8dc9-38f8-818cb1ea655a">
+                    <SHORT-NAME>AUTOMATIC</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>GLOBAL</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>CORE</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                </LITERALS>
+              </ECUC-ENUMERATION-PARAM-DEF>
+              <ECUC-ENUMERATION-PARAM-DEF UUID="ECUC:a6a46311-b3c8-4178-acab-c75fa0d24275">
+                <SHORT-NAME>CoreID</SHORT-NAME>
+                <DESC>
+                  <L-2 L="EN">CoreID is used to define the specific core to which the memory pool is associated.</L-2>
+                  <L-2 L="ZH">概述：CoreID 用于定义内存池关联的具体核心。</L-2>
+                  <L-2 L="ZH">注意：当配置了 CoreID 后，内存池将被限定在指定的核心上，以确保只有在该核心上的应用模块才能访问该内存池，其他核心上的模块将无法访问该内存池。</L-2>
+                </DESC>
+                <RELATED-TRACE-ITEM-REF BASE="ArTrace" DEST="TRACEABLE">ECUC_Os_01038</RELATED-TRACE-ITEM-REF>
+                <LOWER-MULTIPLICITY>0</LOWER-MULTIPLICITY>
+                <UPPER-MULTIPLICITY>1</UPPER-MULTIPLICITY>
+                <SCOPE>LOCAL</SCOPE>
+                <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                <POST-BUILD-VARIANT-VALUE>false</POST-BUILD-VARIANT-VALUE>
+                <VALUE-CONFIG-CLASSES>
+                  <ECUC-VALUE-CONFIGURATION-CLASS>
+                    <CONFIG-CLASS>PRE-COMPILE</CONFIG-CLASS>
+                    <CONFIG-VARIANT>VARIANT-PRE-COMPILE</CONFIG-VARIANT>
+                  </ECUC-VALUE-CONFIGURATION-CLASS>
+                </VALUE-CONFIG-CLASSES>
+                <SYMBOLIC-NAME-VALUE>false</SYMBOLIC-NAME-VALUE>
+                <LITERALS>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:31acd999-e8a4-8dc9-38f8-818cb1ea655a">
+                    <SHORT-NAME>Core0</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>Core1</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>Core2</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>Core3</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>Core4</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                  <ECUC-ENUMERATION-LITERAL-DEF UUID="ECUC:08fd53b9-c8b5-8af6-2ea1-76a33ab1a912">
+                    <SHORT-NAME>Core5</SHORT-NAME>
+                    <ORIGIN>AUTOSAR_ECUC</ORIGIN>
+                  </ECUC-ENUMERATION-LITERAL-DEF>
+                </LITERALS>
+              </ECUC-ENUMERATION-PARAM-DEF>
+            </PARAMETERS>
+        </ECUC-PARAM-CONF-CONTAINER-DEF>
+       </CONTAINERS>
+      </ECUC-MODULE-DEF>
+     </ELEMENTS>
+    </AR-PACKAGE>
+   </AR-PACKAGES>
+  </AR-PACKAGE>
+ </AR-PACKAGES>
+</AUTOSAR>

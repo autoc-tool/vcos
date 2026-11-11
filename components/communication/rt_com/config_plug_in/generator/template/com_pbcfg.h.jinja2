@@ -1,0 +1,300 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/***********************************************************************************************************************
+ * @file        Com_PBCfg.h
+ * @brief       Com公共配置头文件
+ * @details     主要包含Com模块公共的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef COM_PBCFG_H
+#define COM_PBCFG_H
+
+#include "com_types.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/* Global Macro Definition */
+/* COM Tx IPDU IDs */
+{%- for IPdu in ComConfig.ComTxIPdus_totle.keys() %}
+    {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComTxIPdus_totle) %}
+{{ "%-80s" | format("#define COM_PDU_ID_" ~ ipduObj.MessageName) }}({{ "%s" | format(ipduObj.message_id_trx ~ "U") }})
+{%- endfor %}
+
+/* COM Rx IPDU IDs */
+{%- for IPdu in ComConfig.ComRxIPdus_totle.keys() %}
+    {%- set ipduObj = GetIPduObject(IPdu, ComConfig.ComRxIPdus_totle) %}
+{{ "%-80s" | format("#define COM_PDU_ID_" ~ ipduObj.MessageName) }}({{ "%s" | format(ipduObj.message_id_trx ~ "U") }})
+{%- endfor %}
+
+/* COM PDU GROUP IDs */
+{%- for IPduGroup in ComConfig.ComIPduGroups.keys() %}
+    {%- set IPduGroupObj = GetIPduGroupObject(IPduGroup, ComConfig.ComIPduGroups) %}
+{{ "%-80s" | format("#define ComConf_ComIPduGroup_" ~ IPduGroup) }}({{ "%s" | format((IPduGroupObj.Id) ~ "U") }})
+{%- endfor %}
+
+#define  COM_START_SEC_CONST
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com配置类型
+ **********************************************************************************************************************/
+extern CONST(com_config_type, COM_CONST) com_configuration;
+/*!*********************************************************************************************************************
+ *  @brief  接收信息类型
+ **********************************************************************************************************************/
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF" %}
+extern CONST(com_rx_tout_info_type, COM_CONST) com_rx_signal_tout_info[{{ComGeneral.RxToutsignal_size}}];
+{%- endif %} 
+/*!*********************************************************************************************************************
+ *  @brief  接收消息信息类型
+ **********************************************************************************************************************/
+{%- if ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_ON" %}
+extern CONST(com_rx_tout_message_info_type, COM_CONST) com_rx_pdu_tout_struct[{{ComGeneral.RxToutmessage_size}}];
+{%- endif %} 
+/*!*********************************************************************************************************************
+ *  @brief  发送消息消息类型
+ **********************************************************************************************************************/
+{%- if ComGeneral.COM_TXIPDU_SAME_TIMEOUT == "STD_ON" %}
+extern CONST(com_tx_tout_message_info_type, COM_CONST) com_tx_pdu_tout_struct[{{ComGeneral.TxToutmessage_size}}];
+{%- endif %} 
+/*!*********************************************************************************************************************
+ *  @brief  com接收IPDU类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_ipdu_type, COM_CONST) com_rx_ipdu_const[{{ComGeneral.Parameters.COM_MAX_N_RXIPDUS + 1}}];
+/*!*********************************************************************************************************************
+ *  @brief  com发送IPDU类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_ipdu_type, COM_CONST) com_tx_ipdu_const[{{ComGeneral.Parameters.COM_MAX_N_TXIPDUS + 1}}];
+/*!*********************************************************************************************************************
+ *  @brief  com接收信号类型
+ **********************************************************************************************************************/
+extern CONST(com_rx_signal_type, COM_CONST) com_rx_signal_const[{{ComGeneral.Parameters.COM_MAX_N_RXSIGNALS + 1}}];
+/*!*********************************************************************************************************************
+ *  @brief  com发送信号类型
+ **********************************************************************************************************************/
+extern CONST(com_tx_signal_type, COM_CONST) com_tx_signal_const[{{ComGeneral.Parameters.COM_MAX_N_TXSIGNALS + 1}}];
+/*!*********************************************************************************************************************
+ *  @brief  com主发送函数结构类型
+ **********************************************************************************************************************/
+extern CONST(com_main_function_tx_struct_type, COM_CONST) com_tx_main_function_des[{{ComGeneral.mainfunction_tx_num_totle}}];
+/*!*********************************************************************************************************************
+ *  @brief  com主接收函数结构类型
+ **********************************************************************************************************************/
+extern CONST(com_main_function_rx_struct_type, COM_CONST) com_rx_main_function_des[{{ComGeneral.mainfunction_rx_num_totle}}];
+#define  COM_STOP_SEC_CONST
+#include "com_memmap.h"
+
+{%- if ComGeneral.Com_Support_MutiCore == "STD_OFF" %}
+{%- if ComGeneral.SingleCore.uint8_bool_signal_num != 0 %}
+/**********************************************************************************************************************
+  com_const_init_value_u8
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com接收信号缓存uint8类型
+ **********************************************************************************************************************/
+extern VAR(uint8, COM_PRIVATE_BSS) com_rx_sig_buf_u8[{{ComGeneral.SingleCore.uint8_bool_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if ComGeneral.SingleCore.uint16_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt16
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com接收信号缓存uint16类型
+ **********************************************************************************************************************/
+extern VAR(uint16, COM_PRIVATE_BSS) com_rx_sig_buf_u16[{{ComGeneral.SingleCore.uint16_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+
+{%- if ComGeneral.SingleCore.uint32_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt32
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com接收信号缓存uint32类型
+ **********************************************************************************************************************/
+extern VAR(uint32, COM_PRIVATE_BSS) com_rx_sig_buf_u32[{{ComGeneral.SingleCore.uint32_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+
+{%- if ComGeneral.SingleCore.uint64_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ValueUInt64
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com接收信号缓存uint64类型
+ **********************************************************************************************************************/
+extern VAR(uint64, COM_PRIVATE_BSS) com_rx_sig_buf_u64[{{ComGeneral.SingleCore.uint64_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+
+{%- if ComGeneral.SingleCore.uint8_N_signal_num != 0 %}
+/**********************************************************************************************************************
+  Com_ConstValueUInt8_N
+**********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com接收信号缓存数组类型
+ **********************************************************************************************************************/
+extern VAR(uint8, COM_PRIVATE_BSS) com_rx_sig_buf_u8_n[{{ComGeneral.SingleCore.uint8_N_signal_num}}];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ *  @brief  buffer memap
+ **********************************************************************************************************************/
+{%- if ComGeneral.Com_Support_MutiCore == "STD_OFF" %}
+/*!*********************************************************************************************************************
+ *  @brief  com_init_status com_config
+ **********************************************************************************************************************/
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+extern VAR(com_status_type, COM_PRIVATE_BSS) com_init_status;
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+extern P2CONST(com_config_type, COM_PRIVATE_BSS, Com_VAR_Class) com_config;
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  CAN单核部署 Tx Rx IPDU Buff分配
+ **********************************************************************************************************************/
+extern VAR(com_self_tx_ipdu_type, COM_PRIVATE_BSS) com_self_tx_ipdu[COM_MAX_N_TXIPDUS];
+extern VAR(com_self_rx_ipdu_type, COM_PRIVATE_BSS) com_self_rx_ipdu[COM_MAX_N_RXIPDUS];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  Tx Signal管理面数据
+ **********************************************************************************************************************/
+extern VAR(com_self_tx_signal_type, COM_PRIVATE_BSS) com_self_tx_signal[COM_MAX_N_TXSIGNALS];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON" or ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  Rx Signal管理面数据
+ **********************************************************************************************************************/
+extern VAR(com_self_rx_signal_type, COM_PRIVATE_BSS) com_self_rx_signal[COM_MAX_N_RXSIGNALS];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+/* Data, deferred data and shadow buffer */
+#define COM_START_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+extern VAR(uint8, COM_PRIVATE_BSS) com_self_tx_buffer[COM_MAX_TXBUFFER_SIZE];
+extern VAR(uint8, COM_PRIVATE_BSS) com_self_rx_buffer[COM_MAX_RXBUFFER_SIZE];
+#define COM_STOP_SEC_PRIVATE_BSS
+#include "com_memmap.h"
+
+{%- else %}
+/*!*********************************************************************************************************************
+ *  @brief  com_init_status com_config
+ **********************************************************************************************************************/
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+extern VAR(com_status_type, COM_MULTI_APP_BSS) com_init_status[{{ComGeneral.Com_MaxCore_Idx + 1}}];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+extern P2CONST(com_config_type, COM_MULTI_APP_BSS, BSW_VAR_Class) com_config;
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  Tx Rx管理面数据
+ **********************************************************************************************************************/
+extern VAR(com_self_tx_ipdu_type, COM_MULTI_APP_BSS) com_self_tx_ipdu[COM_MAX_N_TXIPDUS];
+extern VAR(com_self_rx_ipdu_type, COM_MULTI_APP_BSS) com_self_rx_ipdu[COM_MAX_N_RXIPDUS];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON"%}
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  Tx Signal管理面数据
+ **********************************************************************************************************************/
+extern VAR(com_self_tx_signal_type, COM_MULTI_APP_BSS) com_self_tx_signal[COM_MAX_N_TXSIGNALS];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+{%- if ComGeneral.Parameters.COM_SIG_GATEWAY_ENABLE == "STD_ON" or ComGeneral.COM_SIGNAL_GROUP_ENABLE == "STD_ON" or ComGeneral.COM_RXIPDU_SAME_TIMEOUT == "STD_OFF"%}
+#define COM_START_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  Rx Signal管理面数据
+ **********************************************************************************************************************/
+extern VAR(com_self_rx_signal_type, COM_MULTI_APP_BSS) com_self_rx_signal[COM_MAX_N_RXSIGNALS];
+#define COM_STOP_SEC_MULTI_APP_BSS
+#include "com_memmap.h"
+{%- endif %}
+
+#define  COM_START_SEC_CONST
+#include "com_memmap.h"
+/*!*********************************************************************************************************************
+ *  @brief  com_core_map_info_struct
+ **********************************************************************************************************************/
+extern CONST(com_core_map_info_struct_type, COM_CONST) com_core_map_info_struct[{{ComGeneral.Com_Core_Num}}];
+#define  COM_STOP_SEC_CONST
+#include "com_memmap.h"
+{%- endif %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* COM_PBCFG_H */

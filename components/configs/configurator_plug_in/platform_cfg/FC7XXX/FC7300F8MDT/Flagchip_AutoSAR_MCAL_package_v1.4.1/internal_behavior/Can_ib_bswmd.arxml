@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00048.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE UUID="69253eb2-5739-4275-b504-58f6820c849a">
+      <SHORT-NAME>FC7300FXXX</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE UUID="a2b2e5b2-dc25-4436-918e-fd8c9d0630e8">
+          <SHORT-NAME>EcucDefs</SHORT-NAME>
+          <AR-PACKAGES>
+            <AR-PACKAGE UUID="002c1f15-0f43-4493-8200-695f55586369">
+              <SHORT-NAME>Can_ib_bswmd</SHORT-NAME>
+              <AR-PACKAGES>
+                <AR-PACKAGE UUID="7c2822ea-6f38-4691-93ce-4103abbf5bef">
+                  <SHORT-NAME>BswModuleDescriptions</SHORT-NAME>
+                  <ELEMENTS>
+                    <BSW-MODULE-DESCRIPTION UUID="97b3cf63-a33a-4b20-b5bf-2e0f0cd669c5">
+                      <SHORT-NAME>Can</SHORT-NAME>
+                      <INTERNAL-BEHAVIORS>
+                        <BSW-INTERNAL-BEHAVIOR UUID="fbe1e36f-6351-4556-9485-66b2b93b59bd">
+                          <SHORT-NAME>CanBehavior</SHORT-NAME>
+                          <PROVIDED-ENTRYS>
+                          </PROVIDED-ENTRYS>
+                          <EXCLUSIVE-AREAS>
+                            <EXCLUSIVE-AREA UUID="ef793a7d-6c03-4aaa-9bb2-0dc408ccdc70">
+                              <SHORT-NAME>Can_CheckWakeup</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="634cee6d-3c98-42b6-84b7-4db2c3c0886c">
+                              <SHORT-NAME>Can_DisableControllerInterrupts</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="a5464286-b273-4e0a-990d-59939ebc9871">
+                              <SHORT-NAME>Can_EnableControllerInterrupts</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="175a1637-4dba-4c77-b474-f69b6073be15">
+                              <SHORT-NAME>Can_GetVersionInfo</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="7f039927-14b4-48ec-bccc-84d0eae13ad8">
+                              <SHORT-NAME>Can_Init</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="9e914468-fbfa-4ae9-8930-b2afc7384ec5">
+                              <SHORT-NAME>Can_DeInit</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="7ce1c741-c196-48aa-91bb-d8dd6952302e">
+                              <SHORT-NAME>Can_GetControllerErrorState</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="cacf6e29-cd19-4834-a8c0-0da98176dd06">
+                              <SHORT-NAME>Can_GetControllerMode</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="c84c613a-0f45-4233-9f9d-cc44d2e46b36">
+                              <SHORT-NAME>Can_MainFunction_BusOff</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="b904392e-e09b-41d7-9af9-4f20538577db">
+                              <SHORT-NAME>Can_MainFunction_Mode</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="0b158f8c-ed97-41f7-811c-b11a3e2d1dbc">
+                              <SHORT-NAME>Can_MainFunction_Read</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="7c2f3a1a-3490-418d-8ab7-d779fd3fc1d2">
+                              <SHORT-NAME>Can_MainFunction_Wakeup</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="4930e8bb-7973-44bb-b61f-5d12ee9889c2">
+                              <SHORT-NAME>Can_MainFunction_Write</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="ea149db9-72c2-40e4-8bae-dde74fb81331">
+                              <SHORT-NAME>Can_SetBaudrate</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="ab1e2c13-8ad3-4b92-a43e-508568ebbc7c">
+                              <SHORT-NAME>Can_SetControllerMode</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="a41e0601-5fd9-410f-adc5-927437fe0f68">
+                              <SHORT-NAME>Can_Write</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="bbb9dcfb-aa68-42a4-91d3-4c81cbb49ece">
+                              <SHORT-NAME>Can_TransmitAbort</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="37bc261f-2168-41b3-a5e6-2c8564785bff">
+                              <SHORT-NAME>Can_GetControllerRxErrorCounter</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="858ad046-d4e2-4f87-8aa2-91a8615934f8">
+                              <SHORT-NAME>Can_GetControllerTxErrorCounter</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                          </EXCLUSIVE-AREAS>
+                          <ENTITYS>
+                          </ENTITYS>
+                          <EVENTS>
+                          </EVENTS>
+                        </BSW-INTERNAL-BEHAVIOR>
+                      </INTERNAL-BEHAVIORS>
+                    </BSW-MODULE-DESCRIPTION>
+                  </ELEMENTS>
+                </AR-PACKAGE>
+              </AR-PACKAGES>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

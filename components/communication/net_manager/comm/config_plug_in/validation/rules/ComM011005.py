@@ -1,0 +1,83 @@
+# This Python file uses the following encoding: utf-8
+# ##############################################################################
+# Copyright (c) 2025 Li Auto Inc. and its affiliates
+# Licensed under the Apache License, Version 2.0(the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ##############################################################################
+from func_module.validation.common.basic_rule import BasicRule, timing_decorator
+from durable.lang import *
+from durable.engine import *
+
+def is_dict_values_continuous(dict_list):
+    # 使用列表推导式提取所有的 channel_id 值
+    user_ids = [d['channel_id'] for d in dict_list if 'channel_id' in d]
+    # 对 channel_id 值排序
+    user_ids.sort()
+    # 检查每个 channel_id 是否连续
+    for i in range(len(user_ids) - 1):
+        if user_ids[i] + 1 != user_ids[i + 1]:
+            # 如果发现不连续，立即返回 False
+            return False
+    # 如果所有 channel_id 都连续，则返回 True
+    return True
+
+# ComMChannelId 重复校验
+class ComM011005Rule(BasicRule):
+    ruleset_name = 'ComM011005'
+    validation_result = False
+
+    def __init__(self, logs, bsw_dict, comm_dict) -> None:
+        super().__init__()
+        self.logs = logs
+        self.bsw_dict = bsw_dict
+        self.comm_dict = comm_dict
+
+    @timing_decorator
+    def validation_run(self):
+        valid = True
+        # 1）准备校验数据
+        ecuc_comm_dict = self.comm_dict
+
+        comm_dict = ecuc_comm_dict['ComMConfigSet']
+        base_path = '/ActiveEcuC/ComM/ComMConfigSet'
+        log_path = '/ActiveEcuC/ComM/ComMConfigSet/ComMChannel'
+        validation_data_list = []
+        for channel_key, channel_value in comm_dict.items():
+            if not isinstance(channel_value, dict):
+                continue
+            if 'ComMChannel' == channel_value['DefinitionRef'].split('/')[-1]:
+                service_table_path = base_path + '/' + channel_key
+                service_path = service_table_path + '/' + 'ComMChannelId'
+
+                validation_data = {}
+                validation_data['channel_id'] = channel_value['ComMChannelId']['Value']
+                validation_data_list.append(validation_data)
+
+        # 2） 开始校验
+        try:
+            res = is_dict_values_continuous(validation_data_list)
+        except Exception as e:
+            print(f"{type(e)} {format(e)} dose not support config validation")
+            pass
+
+        # 格式：'错误码', '摘要', '错误信息', '错误索引路径' '结果'
+        if (res == True):
+            self.vlog('ComM011005', 'ComMChannelId should be continuous.',
+                        f"ComMChannel(s) ComMChannelId should be continuous.", log_path,
+                        'pass')
+        else:
+            self.vlog('ComM011005', 'ComMChannelId should be continuous.',
+                        f"ComMChannel(s) ComMChannelId should be continuous.", log_path,
+                        'fail')
+            valid = False
+
+        return valid

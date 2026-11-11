@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        Lwippool_Cfg.h
+ * @brief       TcpIp配置头文件
+ * @details     主要包含和内存池相关的配置信息
+ * @date        {{get_generation_time_temp()}}
+ **********************************************************************************************************************/
+{%- set TcpIpConfig = get_TcpIpConfig() %}
+#if MEM_USE_POOLS
+LWIP_MALLOC_MEMPOOL_START
+{%- for buffer_memory in TcpIpConfig.TcpIpBufferMemoryConfig %}
+{{"LWIP_MALLOC_MEMPOOL(%s, %s)" | format(buffer_memory.TcpIpBufferMemoryNum.Value, buffer_memory.TcpIpBufferMemoryLen.Value)}}
+{%- endfor %}
+LWIP_MALLOC_MEMPOOL_END
+#endif /* MEM_USE_POOLS */

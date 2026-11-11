@@ -1,0 +1,330 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        pdur_cfg.h
+ * @brief       PduR配置头文件
+ * @details     主要包含PduR模块的配置
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef PDUR_CFG_H
+#define PDUR_CFG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include "comstack_cfg.h"
+#include "isr_cfg.h"
+
+/* Global Macro Definition */
+{%- set pdur_general = get_pdur_general_config() %}
+{%- set pdur_multicore = get_pdur_multicore() %}
+{%- set pdur_dest_max_Num = get_pdur_dest_max_Num() %}
+{%- set pdur_bsw_modules = get_pdur_bsw_modules_config() %}
+{%- set pdur_max_routing_path_cnt = get_pdur_max_routing_path_cnt_config() %}
+{%- set pdur_routing_groups = get_pdur_routing_groups() %}
+
+{%- for module_name in pdur_bsw_modules %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_SUPPORT"))  }}(STD_ON)  ///< PduR支持{{ module_name }}
+{%- if pdur_bsw_modules[module_name]["PduRCancelReceive"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_CANCEL_RECEIVE_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}取消接收
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_CANCEL_RECEIVE_SUPPORT"))}}(STD_OFF)  ///< PduR支持{{ module_name }}取消接收
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRCancelTransmit"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_CANCEL_TRANSMIT_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}取消发送
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_CANCEL_TRANSMIT_SUPPORT"))}}(STD_OFF)  ///< PduR支持{{ module_name }}取消发送
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRCommunicationInterface"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_COMMUNICATION_INTERFACE_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}通信接口
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_COMMUNICATION_INTERFACE_SUPPORT"))}}(STD_OFF)  ///< PduR支持{{ module_name }}通信接口
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRLowerModule"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_LOWER_MODULE_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}通信接口
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_LOWER_MODULE_SUPPORT"))}}(STD_OFF)  ///< PduR不支持{{ module_name }}通信接口
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRRetransmission"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_RETRANSMISSION_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}重传
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_RETRANSMISSION_SUPPORT"))}}(STD_OFF)  ///< PduR不支持{{ module_name }}重传
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRTransportProtocol"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_TRANSPORT_PROTOCOL_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}传输协议
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_TRANSPORT_PROTOCOL_SUPPORT"))}}(STD_OFF) ///< PduR不支持{{ module_name }}传输协议
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRTriggertransmit"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_TRIGGER_TRANSMIT_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}触发发送
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_TRIGGER_TRANSMIT_SUPPORT"))}}(STD_OFF) ///< PduR不支持{{ module_name }}触发发送
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRTxConfirmation"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_TX_CONFIRMATION_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}发送确认
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_TX_CONFIRMATION_SUPPORT"))}}(STD_OFF) ///< PduR不支持{{ module_name }}发送确认
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRUpperModule"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_UPPER_MODULE_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}上层模块
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_UPPER_MODULE_SUPPORT"))}}(STD_OFF) ///< PduR不支持{{ module_name }}上层模块
+{%- endif %}
+{%- if pdur_bsw_modules[module_name]["PduRUseTag"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_USE_TAG_SUPPORT"))}}(STD_ON)  ///< PduR支持{{ module_name }}用户标签
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper() ~ "_USE_TAG_SUPPORT"))}}(STD_OFF) ///< PduR不支持{{ module_name }}用户标签
+{%- endif %}
+{%- endfor %}
+{%- if pdur_routing_groups|length %}
+{{  ("%-80s" | format("#define PDUR_SUPPORT_ROUTING_PATH_GROUP"))}}(STD_ON)
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_SUPPORT_ROUTING_PATH_GROUP"))}}(STD_OFF)
+{%- endif %}
+
+{%- if pdur_general["DevErrorDetect"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_DEV_ERROR_DETECT"))}}(STD_ON)  ///< 支持日志接口
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_DEV_ERROR_DETECT"))}}(STD_OFF) ///< 不支持日志接口
+{%- endif %}
+{%- if pdur_general["MetaDataSupport"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_META_DATA_SUPPORT"))}}(STD_ON)  ///< 支持原始数据
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_META_DATA_SUPPORT"))}}(STD_OFF) ///< 不支持原始数据
+{%- endif %}
+{%- if pdur_general["VersionInfoApi"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_VERSION_INFO_API"))}}(STD_ON)  ///< 支持版本信息接口
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_VERSION_INFO_API"))}}(STD_OFF) ///< 不支持版本信息接口
+{%- endif %}
+{%- if pdur_general["ZeroCostOperation"]["Value"] == True %}
+{{  ("%-80s" | format("#define PDUR_ZERO_COST_OPERATION"))}}(STD_ON)  ///< 支持零消耗运行
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_ZERO_COST_OPERATION"))}}(STD_OFF) ///< 不支持零消耗运行
+{%- endif %}
+{%- if pdur_multicore == True %}
+{{  ("%-80s" | format("#define PDUR_MULTICORE_SUPPORT"))}}(STD_ON)  ///< 支持多核
+{%- else %}
+{{  ("%-80s" | format("#define PDUR_MULTICORE_SUPPORT"))}}(STD_OFF) ///< 不支持多核
+{%- endif %}
+
+#define PDUR_SPINLOCK_RETRY_COUNTER                    ({{ pdur_general["PduRSpinlockRetryCounter"]["Value"] }}u)  ///< PduR 自旋锁重新尝试次数
+#define PDUR_MAX_ROUTE_COUNT                           ({{ pdur_max_routing_path_cnt }}u)                          ///< 最大路由数
+{%- if pdur_routing_groups|length %}
+#define PDUR_ROUTING_GROUP_NUM                         ({{pdur_routing_groups|length}}u)
+{%- endif %}
+#define PDUR_DEFAULT_BUFFER_SIZE                       ((uint32)8u)       ///< PduR默认缓存大小
+#define PDUR_NO_BUFFER                                 ((uint16)0xFFFFu)  ///< PduR无缓存
+#define PDUR_EVC_FIFO_CORE_MAX_NUM                     ((uint32){{get_pdur_core_num()}}u)       ///< PduRTP路由最大核个数
+#define PDUR_IF_EVC_FIFO_CORE_MAX_NUM                  ((uint32){{get_pdur_if_core_num()}}u)    ///< PduRIF路由最大核个数
+#define PDUR_MAX_GW_DESTINATIONS                       ({{ pdur_dest_max_Num }}u)              ///< GW目的模块最大值
+
+#define PDUR_PDU_ID_BIT                                (12u)             ///< 从低12位中提取掩码，低12位代表PduId
+#define PDUR_PDU_ID_RIGHT_MOVE_BIT                     (3u)              ///< 右移3位
+#define PDUR_PDU_ID_LOW_BIT_MAX_NUM                    (7u)              ///< 除8的最大余数
+#define PDUR_PDU_ID_UINT8_BIT_NUM                      (8u)              ///< uint8里面有8个bit
+#define PDUR_INVALID_PDU_ID                            (0xFFFFU)          ///< 无效pduid
+#define PDUR_SRC_PDUID_DEFAULT_INDEX                   (0u)              ///< 源PduId默认索引值
+{%- set pdurIsrTable, pdurIsrTableLen = get_pdur_isr_table() %}
+#define PDUR_ISR_TABLE_LEN                             ({{pdurIsrTableLen}}) // 路由跨核中断处理函数表长度
+
+{%- set pdur_n_to_1_index = namespace(value = 0) %}
+{%- set dest_pduid_no_duplicate = get_msg_dest_pduid_no_duplicate_config() %}
+{%- for pdu_name in dest_pduid_no_duplicate %}
+{%- set srcpduId_num = namespace(value = 0) %}
+{%- set srcpduId_list = get_srcpduid_by_destpduid(pdu_name) %}
+{%- for srcpduId in srcpduId_list %}
+{%- set srcpduId_num.value = srcpduId_num.value + 1 %}
+{%- endfor %}
+{%- if srcpduId_num.value > 1 %}
+{%- set pdur_n_to_1_index.value = pdur_n_to_1_index.value + 1 %}
+{%- endif %}
+{%- endfor %}
+
+#define pdur_dest_PDUID_MAPPING_SIZE                   ({{ pdur_n_to_1_index.value  }}u)             ///< 目的PduId映射数组大小
+
+{%- set pdur_1_to_n_index = namespace(value = 0) %}
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+{%- if path_value['PduRDestinatnNum'] > 1 %}
+{%- set pdur_1_to_n_index.value = pdur_1_to_n_index.value + 1 %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+#define PDUR_SRC_PDUID_MAPPING_SIZE                    ({{ pdur_1_to_n_index.value  }}u)             ///< 源PduId映射数组大小
+
+{%- set pdur_real_routing_path_cnt = get_pdur_real_routing_path_cnt_config() %}
+#define PDUR_ROUTING_PATH_NUM                          ({{ pdur_real_routing_path_cnt }}u)         ///< 真实的路由路径个数
+{%- set routing_path_bit_cnt = get_pdur_real_routing_path_bit_cnt_config() %}
+
+/*!*********************************************************************************************************************
+ * @brief    定义PduR路由状态类型
+ **********************************************************************************************************************/
+/* Buffer Manager */
+#define PDUR_ROUTING_IDLE                            0u     ///< IDLE状态                   |
+#define PDUR_GATEWAY_DIRECT_RX_READY                 1u     ///< 状态RX_READY               | StartOfRecetion后 - 
+#define PDUR_GATEWAY_DIRECT_RX_ONGOING               2u     ///< 状态RX_ONGOING             | 开始CopyRxData后 - 
+#define PDUR_GATEWAY_DIRECT_RX_FINISH                3u     ///< 状态RX_FINISH              | 收到RxIndication后 - 
+#define PDUR_GATEWAY_DIRECT_TX_READY                 4u     ///< 状态TX_READY               | 准备调用Transmit前 - 
+#define PDUR_GATEWAY_DIRECT_TX_ONGOING               5u     ///< 状态TX_ONGOING             | 调用CopyTxData后 - 
+#define PDUR_GATEWAY_ONTHEFLY_RX_READY_TX_WAIT       6u     ///< 状态RX_READY_TX_WAIT       | 调用StartOfReception后 - 未达到Threshold,未调用Transmit
+#define PDUR_GATEWAY_ONTHEFLY_RX_ONGOING_TX_WAIT     7u     ///< 状态RX_ONGOING_TX_WAIT     | 调用CopyRxData后 - 未达到Threshold,未调用Transmit
+#define PDUR_GATEWAY_ONTHEFLY_RX_FINISH_TX_WAIT      8u     ///< 状态RX_FINISH_TX_WAIT      | 调用RxIndication后 - 未达到Threshold,未调用Transmit
+#define PDUR_GATEWAY_ONTHEFLY_RX_READY_TX_READY      9u     ///< 状态RX_READY_TX_READY      | 调用StartOfReception后 - Threshold=0,已调用Transmit,未调用CopyTxData
+#define PDUR_GATEWAY_ONTHEFLY_RX_ONGOING_TX_READY    10u    ///< 状态RX_ONGOING_TX_READY    | 调用CopyRxData后 - 已达到Threshold,调用Transmit,未调用CopyTxData
+#define PDUR_GATEWAY_ONTHEFLY_RX_FINISH_TX_READY     11u    ///< 状态RX_FINISH_TX_READY     | 调用RxIndication后 - 调用Transmit,未调用CopyTxData
+#define PDUR_GATEWAY_ONTHEFLY_RX_ONGOING_TX_ONGOING  12u    ///< 状态RX_ONGOING_TX_ONGOING  | 调用CopyRxData后 -  已达到Threshold 已调用CopyTxData
+#define PDUR_GATEWAY_ONTHEFLY_RX_FINISH_TX_ONGOING   13u    ///< 状态RX_FINISH_TX_ONGOING   | 调用RxIndication后 - 已调用CopyTxData
+#define PDUR_DIAG_UPPERLAYER_RX_READY                14u    ///< 状态UPPERLAYER_RX_READY    | 路由消息至其他核的上层模块 - PduR收到StartOfReception
+#define PDUR_DIAG_UPPERLAYER_RX_ONGOING              15u    ///< 状态UPPERLAYER_RX_ONGOING  | 路由消息至其他核的上层模块 - PduR收到CopyRxData
+#define PDUR_DIAG_UPPERLAYER_RX_FINISH               16u    ///< 状态UPPERLAYER_RX_FINISH   | 路由消息至其他核的上层模块 - PduR收到RxIndication
+#define PDUR_DIAG_UPPERLAYER_TX_READY                17u    ///< 状态UPPERLAYER_TX_READY    | 路由消息至其他核的上层模块 - PduR接收完毕准备跨核传递
+#define PDUR_DIAG_UPPERLAYER_TX_ONGOING              18u    ///< 状态UPPERLAYER_TX_ONGOING  | 路由消息至其他核的上层模块 - 接收端开始从PduR复制数据
+#define PDUR_GATEWAY_IF_DIRECT_TX_FIFO_APPEND        19u    ///< 状态IF_DIRECT_TX           | 路由消息IF-Direct已经入队跨核FIFO
+#define PDUR_GATEWAY_IF_TT_TX_FIFO_APPEND            20u    ///< 状态IF_TT_TX               | 路由消息IF-TriggerTransmit已经入队跨核FIFO
+#define PDUR_GATEWAY_IF_TT_TX_TRIGGERTRANSMIT        21u    ///< 状态IF_TT_TX               | 路由消息IF-TriggerTransmit已经被调用TriggerTransmit复制数据
+#define PDUR_GATEWAY_ONTHEFLY_FAILED                 22u    ///< 状态FAILED                 | 调用Transmit后发送失败,等待TxConfirmation
+
+
+
+{%- set pdur_n_to_1_max_cnt = namespace(value = 0) %}
+{%- set pduidindex = namespace(value = 0) %}
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+{%- for pdu_name, pdu_value in path_value["PduRDestPdus"].items() %}
+{%- set srcpduId_by_destpduid_num = namespace(value = 0) %}
+{%- set srcpduId_list = get_srcpduid_by_destpduid(pdu_name) %}
+{%- for srcpduId in srcpduId_list %}
+{%- set srcpduId_by_destpduid_num.value = srcpduId_by_destpduid_num.value + 1 %}
+{%- endfor %}
+{%- if pdur_n_to_1_max_cnt.value < srcpduId_by_destpduid_num.value %}
+{%- set pdur_n_to_1_max_cnt.value = srcpduId_by_destpduid_num.value %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+#define PDUR_N_TO_1_MAX_N_NUM                          ({{ pdur_n_to_1_max_cnt.value }}u)    ///< N对1类型中N的最大值
+
+/*!*********************************************************************************************************************
+ * @brief    定义PduR目的PduId映射类型
+ **********************************************************************************************************************/
+typedef struct {
+    PduIdType dest_pdu_id;                          ///< 目的PduId
+    PduIdType src_pdu_id[PDUR_N_TO_1_MAX_N_NUM];    ///< 源PduId
+} pdur_dest_pdu_id_mapping_struct_type;
+
+/*!*********************************************************************************************************************
+ * @brief    定义PduR源PduId映射类型
+ **********************************************************************************************************************/
+typedef struct {
+    PduIdType src_pdu_id;                            ///< 源PduId
+    PduIdType dest_pdu_id[PDUR_MAX_GW_DESTINATIONS]; ///< 目的PduId
+} pdur_src_pdu_id_mapping_struct_type;
+
+{%- set msg_names = get_msg_src_pduid_config() %}
+{%- for msg_name in msg_names %}
+#ifndef PDUR_PDU_ID_{{ msg_name }}
+{{  ("%-90s" | format("#define PDUR_PDU_ID_" ~ msg_name))}}({{loop.index0}}u) ///< {{to_hex(loop.index0)}}u
+#endif
+{{''}}
+{%- endfor %}
+
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- set path_index = loop.index0 %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+{%- set dest_pduid_num = namespace(value = 0) %}
+{%- for pdu_name, pdu_value in path_value["PduRDestPdus"].items() %}
+{%- set dest_pduid = 4096 * dest_pduid_num.value + path_index %}
+#ifndef PDUR_PDU_ID_{{pdu_name}}
+///< PduR配置目的消息{{pdu_name}}的PduId为4096 * {{dest_pduid_num.value}} + {{path_index}}
+{{  ("%-90s" | format("#define PDUR_PDU_ID_" ~ pdu_name))}}  ({{dest_pduid}}u) ///< {{to_hex(dest_pduid)}}u
+#endif
+{{''}}
+{%- set dest_pduid_num.value = dest_pduid_num.value + 1 %}
+{%- endfor %}
+{%- endif %}
+{% endfor %}
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+ /*!*********************************************************************************************************************
+ * @brief          设置变量pdur_src_pdu_id_mapping_table的接口
+ * @details        设置变量pdur_src_pdu_id_mapping_table的接口
+ * @retval         void
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+extern FUNC(void, PDUR_CODE) pdur_set_src_pdu_id_mapping(const pdur_src_pdu_id_mapping_struct_type* table_ptr);
+
+ /*!*********************************************************************************************************************
+ * @brief          设置变量pdur_dest_pdu_id_mapping_table的接口
+ * @details        设置变量pdur_dest_pdu_id_mapping_table的接口
+ * @retval         void
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+extern FUNC(void, PDUR_CODE) pdur_set_dest_pdu_id_mapping(const pdur_dest_pdu_id_mapping_struct_type* table_ptr);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取变量pdur_src_pdu_id_mapping_table的接口
+ * @details        获取变量pdur_src_pdu_id_mapping_table的接口
+ * @retval         pdur_src_pdu_id_mapping_struct_type  pdur_src_pdu_id_mapping_table的首元素指针
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+extern FUNC_P2CONST(pdur_src_pdu_id_mapping_struct_type, AUTOMATIC, PDUR_CODE) pdur_get_src_pdu_id_mapping(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取变量pdur_dest_pdu_id_mapping_table的接口
+ * @details        获取变量pdur_dest_pdu_id_mapping_table的接口
+ * @retval         pdur_dest_pdu_id_mapping_struct_type  pdur_dest_pdu_id_mapping_struct_type的首元素指针
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+extern FUNC_P2CONST(pdur_dest_pdu_id_mapping_struct_type, AUTOMATIC, PDUR_CODE) pdur_get_dest_pdu_id_mapping(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取变量pdur_interrupt_service_routine_table的接口
+ * @details        获取变量pdur_interrupt_service_routine_table的接口
+ * @retval         OS_ISRID_DEF*  pdur_interrupt_service_routine_table首元素指针
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC_P2CONST(OS_ISRID_DEF, AUTOMATIC, PDUR_CODE) pdur_get_isr_table(void);
+
+ /*!*********************************************************************************************************************
+ * @brief          获取变量pdur_interrupt_service_routine_table的长度
+ * @details        获取变量pdur_interrupt_service_routine_table的长度
+ * @retval         uint8  长度
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(uint8, PDUR_CODE) pdur_get_isr_table_len(void);
+
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PDUR_CFG_H */
+{{ "" }}

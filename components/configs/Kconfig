@@ -1,0 +1,131 @@
+config MODULE_ETHIF
+    bool "module EthIf support"
+    default n
+    ---help---
+        Enable the module EthIf
+
+config MODULE_TCPIP
+    bool "module TcpIp support"
+    default n
+    ---help---
+        Enable the module TcpIp
+
+config MODULE_COM
+    bool "net rtcom support"
+    default n
+    ---help---
+        Enable the NET_RTCOM
+
+config MODULE_PDUR
+    bool "net pdurouter support"
+    default n
+    ---help---
+        Enable the NET_PDUROUTER
+
+config MODULE_CANIF
+    bool "can canif support"
+    default n
+    ---help---
+        Enable the CAN_CANIF
+
+config MODULE_COMM
+    bool "net comm support"
+    default n
+    ---help---
+        Enable the CAN_CANIF
+
+config MODULE_CANSM
+    bool "can cansm support"
+    default n
+    ---help---
+        Enable the CAN_CANSM
+
+config MODULE_NM
+    bool "net manager nm support"
+    default n
+    ---help---
+        Enable the MODULE_NM
+
+config MODULE_CANNM
+    bool "net manager cannm support"
+    default n
+    ---help---
+        Enable the MODULE_CANNM
+
+config MODULE_CANTRCV1145
+    bool "net manager trcv1145 support"
+    default n
+    ---help---
+        Enable the MODULE_CANTRCV1145
+
+config MODULE_NVM
+    bool "mem nvm support"
+    default n
+    ---help---
+        Enable the MEM_NVM
+
+config MODULE_MEMIF
+    bool "mem memif support"
+    default n
+    ---help---
+        Enable the MEM_MEMIF
+
+config MODULE_RT_FRAMEWORK
+    bool "autosar cp support"
+    default n
+    ---help---
+        Enable the autosar os module
+
+config MODULE_CANTSYN
+    bool "module cantsyn support"
+    default n
+    ---help---
+        Enable the MODULE_CANTSYN
+
+config MODULE_ETHTSYN
+    bool "module ethtsyn support"
+    default n
+    ---help---
+        Enable the MODULE_ETHTSYN
+
+config MODULE_STBM
+    bool "module stbm support"
+    default n
+    ---help---
+        Enable the MODULE_STBM
+
+config MODULE_ECUM
+    bool "servm ecum support"
+    default n
+    ---help---
+        Enable the SERVM_ECUM
+
+config MODULE_BSWM
+    bool "servm bswm support"
+    default n
+    ---help---
+        Enable the SERVM_BSWM
+
+config MODULE_RTE
+    bool "MOUDLE RTE support"
+    default n
+    ---help---
+        Enable the MODULE_RTE
+
+config MODULE_DEM
+    bool "diagnostics dem support"
+    default n
+	---help---
+		Enable the MODULE_DEM
+
+config MODULE_DCM
+    bool "diagnostics dcm support"
+    default n
+	---help---
+		Enable the MODULE_DCM
+
+config MODULE_CANTP
+    bool "diagnostics cantp support"
+    default n
+	---help---
+		Enable the MODULE_CANTP

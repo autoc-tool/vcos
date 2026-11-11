@@ -1,0 +1,32 @@
+diff --git a/src/ptsematest/ptsematest.c b/src/ptsematest/ptsematest.c
+index 5a29718..213dd4c 100644
+--- a/src/ptsematest/ptsematest.c
++++ b/src/ptsematest/ptsematest.c
+@@ -17,8 +17,10 @@
+ #include <sys/stat.h>
+ #include <sys/time.h>
+ #include <sys/mman.h>
++#ifndef __NuttX__
+ #include <linux/unistd.h>
+ #include <utmpx.h>
++#endif
+ #include <pthread.h>
+ #include <inttypes.h>
+ 
+@@ -55,7 +57,7 @@ struct params {
+ 	struct params *neighbor;
+ };
+ 
+-void *semathread(void *param)
++static void *semathread(void *param)
+ {
+ 	int mustgetcpu = 0;
+ 	struct params *par = param;
+@@ -396,6 +398,7 @@ int main(int argc, char *argv[])
+ 	sigset_t sigset;
+ 	struct timespec maindelay;
+ 
++    shutdown = 0;
+ 	rt_init(argc, argv);
+ 	process_options(argc, argv);
+ 

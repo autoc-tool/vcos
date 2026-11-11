@@ -1,0 +1,512 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        dem_lcfg_internal.h
+ * @brief       Dem本地配置内部头文件
+ * @details     主要包含Dem模块的内部配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+{%- set dem_general = get_dem_general_config() %}
+{%- set dem_client_config = get_dem_client_config() %}
+{%- set dem_dtc_sta_chg_cbk_config = get_dem_dtc_status_changed_cbk_config() %}
+{%- set dem_dtc_group_list_config = get_dem_dtc_group_list_config() %}
+{%- set dem_satellite_config = get_dem_satellite_config() %}
+{%- set dem_event_parameters_config = get_dem_event_parameters_config() %}
+{%- set dem_opcycles_config = get_dem_opcycles_config() %}
+{%- set dem_event_available_data_length_config = get_dem_event_available_data_length_config() %}
+{%- set dem_ext_data_max_nof_record_config = get_dem_ext_data_max_nof_record_config() %}
+{%- set dem_freeze_frame_max_nof_record_config = get_dem_freeze_frame_max_nof_record_config() %}
+{%- set dem_satellite_event_id_type_config = get_dem_satellite_event_id_type_config() %}
+{%- set dem_event_combined_groups_config = get_dem_event_combined_groups_config() %}
+{%- set dem_nvm_blocks = get_dem_nvm_blocks_config() %}
+{%- set dem_clear_dtc_notification_start_list_config = get_dem_clear_dtc_notification_start_list_config() %}
+{%- set dem_clear_dtc_notification_finish_list_config = get_dem_clear_dtc_notification_finish_list_config() %}
+{%- set dem_indicator_Attributes = get_dem_indicator_attributes_config() %}
+{%- set dem_ext_data_class_config = get_dem_ext_data_class_config() %}
+{%- set dem_indicator_attribute_groups = get_dem_indicator_attribute_groups_config() %}
+{%- set dem_master_memmap_tag_str = get_dem_master_memmap_tag_str() %}
+{%- set dem_master_core = get_dem_master_core() %}
+
+#ifndef DEM_LCFG_INTERNAL_H
+#define DEM_LCFG_INTERNAL_H
+
+#include "dem_types.h"
+#include "dem_cfg.h"
+#include "dem_lcfg.h"
+#include "Os.h"
+#include "application_cfg.h"
+{%- if 'CONFIG_MODULE_RTE' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_RTE'] == 'y' %}
+{%- if dem_general["DemSatelliteEnable"] == "True" %}
+#include "Rte_DemMaster_{{ dem_general["DemMasterApplicationName"] }}.h"
+{%- else %}
+#include "Rte_Dem.h"
+{%- endif %}
+{%- endif %}
+{%- if 'CONFIG_MODULE_OS' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_OS'] == 'y' %}
+#include "application_cfg.h"
+{%- endif %}
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+{% if dem_general.GeneralInterfaceSupport -%}
+#if (CONFIG_MODULE_RTE == 1)
+#define Rte_Call_GeneralCBStatusEvt_EventStatusChanged  Rte_Call_GeneralCBStatusEvt_GeneralCallbackEventUdsStatusChanged ///< 事件状态变化的RTE通用回调
+#endif
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_ff_rec_type
+ **********************************************************************************************************************/
+typedef struct {
+    dem_ff_kind_type kind;
+    uint8 recnum; ///< 记录数
+    uint16 data_size; ///< 数据大小
+    dem_event_id_type event_id; ///< 事件ID
+#if (DEM_EVENT_DISPLACEMENT_SUPPORT == STD_ON)
+    uint32 timestamp; ///< 时间戳
+#endif
+    uint8 data[DEM_CFG_MAX_PRESTORE_FF_SIZE]; ///< 数据，长度为OBD冻结帧和UDS冻结帧的最大值
+} dem_ff_rec_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_prestore_entry_type
+ **********************************************************************************************************************/
+typedef struct {
+    dem_event_id_type event_id; ///< 事件ID
+    uint16 data_size; ///< 数据大小
+    uint8 data[DEM_CFG_MAX_PRESTORE_FF_SIZE]; ///< 数据，预存储数据长度为OBD冻结帧和UDS冻结帧的最大值
+} dem_prestore_entry_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义healing_rec_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 aging_cnt;  ///< 老化计数
+    dem_event_id_type event_id; ///< 事件ID
+} healing_rec_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_event_info_rec_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean failed_during_aging_cycle:1; ///< 老化周期期间失败
+    boolean passed_during_aging_cycle:1; ///< 老化周期期间成功
+    boolean failed_during_failure_cycle:1; ///< 失败周期期间失败
+    boolean passed_during_failure_cycle:1; ///< 失败周期期间成功
+    boolean error_status_changed:1; ///< 错误状态改变
+{%- if dem_indicator_Attributes | length %}
+    boolean indicator_data_changed:1; ///< 指示器数据改变
+{%- endif %}
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+    boolean is_available:1; ///< 可用性
+{%- endif %}
+{%- if dem_general.DataCyclesSinceLastFailed == "STD_ON" %}
+    boolean cycles_since_last_failed_start:1; ///< 从上次失败起，DTC fdc 是否达到过其最大值
+{%- endif %}
+{%- if dem_general.DataCyclesSinceFirstFailed == "STD_ON" %}
+    boolean cycles_since_first_failed_start:1; ///< 从首次失败起，DTC fdc 是否达到过其最大值
+{%- endif %}
+{%- if dem_general.DataFailedCycles == "STD_ON" %}
+    boolean failed_cycles_start:1; ///< 错误周期开始
+{%- endif %}
+    boolean fdc_this_opcycle:1; ///< 当前操作周期是否达到FDC阈值
+    boolean ext_data_stored:1; ///< 扩展数据已存储标记
+{%- if dem_general.DataCurrentFdc == "STD_ON" %}
+    sint8 uds_fdc; ///< uds_fdc
+{%- endif %}
+{%- if dem_general.DataMaxFdcDuringCurrentCycle == "STD_ON" %}
+    sint8 max_uds_fdc; ///< 最大uds_fdc
+{%- endif %}
+    uint8 failure_counter; ///< 失败计数器
+    uint8 aging_cnt; ///< 老化计数器
+{%- if dem_general.DataAgedCounter == "STD_ON" %}
+    uint8 aged_cnt; ///< 已老化的计数器
+{%- endif %}
+{%- if dem_general.DataCyclesSinceLastFailed == "STD_ON" %}
+    uint8 cycles_since_last_failed; ///< 从 DTC fdc上次达到其最大值以来的操作周期数
+{%- endif %}
+{%- if dem_general.DataCyclesSinceFirstFailed == "STD_ON" %}
+    uint8 cycles_since_first_failed; ///< 从 DTC fdc首次达到其最大值以来的操作周期数
+{%- endif %}
+{%- if dem_general.DataFailedCycles == "STD_ON" %}
+    uint8 failed_cycles; ///< 失败周期数
+{%- endif %}
+#if (DEM_FF_DATA_IN_PRI_MEM)
+    uint8 stored_ff_recnum; ///< 存储的冻结帧记录数
+#endif
+{%- if dem_general.DataOccurCounter == "STD_ON" %}
+    uint8 occctr; ///< 发生
+{%- endif %}
+    dem_event_status_rec_type event_status_rec; ///<  事件状态记录
+    dem_event_id_type event_id; ///< 事件ID
+#if (DEM_DEBOUNCE_DISABLE == STD_OFF)
+    sint16 local_fdc; ///< 本地fdc
+#endif
+    uint32 timestamp; ///< 时间戳
+} dem_event_info_rec_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_data_data_type
+ **********************************************************************************************************************/
+typedef struct
+{
+    dem_event_queue_status_type queue_status; ///< 队列状态
+} dem_satellite_data_data_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_data_type
+ **********************************************************************************************************************/
+typedef union {
+    volatile dem_satellite_data_data_type data; ///< 数据
+    volatile dem_atomic_word_type raw; ///< 原始值
+} dem_satellite_data_type;
+
+/*!*********************************************************************************************************************
+ * @brief   dem_satellite_info_data_type
+ **********************************************************************************************************************/
+typedef struct
+{
+    uint8 state; ///< 初始化状态
+    uint8 satellite_status; ///< 卫星状态
+} dem_satellite_info_data_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_status_info_type
+ **********************************************************************************************************************/
+typedef union {
+    volatile dem_satellite_info_data_type data; ///< 数据
+    volatile dem_atomic_word_type raw;///< 原始值
+} dem_satellite_status_info_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_info_type
+ **********************************************************************************************************************/
+typedef struct {
+    dem_satellite_event_id_type event_count; ///< 事件计数
+    dem_satellite_event_id_type event_table_ind_start_idx; ///<事件表起始位置
+    dem_satellite_id_type satellite_id; ///< 卫星ID
+    OS_APPLICATIONID_DEF application_id; ///< 应用ID
+    volatile dem_satellite_status_info_type *satellite_status; ///< 卫星状态
+    volatile dem_satellite_data_type *satellite_data; ///< 卫星数据
+} dem_satellite_info_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_satellite_info_type
+ **********************************************************************************************************************/
+{% for satellite_name, satellite in dem_satellite_config.items() %}
+typedef struct {
+    volatile dem_satellite_status_info_type satellite_status; ///< 卫星状态
+    volatile dem_satellite_data_type satellite_data[{{satellite["EventCount"]}}]; ///< 卫星数据    
+} dem_satellite_info_type_{{ satellite_name.lower() }};
+{% endfor %}
+
+typedef struct {
+    boolean setting_disabled;
+    dem_dtc_group_type dtc_group;
+} dem_disable_dtc_setting_type;
+
+#if (DEM_DTC_SUPPRESSION_SUPPORT == STD_ON)
+typedef struct {
+    boolean suppressed_by_dtc:1;
+    boolean suppressed_by_event:1;
+} dem_dtc_suppression_type;
+#endif
+
+#if (DEM_DEBOUNCE_DISABLE == STD_OFF)
+#if defined(DEM_USE_TIME_BASE_PREDEBOUNCE)
+/*!*********************************************************************************************************************
+ * @brief   定义基于时间去抖状态数据类型
+ **********************************************************************************************************************/
+typedef struct {
+    uint32 debounce_time; ///< 去抖计时器，每至周期函数更新一次，达到门限值则去抖完成
+    dem_event_id_type event_id; ///< 本去抖管理结构体对应的Event
+    boolean started:1; ///< 计时器是否在计时中
+    boolean failure_counting:1; ///< 计时器对应的EventStatus：FALSE - Failed / TRUE - Passed
+    boolean error_reported:1; ///< 是否已经上报 - 在达到去抖时间门限转为FAILED/PASSED时置为TRUE
+    boolean counter_reset:1; ///< 重置计时器后置为TRUE，第一次达到主周期函数时置为FALSE（重置后到第一次主周期函数时间间隔可能不足10ms，舍弃这段时间）
+    dem_satellite_id_type satellite_id; ///< 卫星ID
+} dem_time_base_status_data_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义基于时间去抖状态类型
+ **********************************************************************************************************************/
+typedef union {
+    volatile dem_time_base_status_data_type data; ///< 数据
+    volatile dem_atomic_word_type raw[2];  ///< 初始值
+} dem_time_base_debounce_status_type;
+#endif
+#endif
+
+/*!*********************************************************************************************************************
+ * @brief   声明dem_satellite_event_id_type
+ **********************************************************************************************************************/
+#define  DEM_START_SEC_CONST
+#include "dem_memmap.h"
+extern CONST(dem_satellite_event_id_type, DEM_CONST) g_dem_satellite_event_table[DEM_MAX_NUMBER_EVENT];
+#define  DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+/*!*********************************************************************************************************************
+ * @brief   声明dem_satellite_info_type
+ **********************************************************************************************************************/
+{% for satellite_name, satellite in dem_satellite_config.items() %}
+extern dem_satellite_info_type_{{ satellite_name.lower() }} g_dem_satellite_info_{{ satellite_name.lower() }};
+{% endfor %}
+
+/*!*********************************************************************************************************************
+ * @brief   声明dem_satellite_info_type
+ **********************************************************************************************************************/
+#define  DEM_START_SEC_CONST
+#include "dem_memmap.h"
+extern CONST(dem_satellite_info_type, DEM_CONST) g_dem_satellite_info[{{ dem_satellite_config | length }}];
+#define  DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+{% if dem_general.global_debounce_storage_event_count > 0 -%}
+/*!*********************************************************************************************************************
+ * @brief   声明dem_cfg_debounce_data_type
+ **********************************************************************************************************************/
+typedef sint16 dem_cfg_debounce_data_type[{{ dem_general.global_debounce_storage_event_count }}];
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_cfg_debounce_data
+ **********************************************************************************************************************/
+extern dem_cfg_debounce_data_type g_dem_cfg_debounce_data;
+{% endif -%}
+{% endif -%}
+
+/*!*********************************************************************************************************************
+ * @brief   声明保存当前ClientId对应的信息，ClientId可以对应Event、DTCGroup或GroupMask等 - 此处使用一个联合体
+ **********************************************************************************************************************/
+typedef union {
+    dem_event_id_type event_id; ///< 事件ID
+    dem_dtc_group_id_type group_id; ///< 组Id
+} dem_dtc_selector_selection_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义ClientId对应的Dem内部的Selector的信息
+ **********************************************************************************************************************/
+typedef struct {
+    uint32 dtc; ///< DTC值
+    dem_dtc_format_type dtc_format; ///< DTC格式
+    dem_dtc_origin_type dtc_origin; ///< DTC起源
+} dem_dtc_selector_request_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_dtc_selector_data_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean dtc_selector_is_set; ///< DTC选择器是否设置
+    dem_dtc_selector_request_type request; ///< 请求类型
+    dem_dtc_selector_selection_type selection; ///< 选择类型
+    dem_dtc_selector_result_type selector_state; ///< 选择器状态
+} dem_dtc_selector_data_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_dtc_filter_type
+ **********************************************************************************************************************/
+typedef struct {
+    dem_event_status_rec_type dtc_status_mask; ///< DTC状态掩码
+    dem_dtc_origin_type dtc_origin; ///< DTC起源
+    boolean filter_with_severity; ///< 严重性过滤
+    dem_dtc_severity_type dtc_severity_mask; ///< 严重性掩码
+    boolean filter_for_fault_detection_counter; ///< 故障检测计数过滤
+    uint16 fault_index; ///< 故障索引
+    dem_dtc_format_type dtc_format; ///< DTC格式
+    boolean dtc_filter_is_set; ///< dtc设置过滤
+} dem_dtc_filter_type;
+
+/*!*********************************************************************************************************************
+ * @brief   定义dem_ff_record_filter_type
+ **********************************************************************************************************************/
+typedef struct {
+    boolean ff_rec_filter_is_set; ///< 冻结帧记录过滤是否设置
+    dem_dtc_format_type dtc_format; ///< DTC格式
+    uint16 ff_index; ///< 冻结帧索引
+    uint32 event_index; ///< 事件索引
+} dem_ff_record_filter_type;
+
+#if (CONFIG_MODULE_NVM == 1) && (DEM_USE_NVM == STD_ON)
+typedef uint8 dem_nvm_state_type;
+#define DEM_NVM_IDLE (dem_nvm_state_type)0x00u
+#define DEM_NVM_SETRAMBLOCKSTATUS (dem_nvm_state_type)0x01u
+#define DEM_NVM_WRITEBLOCK (dem_nvm_state_type)0x02u
+#define DEM_NVM_WAIT_DONE (dem_nvm_state_type)0x03u
+#define DEM_NVM_WRITEBLOCK_RETRY (dem_nvm_state_type)0x04u
+
+typedef struct {
+    dem_nvm_state_type state;
+    boolean dirty;
+    boolean pending_write;
+}dem_nvm_block_status_type;
+#endif
+
+#define DEM_START_SEC_{{ dem_master_memmap_tag_str }}PRIVATE_BSS
+#include "dem_memmap.h"
+
+#if (CONFIG_MODULE_NVM == 1) && (DEM_USE_NVM == STD_ON)
+extern VAR(dem_nvm_block_status_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_nvm_block_status[DEM_NOF_SUPPORTED_NVM_BLOCKS];
+extern P2CONST(dem_general_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS, Dem_VAR_Class) g_dem_nvm_mgr;
+#endif
+
+#if (DEM_EVENT_DISPLACEMENT_SUPPORT == STD_ON)
+extern VAR(uint32, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_event_timestamp;
+#endif
+
+#if (DEM_IMMEDIATE_NV_STORAGE == STD_ON)
+extern VAR(uint16, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_nvm_storage_time;
+#endif
+
+extern VAR(dem_dtc_record_update_disable_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_dtc_record_disabled;
+
+#define DEM_STOP_SEC_{{ dem_master_memmap_tag_str }}PRIVATE_BSS
+#include "dem_memmap.h"
+
+#define DEM_START_SEC_MULTI_APP_BSS
+#include "dem_memmap.h"
+extern P2CONST(dem_cfg_helper_type, DEM_MULTI_APP_BSS, Dem_VAR_Class) g_dem_cfg_helper;
+extern P2CONST(dem_general_type, DEM_MULTI_APP_BSS, Dem_VAR_Class) g_dem_general_set;
+extern P2CONST(dem_config_set_type, DEM_MULTI_APP_BSS, Dem_VAR_Class) g_dem_config_set;
+
+extern VAR(dem_disable_dtc_setting_type, DEM_MULTI_APP_BSS) g_dem_disable_dtc_set;
+extern VAR(dem_opcycle_state_type, DEM_MULTI_APP_BSS) g_dem_opcycle_state_list[DEM_OPERATION_CYCLE_ID_ENDMARK];
+extern VAR(dem_event_info_rec_type, DEM_MULTI_APP_BSS) g_dem_event_info_rec[DEM_MAX_NUMBER_EVENT];
+
+#if (DEM_ENABLE_CONDITION_SUPPORT == STD_ON)
+extern VAR(boolean, DEM_MULTI_APP_BSS) g_dem_enable_conditions[DEM_NUM_ENABLECONDITIONS];
+#endif
+
+#if (DEM_STORAGE_CONDITION_SUPPORT == STD_ON)
+extern VAR(boolean, DEM_MULTI_APP_BSS) g_dem_storage_conditions[DEM_NUM_STORAGECONDITIONS];
+#endif
+
+#if (DEM_DTC_SUPPRESSION_SUPPORT == STD_ON)
+extern VAR(dem_dtc_suppression_type, DEM_MULTI_APP_BSS) g_dem_dtc_suppressed[DEM_NOF_DTCS];
+#endif
+
+#if (DEM_DEBOUNCE_DISABLE == STD_OFF)
+#if defined(DEM_USE_TIME_BASE_PREDEBOUNCE)
+extern VAR(dem_time_base_debounce_status_type, DEM_MULTI_APP_BSS) g_dem_time_base_deb[DEM_NOF_TIME_BASE_PREDEB];
+#endif
+#endif
+
+#define DEM_STOP_SEC_MULTI_APP_BSS
+#include "dem_memmap.h"
+
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_client_selector
+ **********************************************************************************************************************/
+extern dem_dtc_selector_data_type g_dem_client_selector[{{dem_client_config | length}}];
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_client_dtc_filter
+ **********************************************************************************************************************/
+extern dem_dtc_filter_type g_dem_client_dtc_filter[{{dem_client_config | length}}];
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_ff_record_filter
+ **********************************************************************************************************************/
+extern dem_ff_record_filter_type g_dem_ff_record_filter[{{dem_client_config | length}}];
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_prestore_ff_record
+ **********************************************************************************************************************/
+extern dem_prestore_entry_type g_dem_prestore_ff_record[DEM_MAX_NUMBER_PRESTORED_FF];
+
+{{  ("%-80s" | format("#define dem_get_client_selector_list()"))}}(g_dem_client_selector) ///< 用户选择列表
+{{  ("%-80s" | format("#define dem_get_client_filter_list()"))}}(g_dem_client_dtc_filter) ///< 用户DTC过滤列表
+{{  ("%-80s" | format("#define dem_get_client_ff_record_filter_list()"))}}(g_dem_ff_record_filter) ///< 冻结帧记录过滤列表
+{{  ("%-80s" | format("#define dem_get_prestorage_buffer()"))}}(g_dem_prestore_ff_record) ///< 冻结帧记录缓存
+{{  ("%-80s" | format("#define dem_get_size_of_client_id_list()"))}} ({{ dem_client_config | length }}u) ///< 用户ID列表大小
+{{  ("%-80s" | format("#define dem_get_size_of_filter_list()"))}} ({{ dem_client_config | length }}u) ///< 过滤列表大小
+{{  ("%-80s" | format("#define dem_get_size_of_ff_record_filter_list()"))}} ({{ dem_client_config | length }}u) ///< 冻结帧记录过滤列表大小
+{{  ("%-80s" | format("#define dem_get_size_of_dtc_group_list()"))}} ({{ dem_dtc_group_list_config | length }}u) ///< DTC组列表大小
+{{  ("%-80s" | format("#define dem_get_size_of_client_selector_list()"))}} ({{ dem_client_config | length }}u) ///< 用户选择列表大小
+{{  ("%-80s" | format("#define dem_get_size_of_dtc_sta_chg_cbk_list()"))}} ({{ dem_dtc_sta_chg_cbk_config | length }}u) ///< DTC事件状态变化改变回调列表大小
+{{  ("%-80s" | format("#define dem_get_size_of_event_queue()"))}}(DEM_EVENT_QUEUE_LENGTH) ///< 事件队列大小
+
+extern const dem_ext_data_class_type g_dem_ext_data_class_list[];
+{{  ("%-80s" | format("#define dem_get_ext_data_class_list()"))}}(g_dem_ext_data_class_list) ///< 扩展数据类列表
+
+extern const dem_ff_class_type g_dem_ff_class_list[];
+{{  ("%-80s" | format("#define dem_get_ff_class_list()"))}}(g_dem_ff_class_list) ///< 冻结帧类列表
+
+extern const dem_ff_recnum_class_type g_dem_ff_recnum_class_list[];
+{{  ("%-80s" | format("#define dem_get_ff_recnum_class_list()"))}}(g_dem_ff_recnum_class_list) ///< 冻结帧记录数类列表
+
+extern const dem_dtc_class_type g_dem_dtc_class_list[];
+{{  ("%-80s" | format("#define dem_get_dtc_class_list()"))}}(g_dem_dtc_class_list) ///< 冻结帧记录数类列表
+
+{% if dem_general.StorageConditionSupport == "STD_ON" -%}
+extern const dem_storage_condition_group_type g_dem_storage_condition_group[];
+{{  ("%-80s" | format("#define dem_get_storage_condition_group_list()"))}}(g_dem_storage_condition_group) ///< 存储条件组列表
+
+extern const dem_storage_condition_type *const g_dem_storage_condition_group_class_list[];
+{{  ("%-80s" | format("#define dem_get_storage_condition_group_class_list()"))}}(g_dem_storage_condition_group_class_list) ///< 存储条件组类列表
+{%- endif %}
+
+{% if dem_general.EnableConditionSupport == "STD_ON" -%}
+extern const dem_enable_condition_group_type g_dem_enable_condition_group[];
+{{  ("%-80s" | format("#define dem_get_enable_condition_group_list()"))}}(g_dem_enable_condition_group) ///< 使能条件组列表
+
+extern const dem_enable_condition_type *const g_dem_enable_condition_group_class_list[];
+{{  ("%-80s" | format("#define dem_get_enable_condition_group_class_list()"))}}(g_dem_enable_condition_group_class_list) ///< 使能条件组类列表
+{%- endif %}
+
+{% if dem_general.DemSupportIndicator == "TRUE" -%}
+{% if dem_indicator_attribute_groups | length -%}
+extern const dem_indicator_attribute_type *const g_dem_indicator_attribute_group[];
+{{  ("%-80s" | format("#define dem_get_indicator_attribute_group_list()"))}}(g_dem_indicator_attribute_group)  ///< 指示器属性列表
+{%- endif %}
+{%- endif %}
+
+{%- if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}
+/*!*********************************************************************************************************************
+ * @brief   dem_event_combined_group_type
+ **********************************************************************************************************************/
+typedef struct {
+    uint8 start_combined_event_id_index; ///< 开始组合事件ID
+    uint8 end_combined_event_id_index; ///< 结束组合事件ID
+} dem_event_combined_group_type;
+
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_event_combined_group_status
+ **********************************************************************************************************************/
+extern uint8 g_dem_event_combined_group_status[{{ dem_event_combined_groups_config | length }}];
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_combined_event_id_table
+ **********************************************************************************************************************/
+#define  DEM_START_SEC_CONST
+#include "dem_memmap.h"
+extern CONST(uint8, DEM_CONST) g_dem_combined_event_id_table[{{ dem_general.DemCombinedEventNumber }}];
+#define  DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+/*!*********************************************************************************************************************
+ * @brief   声明g_dem_event_combined_groups
+ **********************************************************************************************************************/
+#define  DEM_START_SEC_CONST
+#include "dem_memmap.h"
+extern CONST(dem_event_combined_group_type, DEM_CONST) g_dem_event_combined_groups[{{ dem_event_combined_groups_config | length }}];
+#define  DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+{%- endif %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DEM_LCFG_H */

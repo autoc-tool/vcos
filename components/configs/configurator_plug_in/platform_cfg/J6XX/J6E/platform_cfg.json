@@ -1,0 +1,39 @@
+{
+    "module_cfg": {
+        "Can": {
+            "symbol": "Can",
+            "group": [
+                "Communication"
+            ],
+            "dependency_list": [],
+            "support_ui": true,
+            "support_validation": false,
+            "support_generation": false,
+            "is_mcal": true,
+            "internal_behavior": {
+                "support": true,
+                "dynamic": false,
+                "support_generation": false
+            }
+        },
+        "Spi": {
+            "symbol": "Spi",
+            "group": [
+                "Communication"
+            ],
+            "dependency_list": [],
+            "support_ui": true,
+            "support_validation": false,
+            "support_generation": false,
+            "is_mcal": true,
+            "internal_behavior": {
+                "support": true,
+                "dynamic": false,
+                "support_generation": false
+            }
+        }
+    },
+    "cmd_line_rules": {
+
+    }
+}

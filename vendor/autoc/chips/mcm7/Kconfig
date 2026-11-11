@@ -1,0 +1,16 @@
+if ARCH_CHIP_CUSTOM
+
+config ARCH_CHIP_AUTOC
+	bool
+
+config ARCH_CHIP_AUTOC_MCM7
+	bool "autoc mcm7"
+	select ARCH_CHIP_AUTOC
+	select ARCH_CORTEXM7
+	select ARCH_HAVE_MULTICPU
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	int
+	default 160000000
+
+endif

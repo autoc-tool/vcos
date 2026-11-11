@@ -1,0 +1,706 @@
+{
+    "CANNM111001": {
+        "rule_name": "CANNM111001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanNmRxPduId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmRxPdu/CanNmRxPduId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmRxPdu/CanNmRxPduId",
+            "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmRxPdu/CanNmRxPduId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "CANNM010001": {
+        "rule_name": "CANNM010001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmBusLoadReductionEnabled, CanNmPassiveModeEnabled and CanNmGlobalPnSupport.",
+        "rule_message": "CanNmBusLoadReductionEnabled should be False if CanNmPassiveModeEnabled is set to True or CanNmGlobalPnSupport is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmGlobalPnSupport",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusLoadReductionEnabled",
+                        "value_operator": "==",
+                        "value": false,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANNM010004": {
+        "rule_name": "CANNM010004",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmComUserDataSupport and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmComUserDataSupport should be False if CanNmPassiveModeEnabled is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmComUserDataSupport",
+                        "value_operator": "==",
+                        "value": false,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANNM010005": {
+        "rule_name": "CANNM010005",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmCoordinatorSyncSupport and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmCoordinatorSyncSupport should be set to False if CanNmPassiveModeEnabled is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmCoordinatorSyncSupport",
+                        "value_operator": "==",
+                        "value": false,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANNM010006": {
+        "rule_name": "CANNM010006",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmImmediateTxconfEnabled and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmImmediateTxconfEnabled should be False if CanNmPassiveModeEnabled is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmImmediateTxconfEnabled",
+                        "value_operator": "==",
+                        "value": false,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANNM010008": {
+        "rule_name": "CANNM010008",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPnEiraCalcEnabled and CanNmGlobalPnSupport.",
+        "rule_message": "CanNmPnEiraCalcEnabled should be False if CanNmGlobalPnSupport is set to False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmGlobalPnSupport",
+                        "value_operator": "==",
+                        "value": false,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPnEiraCalcEnabled",
+                        "value_operator": "==",
+                        "value": false,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANNM010014": {
+        "rule_name": "CANNM010014",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmCarWakeUpFilterEnabled and CanNmCarWakeUpRxEnabled.",
+        "rule_message": "CanNmCarWakeUpRxEnabled only available if CanNmCarWakeUpFilterEnabled is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmCarWakeUpRxEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmCarWakeUpFilterEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANNM010013": {
+        "rule_name": "CANNM010013",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmBusLoadReductionActive and CanNmBusLoadReductionEnabled.",
+        "rule_message": "CanNmBusLoadReductionActive should be False if CanNmBusLoadReductionEnabled is set to False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusLoadReductionEnabled"],
+                    "judge_expression": "%0 == False"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmBusLoadReductionActive"],
+                    "judge_expression": "%0 == False"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmBusLoadReductionActive to false.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmBusLoadReductionActive",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010015": {
+        "rule_name": "CANNM010015",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmNodeDetectionEnabled and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmNodeDetectionEnabled should be False if CanNmPassiveModeEnabled is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 == True"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmNodeDetectionEnabled"],
+                    "judge_expression": "%0 == False"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmNodeDetectionEnabled to false.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmNodeDetectionEnabled",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010016": {
+        "rule_name": "CANNM010016",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPnEnabled and CanNmGlobalPnSupport.",
+        "rule_message": "CanNmPnEnabled should be False if CanNmGlobalPnSupport is False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmGlobalPnSupport"],
+                    "judge_expression": "%0 == False"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnEnabled"],
+                    "judge_expression": "%0 == False"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnEnabled to false.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnEnabled",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010017": {
+        "rule_name": "CANNM010017",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPnEraCalcEnabled and CanNmGlobalPnSupport.",
+        "rule_message": "CanNmPnEraCalcEnabled should be False if CanNmGlobalPnSupport is set to False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmGlobalPnSupport"],
+                    "judge_expression": "%0 == False"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnEraCalcEnabled"],
+                    "judge_expression": "%0 == False"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnEraCalcEnabled to false.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnEraCalcEnabled",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010018": {
+        "rule_name": "CANNM010018",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPnHandleMultipleNetworkRequests and CanNmGlobalPnSupport.",
+        "rule_message": "CanNmPnHandleMultipleNetworkRequests should be False if CanNmGlobalPnSupport is set to False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmGlobalPnSupport"],
+                    "judge_expression": "%0 == False"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnHandleMultipleNetworkRequests"],
+                    "judge_expression": "%0 == False"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnHandleMultipleNetworkRequests to false.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnHandleMultipleNetworkRequests",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010027": {
+        "rule_name": "CANNM010027",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmImmediateNmTransmissions, CanNmImmediateRestartEnabled and CanNmPnHandleMultipleNetworkRequests.",
+        "rule_message": "CanNmImmediateNmTransmissions should be 0 if CanNmImmediateRestartEnabled is set to True; CanNmImmediateNmTransmissions should be larger than 0 if CanNmPnHandleMultipleNetworkRequests is set to True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmImmediateRestartEnabled"],
+                    "judge_expression": "%0 == True"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmTransmissions"],
+                    "judge_expression": "%0 == 0"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmTransmissions to 0.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmTransmissions",
+                    "value": 0
+                }]
+            },
+            "ruleset_02": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPnHandleMultipleNetworkRequests"],
+                    "judge_expression": "%0 == True"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmTransmissions"],
+                    "judge_expression": "%0 > 0"
+                }
+            }
+        }
+    },
+    "CANNM010012": {
+        "rule_name": "CANNM010012",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPnResetTime, CanNmMsgCycleTime and CanNmTimeoutTime.",
+        "rule_message": "CanNmPnResetTime should be greater than or equal to CanNmMsgCycleTime and less than or equal to CanNmTimeoutTime.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPnResetTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmTimeoutTime"
+                    ],
+                    "judge_expression": "%0 >= %1 and %0 <= %2"
+                }
+            }
+        }
+    },
+    "CANNM010002": {
+        "rule_name": "CANNM010002",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmBusSynchronizationEnabled, NmBusSynchronizationEnabled and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmBusSynchronizationEnabled should be the same as NmBusSynchronizationEnabled if CanNmPassiveModeEnabled is False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 is False"
+                },
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusSynchronizationEnabled",
+                        "/AUTOSAR/EcucDefs/Nm/NmGlobalConfig/NmGlobalFeatures/NmBusSynchronizationEnabled"
+                    ],
+                    "judge_expression": "%0 == %1"
+                }
+            },
+            "ruleset_02": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 is True"
+                },
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusSynchronizationEnabled"
+                    ],
+                    "judge_expression": "%0 != True"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusSynchronizationEnabled to False.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusSynchronizationEnabled",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010003": {
+        "rule_name": "CANNM010003",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmComControlEnabled, NmComControlEnabled and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmComControlEnabled should be the same as NmComControlEnabled if CanNmPassiveModeEnabled is False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 is False"
+                },
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmComControlEnabled",
+                        "/AUTOSAR/EcucDefs/Nm/NmGlobalConfig/NmGlobalFeatures/NmComControlEnabled"
+                    ],
+                    "judge_expression": "%0 == %1"
+                }
+            },
+            "ruleset_02": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 is True"
+                },
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmComControlEnabled"
+                    ],
+                    "judge_expression": "%0 != True"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmComControlEnabled to False.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmComControlEnabled",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010007": {
+        "rule_name": "CANNM010007",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPduRxIndicationEnabled and NmPduRxIndicationEnabled.",
+        "rule_message": "CanNmPduRxIndicationEnabled should be the same as NmPduRxIndicationEnabled.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPduRxIndicationEnabled",
+                        "/AUTOSAR/EcucDefs/Nm/NmGlobalConfig/NmGlobalFeatures/NmPduRxIndicationEnabled"
+                    ],
+                    "judge_expression": "%0 == %1"
+                }
+            }
+        }
+    },
+    "CANNM010009": {
+        "rule_name": "CANNM010009",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmRemoteSleepIndEnabled, NmRemoteSleepIndEnabled and CanNmPassiveModeEnabled.",
+        "rule_message": "CanNmRemoteSleepIndEnabled should be the same as NmRemoteSleepIndEnabled if CanNmPassiveModeEnabled is False.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 is False"
+                },
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmRemoteSleepIndEnabled",
+                        "/AUTOSAR/EcucDefs/Nm/NmGlobalConfig/NmGlobalFeatures/NmRemoteSleepIndEnabled"
+                    ],
+                    "judge_expression": "%0 == %1"
+                }
+            },
+            "ruleset_02": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmPassiveModeEnabled"],
+                    "judge_expression": "%0 is True"
+                },
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmRemoteSleepIndEnabled"
+                    ],
+                    "judge_expression": "%0 != True"
+                },
+                "auto_solve_list": [{
+                    "solve_info": "Set the value of /AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmRemoteSleepIndEnabled to False.",
+                    "solve_type": "SetValue",
+                    "parameter": "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmRemoteSleepIndEnabled",
+                    "value": false
+                }]
+            }
+        }
+    },
+    "CANNM010010": {
+        "rule_name": "CANNM010010",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmStateChangeIndEnabled and NmStateChangeIndEnabled.",
+        "rule_message": "CanNmStateChangeIndEnabled should be the same as NmStateChangeIndEnabled.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmStateChangeIndEnabled",
+                        "/AUTOSAR/EcucDefs/Nm/NmGlobalConfig/NmGlobalFeatures/NmStateChangeIndEnabled"
+                    ],
+                    "judge_expression": "%0 == %1"
+                }
+            }
+        }
+    },
+    "CANNM010011": {
+        "rule_name": "CANNM010011",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmUserDataEnabled and NmUserDataEnabled.",
+        "rule_message": "CanNmUserDataEnabled should be the same as NmUserDataEnabled.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmUserDataEnabled",
+                        "/AUTOSAR/EcucDefs/Nm/NmGlobalConfig/NmGlobalFeatures/NmUserDataEnabled"
+                    ],
+                    "judge_expression": "%0 == %1"
+                }
+            }
+        }
+    },
+    "CANNM010019": {
+        "rule_name": "CANNM010019",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmImmediateNmCycleTime and CanNmImmediateNmTransmissions.",
+        "rule_message": "CanNmImmediateNmCycleTime should be less than CanNmImmediateNmTransmissions, and they both need to be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmCycleTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmTransmissions"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %0 < %1"
+                }
+            }
+        }
+    },
+    "CANNM010020": {
+        "rule_name": "CANNM010020",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmMsgCycleTime and CanNmMsgCycleOffset.",
+        "rule_message": "CanNmMsgCycleOffset should be less than CanNmMsgCycleTime, and they both need to be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleOffset",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %0 < %1"
+                }
+            }
+        }
+    },
+    "CANNM010021": {
+        "rule_name": "CANNM010021",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmMsgReducedTime and CanNmMsgCycleTime.",
+        "rule_message": "CanNmMsgReducedTime should be less than CanNmMsgCycleTime and greater than or equal to 0.5 * CanNmMsgCycleTime, and they both need to be configured if CanNmBusLoadReductionEnabled is True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgReducedTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmBusLoadReductionEnabled"
+                    ],
+                    "judge_expression": "%2 is False or %0 != None and %0 != '' and %1 != None and %1 != '' and %0 >= 0.5 * %1 and %0 < %1"
+                }
+            }
+        }
+    },
+    "CANNM010022": {
+        "rule_name": "CANNM010022",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmMsgTimeoutTime and CanNmMsgCycleTime.",
+        "rule_message": "CanNmMsgTimeoutTime should be less than CanNmMsgCycleTime, and they both need to be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgTimeoutTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %0 < %1"
+                }
+            }
+        }
+    },
+    "CANNM010023": {
+        "rule_name": "CANNM010023",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmRemoteSleepIndTime and CanNmMsgCycleTime.",
+        "rule_message": "CanNmRemoteSleepIndTime should be greater than or equal to CanNmMsgCycleTime, and they both need to be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmRemoteSleepIndTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %0 >= %1"
+                }
+            }
+        }
+    },
+    "CANNM010024": {
+        "rule_name": "CANNM010024",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmRepeatMessageTime, CanNmMsgCycleTime, CanNmImmediateNmTransmissions and CanNmImmediateNmCycleTime.",
+        "rule_message": "CanNmRepeatMessageTime should be a multiple of CanNmMsgCycleTime; CanNmRepeatMessageTime should be larger than CanNmImmediateNmTransmissions * CanNmImmediateNmCycleTime, and they all need to be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmRepeatMessageTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmTransmissions",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmImmediateNmCycleTime"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %2 != None and %2 != '' and %3 != None and %3 != '' and %0 % %1 == 0 and %0 > %2 * %3"
+                }
+            }
+        }
+    },
+    "CANNM010025": {
+        "rule_name": "CANNM010025",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmTimeoutTime and CanNmMsgCycleTime.",
+        "rule_message": "CanNmTimeoutTime should be larger than CanNmMsgCycleTime, and they both need to be configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmTimeoutTime",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmMsgCycleTime"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %0 > %1"
+                }
+            }
+        }
+    },
+    "CANNM010026": {
+        "rule_name": "CANNM010026",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmCarWakeUpBytePosition, CanNmPduCbvPosition and CanNmPduNidPosition.",
+        "rule_message": "CanNmCarWakeUpBytePosition should be larger than or equal to CanNmPduNidPosition + CanNmPduCbvPosition, and they all need to be configured if CanNmCarWakeUpFilterEnabled is True.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmCarWakeUpBytePosition",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPduNidPosition",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPduCbvPosition",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmCarWakeUpFilterEnabled"
+                    ],
+                    "judge_expression": "%3 is False or %0 != None and %0 != '' and %1 != None and %1 != '' and %0 >= int(%1 == 'CANNM_PDU_BYTE_1') + int(%2 == 'CANNM_PDU_BYTE_1')"
+                }
+            }
+        }
+    },
+    "CANNM010028": {
+        "rule_name": "CANNM010028",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPduCbvPosition, CanNmNodeDetectionEnabled and CanNmPduNidPosition.",
+        "rule_message": "CanNmPduCbvPosition should not be 'CANNM_PDU_OFF' if CanNmNodeDetectionEnabled is True;\nCanNmPduCbvPosition can not be the same as CanNmPduNidPosition when they are both not 'CANNM_PDU_OFF';\nCanNmPduCbvPosition should be CANNM_PDU_BYTE_0 if not CANNM_PDU_OFF and CanNmPduNidPosition is CANNM_PDU_OFF.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmNodeDetectionEnabled",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPduCbvPosition",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPduNidPosition"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %2 != None and %2 != '' and (%0 is False or %1 != 'CANNM_PDU_OFF') and (%1 == 'CANNM_PDU_OFF' or %2 == 'CANNM_PDU_OFF' or %1 != %2) and (%1 == 'CANNM_PDU_OFF' or %2 != 'CANNM_PDU_OFF' or %1 == 'CANNM_PDU_BYTE_0')"
+                }
+            }
+        }
+    },
+    "CANNM010029": {
+        "rule_name": "CANNM010029",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanNmPduCbvPosition, CanNmNodeDetectionEnabled and CanNmPduNidPosition.",
+        "rule_message": "CanNmPduNidPosition should not be CANNM_PDU_OFF if CanNmNodeDetectionEnabled is True;\nCanNmPduNidPosition can not be the same as CanNmPduCbvPosition when they are both not CANNM_PDU_OFF;\nCanNmPduNidPosition should be CANNM_PDU_BYTE_0 if not CANNM_PDU_OFF and CanNmPduCbvPosition is CANNM_PDU_OFF.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmNodeDetectionEnabled",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPduNidPosition",
+                        "/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig/CanNmPduCbvPosition"
+                    ],
+                    "judge_expression": "%0 != None and %0 != '' and %1 != None and %1 != '' and %2 != None and %2 != '' and (%0 is False or %1 != 'CANNM_PDU_OFF') and (%1 == 'CANNM_PDU_OFF' or %2 == 'CANNM_PDU_OFF' or %1 != %2) and (%1 == 'CANNM_PDU_OFF' or %2 != 'CANNM_PDU_OFF' or %1 == 'CANNM_PDU_BYTE_0')"
+                }
+            }
+        }
+    }
+}

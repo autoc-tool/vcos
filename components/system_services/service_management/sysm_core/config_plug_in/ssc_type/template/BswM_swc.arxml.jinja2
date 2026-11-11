@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00046.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE UUID="123456">
+      <SHORT-NAME>AUTOSAR</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE UUID="123456">
+          <SHORT-NAME>{{bswm_package["short_name"]}}</SHORT-NAME>
+          <ELEMENTS>
+            {%- set mode_group_list = bswm_package["mode_declaration"] %}
+            {%- for mode_group in mode_group_list %}                
+            <MODE-DECLARATION-GROUP UUID="123456">
+              <SHORT-NAME>{{mode_group["name"]}}</SHORT-NAME>
+              <INITIAL-MODE-REF DEST="MODE-DECLARATION">{{mode_group["initial_mode_ref"]}}</INITIAL-MODE-REF>
+              <MODE-DECLARATIONS>
+              {%- for key,value in mode_group["mode_value"].items() %}
+                <MODE-DECLARATION UUID="123456">
+                  <SHORT-NAME>{{key}}</SHORT-NAME>
+                  <VALUE>{{value}}</VALUE>
+                </MODE-DECLARATION>
+              {%- endfor %}
+              </MODE-DECLARATIONS>
+              <ON-TRANSITION-VALUE>{{mode_group["TRANSITION"]}}</ON-TRANSITION-VALUE>
+            </MODE-DECLARATION-GROUP>
+            {%- endfor %}
+          </ELEMENTS>
+          <AR-PACKAGES>
+            <AR-PACKAGE UUID="123456">
+              <SHORT-NAME>DataTypes</SHORT-NAME>
+              <ELEMENTS>
+                {%- for mode_group in mode_group_list %}
+                <IMPLEMENTATION-DATA-TYPE UUID="123456">
+                  <SHORT-NAME>bswm_{{mode_group["name"]}}</SHORT-NAME>
+                  <DESC>
+                    <L-2 L="FOR-ALL">Unique value for each user</L-2>
+                  </DESC>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/AUTOSAR/BswM_swc/DataTypes/CompuMethods/bswm_{{mode_group["name"]}}</COMPU-METHOD-REF>
+                        <DATA-CONSTR-REF DEST="DATA-CONSTR">/AUTOSAR/BswM_swc/DataTypes/DataConstrs/bswm_{{mode_group["name"]}}_Constr</DATA-CONSTR-REF>
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/uint8</IMPLEMENTATION-DATA-TYPE-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+                {%- endfor%}
+              </ELEMENTS>              
+              <AR-PACKAGES>
+                <AR-PACKAGE UUID="123456">
+                  <SHORT-NAME>DataConstrs</SHORT-NAME>
+                  <ELEMENTS>
+                    {%- for mode_group in mode_group_list %}
+                    <DATA-CONSTR UUID="123456">
+                      <SHORT-NAME>bswm_{{mode_group["name"]}}_Constr</SHORT-NAME>
+                      <DATA-CONSTR-RULES>
+                        <DATA-CONSTR-RULE>
+                          <INTERNAL-CONSTRS>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
+                          </INTERNAL-CONSTRS>
+                        </DATA-CONSTR-RULE>
+                      </DATA-CONSTR-RULES>
+                    </DATA-CONSTR>
+                    {%- endfor%}
+                  </ELEMENTS>
+                </AR-PACKAGE>
+                <AR-PACKAGE UUID="123456">
+                  <SHORT-NAME>CompuMethods</SHORT-NAME>
+                  <ELEMENTS>
+                    {%- for mode_group in mode_group_list %}
+                    <COMPU-METHOD UUID="123456">
+                      <SHORT-NAME>bswm_{{mode_group["name"]}}</SHORT-NAME>
+                      <CATEGORY>TEXTTABLE</CATEGORY>                      
+                      <COMPU-INTERNAL-TO-PHYS>
+                        <COMPU-SCALES>
+                          {%- for key,value in mode_group["mode_value"].items() %} 
+                          <COMPU-SCALE>
+                            <SHORT-LABEL>{{key}}</SHORT-LABEL>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{value}}</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">{{value}}</UPPER-LIMIT>
+                            <COMPU-CONST>
+                              <VT>STARTUP</VT>
+                            </COMPU-CONST>
+                          </COMPU-SCALE>
+                          {%- endfor%}
+                        </COMPU-SCALES>
+                      </COMPU-INTERNAL-TO-PHYS>
+                    </COMPU-METHOD>
+                    {%- endfor%}
+                  </ELEMENTS>
+                </AR-PACKAGE>
+              </AR-PACKAGES>
+            </AR-PACKAGE>
+            <AR-PACKAGE>
+              <SHORT-NAME>Interfaces</SHORT-NAME>
+              <ELEMENTS>
+                {%- for mode_group in mode_group_list %}
+                <MODE-SWITCH-INTERFACE UUID="123456">
+                  <SHORT-NAME>BswM_MSI_{{mode_group["name"]}}</SHORT-NAME>
+                  <IS-SERVICE>true</IS-SERVICE>
+                  <SERVICE-KIND>BASIC-SOFTWARE-MODE-MANAGER</SERVICE-KIND>
+                  <MODE-GROUP UUID="123456">
+                    <SHORT-NAME>BswM_MDGP_{{mode_group["name"]}}</SHORT-NAME>
+                    <TYPE-TREF DEST="MODE-DECLARATION-GROUP">/AUTOSAR/BswM_swc/{{mode_group["name"]}}</TYPE-TREF>
+                  </MODE-GROUP>
+                </MODE-SWITCH-INTERFACE>
+                <SENDER-RECEIVER-INTERFACE UUID="123456">
+                  <SHORT-NAME>BswM_SRI_BswM_MSI_{{mode_group["name"]}}_BswM_MDGP_{{mode_group["name"]}}</SHORT-NAME>
+                  <IS-SERVICE>true</IS-SERVICE>
+                  <SERVICE-KIND>BASIC-SOFTWARE-MODE-MANAGER</SERVICE-KIND>
+                  <DATA-ELEMENTS>
+                    <VARIABLE-DATA-PROTOTYPE UUID="123456">
+                      <SHORT-NAME>requestedModeType</SHORT-NAME>
+                      <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/BswM_swc/DataTypes/bswm_{{mode_group["name"]}}</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+                  </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+                {%- endfor%}
+                {%- for sender_reciver in bswm_package["interfaces_pkg"]["sender_reciver"] %}
+                <SENDER-RECEIVER-INTERFACE UUID="123456">
+                  <SHORT-NAME>{{sender_reciver["sr_inf_name"]}}</SHORT-NAME>
+                  <IS-SERVICE>true</IS-SERVICE>
+                  <SERVICE-KIND>BASIC-SOFTWARE-MODE-MANAGER</SERVICE-KIND>
+                  <DATA-ELEMENTS>
+                    <VARIABLE-DATA-PROTOTYPE UUID="123456">
+                    <SHORT-NAME>{{sender_reciver["data_elements_name"]}}</SHORT-NAME>
+                    <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">{{sender_reciver["type_ref"]}}</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+                  </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+                {%- endfor%}
+              </ELEMENTS>
+            </AR-PACKAGE>
+            <AR-PACKAGE UUID="123456">
+              <SHORT-NAME>ComponentTypes</SHORT-NAME>
+              <ELEMENTS>
+                <SERVICE-SW-COMPONENT-TYPE UUID="123456">
+                  <SHORT-NAME>BswM</SHORT-NAME>
+                  <CATEGORY>SERVICE_COMPONENT</CATEGORY>
+                  <PORTS>
+                    {%- for rport in bswm_package["componenttypes_pkg"]["rports"] %}
+                    <R-PORT-PROTOTYPE UUID="7bc00a0b-9435-41a9-a9ee-44257e9d1cb4">
+                    <SHORT-NAME>{{rport["name"]}}</SHORT-NAME>
+                    <REQUIRED-COM-SPECS>
+                        <NONQUEUED-RECEIVER-COM-SPEC>
+                          <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">{{rport["data_element_ref"]}}</DATA-ELEMENT-REF>
+                          <HANDLE-OUT-OF-RANGE>NONE</HANDLE-OUT-OF-RANGE>
+                          <HANDLE-OUT-OF-RANGE-STATUS>SILENT</HANDLE-OUT-OF-RANGE-STATUS>
+                          <INIT-VALUE>
+                            <NUMERICAL-VALUE-SPECIFICATION>
+                              <VALUE>{{rport["init_value"]}}</VALUE>
+                            </NUMERICAL-VALUE-SPECIFICATION>
+                          </INIT-VALUE>
+                        </NONQUEUED-RECEIVER-COM-SPEC>
+                      </REQUIRED-COM-SPECS>
+                      <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">{{rport["require_interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                    </R-PORT-PROTOTYPE>
+                    {%- endfor%}
+                    {%- for rport in bswm_package["componenttypes_pkg"]["notifyports"] %}
+                    <R-PORT-PROTOTYPE UUID="7bc00a0b-9435-41a9-a9ee-44257e9d1cb4">
+                      <SHORT-NAME>{{rport["name"]}}</SHORT-NAME>
+                      <REQUIRED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">{{rport["require_interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                    </R-PORT-PROTOTYPE>
+                    {%- endfor%}
+                    {%- for pport in bswm_package["componenttypes_pkg"]["pports"] %}
+                    <P-PORT-PROTOTYPE UUID="123456">
+                      <SHORT-NAME>{{pport["name"]}}</SHORT-NAME>
+                      <PROVIDED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">{{pport["provide_interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                    </P-PORT-PROTOTYPE>
+                    {%- endfor%}
+                  </PORTS>
+                  <INTERNAL-BEHAVIORS>
+                    <SWC-INTERNAL-BEHAVIOR UUID="123456">
+                      <SHORT-NAME>BswMInternalBehavior</SHORT-NAME>
+                      <EVENTS>
+                        <TIMING-EVENT UUID="123456">
+                          <SHORT-NAME>Timer_BswM_MainFunction</SHORT-NAME>
+                          <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/AUTOSAR/BswM_swc/ComponentTypes/BswM/BswMInternalBehavior/BswM_MainFunction</START-ON-EVENT-REF>
+                          {%- set period =  get_peirod(bswm_package)%}
+                          <PERIOD>{{period}}</PERIOD>
+                        </TIMING-EVENT>
+                      </EVENTS>
+                      <HANDLE-TERMINATION-AND-RESTART>NO-SUPPORT</HANDLE-TERMINATION-AND-RESTART>
+                      <PORT-API-OPTIONS>
+                        {%- for rport in bswm_package["componenttypes_pkg"]["rports"] %}
+                        <PORT-API-OPTION>
+                            <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                            <INDIRECT-API>false</INDIRECT-API>
+                            <PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/BswM_swc/ComponentTypes/BswM/{{rport["name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor%}
+                        {%- for rport in bswm_package["componenttypes_pkg"]["notifyports"] %}
+                        <PORT-API-OPTION>
+                            <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                            <INDIRECT-API>false</INDIRECT-API>
+                            <PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/BswM_swc/ComponentTypes/BswM/{{rport["name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor%}
+                        {%- for pport in bswm_package["componenttypes_pkg"]["pports"] %}
+                        <PORT-API-OPTION>
+                          <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                          <INDIRECT-API>false</INDIRECT-API>
+                          <PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/BswM_swc/ComponentTypes/BswM/{{pport["name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor%}
+                      </PORT-API-OPTIONS>
+
+                      <RUNNABLES>
+                        <RUNNABLE-ENTITY UUID="123456">
+                          <SHORT-NAME>BswM_MainFunction</SHORT-NAME>
+                          <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                          <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                          <DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                            {%- for rport in bswm_package["componenttypes_pkg"]["rports"] %}
+                            <VARIABLE-ACCESS UUID="123456">
+                              <SHORT-NAME>DataReceivePointBswM_MainFunction_{{rport["name"]}}_requestedModeType</SHORT-NAME>
+                              <ACCESSED-VARIABLE>
+                                <AUTOSAR-VARIABLE-IREF>
+                                  <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/BswM_swc/ComponentTypes/BswM/{{rport["name"]}}</PORT-PROTOTYPE-REF>
+                                  <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">{{rport["data_element_ref"]}}</TARGET-DATA-PROTOTYPE-REF>
+                                </AUTOSAR-VARIABLE-IREF>
+                              </ACCESSED-VARIABLE>
+                            </VARIABLE-ACCESS>
+                            {%- endfor%}
+                          </DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                          <MODE-ACCESS-POINTS>
+                            {%- for rport in bswm_package["componenttypes_pkg"]["notifyports"] %}
+                            <MODE-ACCESS-POINT>
+                              <MODE-GROUP-IREF>
+                                <R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF>
+                                  <CONTEXT-R-PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/BswM_swc/ComponentTypes/BswM/{{rport["name"]}}</CONTEXT-R-PORT-REF>
+                                  <TARGET-MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/AUTOSAR/BswM_swc/Interfaces/BswM_MSI_{{rport["modegroup_name"]}}/BswM_MDGP_{{rport["modegroup_name"]}}</TARGET-MODE-GROUP-REF>
+                                </R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF>
+                              </MODE-GROUP-IREF>
+                            </MODE-ACCESS-POINT>
+                            {%- endfor%}
+                          </MODE-ACCESS-POINTS>
+                          <MODE-SWITCH-POINTS>
+                            {%- for pport in bswm_package["componenttypes_pkg"]["pports"] %}                          
+                            <MODE-SWITCH-POINT UUID="123456">
+                              <SHORT-NAME>ModeSwitchPointBswM_MainFunction_{{pport["name"]}}</SHORT-NAME>
+                              <MODE-GROUP-IREF>
+                                <CONTEXT-P-PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/BswM_swc/ComponentTypes/BswM/{{pport["name"]}}</CONTEXT-P-PORT-REF>
+                                <TARGET-MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/AUTOSAR/BswM_swc/Interfaces/BswM_MSI_{{pport["modegroup_name"]}}/BswM_MDGP_{{pport["modegroup_name"]}}</TARGET-MODE-GROUP-REF>
+                              </MODE-GROUP-IREF>
+                            </MODE-SWITCH-POINT>
+                            {%- endfor%}
+                          </MODE-SWITCH-POINTS>
+
+
+                        </RUNNABLE-ENTITY>
+                      </RUNNABLES>
+                    </SWC-INTERNAL-BEHAVIOR>
+                  </INTERNAL-BEHAVIORS>
+                </SERVICE-SW-COMPONENT-TYPE>
+                <SWC-IMPLEMENTATION UUID="fbb76735-fc25-4b0a-9668-aa0848204fc6">
+                  <SHORT-NAME>BswMImplementation</SHORT-NAME>
+                  <PROGRAMMING-LANGUAGE>C</PROGRAMMING-LANGUAGE>
+                  <BEHAVIOR-REF DEST="SWC-INTERNAL-BEHAVIOR">/AUTOSAR/BswM_swc/ComponentTypes/BswM/BswMInternalBehavior</BEHAVIOR-REF>
+                </SWC-IMPLEMENTATION>
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

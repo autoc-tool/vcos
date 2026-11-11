@@ -1,0 +1,53 @@
+{
+  "OsScheduleTable_Core0": [
+    [
+      0,
+      "Core0_Demo_Task_1ms",
+      "Core0_BSWApp_Task_1ms",
+      "Core0_BSW_Task_5ms",
+      "Core0_Demo_Task_5ms",
+      "Core0_BSWApp_Task_5ms",
+      "Core0_ASIL_BSW_Task_5ms",
+      "Core0_BSW_Task_10ms",
+      "Core0_Demo_Task_10ms",
+      "Core0_BSWApp_Task_10ms",
+      "Core0_ASIL_BSW_Task_10ms",
+      "Core0_ActuatorIN_Task_10ms",
+      "Core0_ActuatorOUT_Task_10ms",
+      "Core0_BSW_Task_10ms_LowPriority"
+    ]
+  ],
+  "OsScheduleTable_Core1": [
+    [
+      0,
+      "Core1_ASILB_Task_1ms",
+      "Core1_BSWApp_Task_1ms",
+      "Core1_ActuatorIN_Task_1ms",
+      "Core1_ActuatorOUT_Task_1ms",
+      "Core1_BSWApp_Task_5ms",
+      "Core1_BSW_Task_10ms",
+      "Core1_NMM_Task_10ms",
+      "Core1_ASILB_Task_10ms",
+      "Core1_ASILD_Task_10ms",
+      "Core1_BSWApp_Task_10ms",
+      "Core1_ActuatorIN_Task_10ms",
+      "Core1_ActuatorOUT_Task_10ms"
+    ]
+  ],
+  "OsScheduleTable_Core2": [
+    [
+      0,
+      "Core2_BSW_Task_1ms",
+      "Core2_BSW_Task_5ms",
+      "Core2_BSW_Task_10ms"
+    ]
+  ],
+  "OsScheduleTable_Core3": [
+    [
+      0,
+      "Core3_BSW_Task_1ms",
+      "Core3_BSW_Task_5ms",
+      "Core3_BSW_Task_10ms"
+    ]
+  ]
+}

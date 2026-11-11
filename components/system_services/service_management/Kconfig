@@ -1,0 +1,11 @@
+config SERVM_ECUM
+    bool "servm ecum support"
+    default n
+    ---help---
+        Enable the SERVM_ECUM
+
+config SERVM_BSWM
+    bool "servm bswm support"
+    default n
+    ---help---
+        Enable the SERVM_BSWM

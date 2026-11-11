@@ -1,0 +1,315 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        cannm_cfg.h
+ * @brief       CanNm配置头文件
+ * @details     主要包含CanNm模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef CANNM_CFG_H
+#define CANNM_CFG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#ifndef False
+#define False ((boolean)FALSE)   ///< 否
+#endif
+#ifndef True
+#define True  ((boolean)TRUE)   ///< 是
+#endif
+#ifndef None
+#define None  (0u)              ///< 默认值0
+#endif
+
+#define CANNM_PDU_ID  (0u)      ///< 默认PduId 0
+
+{%- set cannm_channel_list = get_cannm_channel_config() %}
+#define CANNM_CHANNEL_COUNT                             ({{cannm_channel_list | length}}u)   ///< CanNm的通道数
+{%- set CanNmPnCount = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmPnEnabled == True %}
+{%- set CanNmPnCount.value = CanNmPnCount.value + 1 %}
+{%- endif %}
+{%- endfor %}
+#define CANNM_PNC_COUNT                                 ({{ CanNmPnCount.value }}u)          ///< PNC个数
+#define CANNM_CHANNEL_MAX_COUNT                         ({{ cannm_channel_list | length }}u) ///< CanNm的最大通道数
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmBusLoadReductionEnabled == True %}
+#define CANNM_BUS_LOAD_REDUCTION_ENABLED                            (STD_ON)  ///< 总线负载降低使能开关 @req CANNM052
+{%- else %}
+#define CANNM_BUS_LOAD_REDUCTION_ENABLED                            (STD_OFF) ///< 总线负载降低使能开关 @req CANNM052
+{%- endif %}
+
+{%- set CanNmBusLoadReductionActiveNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmBusLoadReductionActive == True %}
+{%- set CanNmBusLoadReductionActiveNum.value = CanNmBusLoadReductionActiveNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmBusLoadReductionActiveNum.value > 0 %}
+#define CANNM_BUS_LOAD_REDUCTION_ACTIVE                             (STD_ON)  ///< 总线负载降低激活开关
+{%- else %}
+#define CANNM_BUS_LOAD_REDUCTION_ACTIVE                             (STD_OFF) ///< 总线负载降低激活开关
+{%- endif %}
+
+{%- set CanNmCarWakeUpRxEnabledNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmCarWakeUpRxEnabled == True %}
+{%- set CanNmCarWakeUpRxEnabledNum.value = CanNmCarWakeUpRxEnabledNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmCarWakeUpRxEnabledNum.value > 0 %}
+#define CANNM_CAR_WUP_RX_FEATURE_ENABLED                            (STD_ON)  ///< 车辆唤醒接收功能使能开关
+{%- else %}
+#define CANNM_CAR_WUP_RX_FEATURE_ENABLED                            (STD_OFF) ///< 车辆唤醒接收功能使能开关
+{%- endif %}
+
+{%- set CanNmCarWakeUpBitPositionNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- set CanNmCarWakeUpBitPositionNum.value = CanNmConfig.CanNmChannelConfig[channel_index].CanNmCarWakeUpBitPosition %}
+{%- endfor %}
+#define CANNM_CAR_WUP_BIT_POSITION                   ({{CanNmCarWakeUpBitPositionNum.value}}u)  ///< 车辆唤醒比特位置
+
+
+{%- set CanNmCarWakeUpBytePositionNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- set CanNmCarWakeUpBytePositionNum.value = CanNmConfig.CanNmChannelConfig[channel_index].CanNmCarWakeUpBytePosition %}
+{%- endfor %}
+#define CANNM_CAR_WUP_BYTE_POSITION                  ({{CanNmCarWakeUpBytePositionNum.value}}u)  ///< 车辆唤醒字节位置
+
+{%- set CanNmActiveWakeupBitEnabledNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmActiveWakeupBitEnabled == True %}
+{%- set CanNmActiveWakeupBitEnabledNum.value = CanNmActiveWakeupBitEnabledNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+
+{%- if CanNmActiveWakeupBitEnabledNum.value > 0 %}
+#define CANNM_ACTIVE_WUP_BIT_FEATURE_ENABLED                         (STD_ON)    ///< 激活车辆唤醒比特功能使能开关
+{%- else %}
+#define CANNM_ACTIVE_WUP_BIT_FEATURE_ENABLED                         (STD_OFF)  ///< 激活车辆唤醒比特功能使能开关
+{%- endif %}
+
+{%- set CanNmNodeDetectionEnabledNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmNodeDetectionEnabled == True %}
+{%- set CanNmNodeDetectionEnabledNum.value = CanNmNodeDetectionEnabledNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmNodeDetectionEnabledNum.value > 0 %}
+#define CANNM_NODE_DETECTION_ENABLED                                 (STD_ON)    ///< 探测模式使能开关
+{%- else %}
+#define CANNM_NODE_DETECTION_ENABLED                                 (STD_OFF)   ///< 探测模式使能开关
+{%- endif %}
+
+{%- set CanNmRepeatMsgIndEnabledNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmRepeatMsgIndEnabled == True %}
+{%- set CanNmRepeatMsgIndEnabledNum.value = CanNmRepeatMsgIndEnabledNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmRepeatMsgIndEnabledNum.value > 0 %}
+#define CANNM_REPEAT_MSG_IND_ENABLED                                     (STD_ON)   ///< 重复消息标志使能开关
+{%- else %}
+#define CANNM_REPEAT_MSG_IND_ENABLED                                     (STD_OFF)  ///< 重复消息标志使能开关
+{%- endif %}
+
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmImmediateTxconfEnabled == True %}
+#define CANNM_IMMEDIATE_TXCONF_ENABLED                                (STD_ON)   ///< 立即发送确认使能开关
+{%- else %}
+#define CANNM_IMMEDIATE_TXCONF_ENABLED                                (STD_OFF)  ///< 立即发送确认使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmUserDataEnabled == True %}
+#define CANNM_USER_DATA_ENABLED                                       (STD_ON)   ///< 用户数据使能开关
+{%- else %}
+#define CANNM_USER_DATA_ENABLED                                       (STD_OFF)  ///< 用户数据使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmPassiveModeEnabled == True %}
+#define CANNM_PASSIVE_MODE_ENABLED                                    (STD_ON)   ///< 被动模式使能开关
+{%- else %}
+#define CANNM_PASSIVE_MODE_ENABLED                                    (STD_OFF)  ///< 被动模式使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmVersionInfoApi == True %}
+#define CANNM_VERSION_INFO_API                                        (STD_ON)   ///< 版本信息API使能开关
+{%- else %}
+#define CANNM_VERSION_INFO_API                                        (STD_OFF)  ///< 版本信息API使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmPduRxIndicationEnabled == True %}
+#define CANNM_PDU_RX_INDICATION_ENABLED                               (STD_ON)   ///< PDU接收标识使能开关
+{%- else %}
+#define CANNM_PDU_RX_INDICATION_ENABLED                               (STD_OFF)  ///< PDU接收标识使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmStateChangeIndEnabled == True %}
+#define CANNM_STATE_CHANGE_IND_ENABLED                                (STD_ON)   ///< 状态改变标识使能开关
+{%- else %}
+#define CANNM_STATE_CHANGE_IND_ENABLED                                (STD_OFF)  ///< 状态改变标识使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmRemoteSleepIndEnabled == True %}
+#define CANNM_REMOTE_SLEEP_IND_ENABLED                                (STD_ON)   ///< 远端睡眠标识使能开关 @req CANNM149
+{%- else %}
+#define CANNM_REMOTE_SLEEP_IND_ENABLED                                (STD_OFF)  ///< 远端睡眠标识使能开关 @req CANNM149
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmBusSynchronizationEnabled == True %}
+#define CANNM_BUS_SYNCHRONIZATION_ENABLED                             (STD_ON)   ///< 总线同步使能开关
+{%- else %}
+#define CANNM_BUS_SYNCHRONIZATION_ENABLED                             (STD_OFF)  ///< 总线同步使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmComUserDataSupport == True %}
+#define CANNM_COM_USER_DATA_SUPPORT                                   (STD_ON)   ///< Com支持用户数据使能开关
+{%- else %}
+#define CANNM_COM_USER_DATA_SUPPORT                                   (STD_OFF)  ///< Com支持用户数据使能开关
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmCoordinatorSyncSupport == True %}
+#define CANNM_COORDINATOR_SYNC_SUPPORT                                (STD_ON)   ///< 支持协调器同步使能开关
+{%- else %}
+#define CANNM_COORDINATOR_SYNC_SUPPORT                                (STD_OFF)  ///< 支持协调器同步使能开关
+{%- endif %}
+
+{%- set CanNmCarWakeUpFilterEnabledNum = namespace(value = 0) %}
+{%- for channel in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel].CanNmCarWakeUpFilterEnabled == True %}
+{%- set CanNmCarWakeUpFilterEnabledNum.value = CanNmCarWakeUpFilterEnabledNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmCarWakeUpFilterEnabledNum.value > 0 %}
+#define CANNM_CAR_WUP_FILTER_FEATURE_ENABLED                          (STD_ON)  ///< 车辆唤醒过滤器功能使能开关
+{%- else %}
+#define CANNM_CAR_WUP_FILTER_FEATURE_ENABLED                          (STD_OFF)  ///< 车辆唤醒过滤器功能使能开关
+{%- endif %}
+
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmGlobalPnSupport == True %}
+#define CANNM_PN_FEATURE_ENABLED                                      (STD_ON)   ///< 局部网络功能使能开关
+{%- else %}
+#define CANNM_PN_FEATURE_ENABLED                                      (STD_OFF)  ///< 局部网络功能使能开关
+{%- endif %}
+
+{%- set cannm_pn_era_calc_enabled = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmPnEraCalcEnabled == True %}
+{%- set cannm_pn_era_calc_enabled.value = cannm_pn_era_calc_enabled.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if cannm_pn_era_calc_enabled.value > 0 %}
+#define CANNM_PNC_ERA_CALC_ENABLED                                    (STD_ON)   ///< PNC ERA计算使能开关
+{%- else %}
+#define CANNM_PNC_ERA_CALC_ENABLED                                    (STD_OFF)  ///< PNC ERA计算使能开关
+{%- endif %}
+
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmPnEiraCalcEnabled == True %}
+#define CANNM_PNC_EIRA_CALC_ENABLED                                   (STD_ON)    ///< PNC EIRA计算使能开关
+{%- else %}
+#define CANNM_PNC_EIRA_CALC_ENABLED                                   (STD_OFF)   ///< PNC EIRA计算使能开关
+{%- endif %}
+
+{%- set CanNmPnHandleMultipleNetworkRequestsNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmPnHandleMultipleNetworkRequests == True %}
+{%- set CanNmPnHandleMultipleNetworkRequestsNum.value = CanNmPnHandleMultipleNetworkRequestsNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmPnHandleMultipleNetworkRequestsNum.value > 0 %}
+#define CANNM_PN_HANDLE_MULTIPLE_NETWORK_REQUESTS                     (STD_ON)  ///< 局部网络处理多个网络请求
+{%- else %}
+#define CANNM_PN_HANDLE_MULTIPLE_NETWORK_REQUESTS                     (STD_OFF) ///< 局部网络处理多个网络请求
+{%- endif %}
+
+{%- set CanNmFirstPduFailedRetryNum = namespace(value = 0) %}
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmFirstPduFailedRetry == True %}
+{%- set CanNmFirstPduFailedRetryNum.value = CanNmFirstPduFailedRetryNum.value + 1 %}
+{%- endif %}
+{%- endfor %}
+{%- if CanNmFirstPduFailedRetryNum.value > 0 %}
+#define CANNM_FIRST_PDU_FAILED_RETRY                             (STD_ON)    ///< 重新尝试第一帧消息请求
+{%- else %}
+#define CANNM_FIRST_PDU_FAILED_RETRY                             (STD_OFF)   ///< 重新尝试第一帧消息请求
+{%- endif %}
+
+#define CANNM_PDU_OFF                                                 (0xFFu)     ///< 不启用PDU位置
+#define CANNM_PDU_BYTE_0                                              (0x00u)     ///< 第0个字节
+#define CANNM_PDU_BYTE_1                                              (0x01u)     ///< 第1个字节
+
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmDevErrorDetect == True %}
+#define CANNM_DEV_ERROR_DETECT                                        (STD_ON)  ///< 开发错误探测开关
+{%- else %}
+#define CANNM_DEV_ERROR_DETECT                                        (STD_OFF) ///< 开发错误探测开关
+{%- endif %}
+
+#define CANNM_PNC_RESET_TIME             ({{ CanNmConfig.CanNmGlobalConfig.CanNmPnResetTime }}u)  ///< PN 重置时间
+
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmComControlEnabled == True %}
+#define CANNM_COM_CONTROL_ENABLED                                     (STD_ON)
+{%- else %}
+#define CANNM_COM_CONTROL_ENABLED                                     (STD_OFF)
+{%- endif %}
+
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmPassiveModeEnabled == False %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmImmediateRestartEnabled == True %}
+#define CANNM_IMMEDIATERESTARTENABLED                                 (STD_ON)    ///< 立即重启开关打开
+{%- else %}
+#define CANNM_IMMEDIATERESTARTENABLED                                 (STD_OFF)   ///< 立即重启开关关闭
+{%- endif %}
+{%- endif %}
+{%- if CanNmConfig.CanNmGlobalConfig.CanNmCalloutConfig == True %}
+#define CANNM_CALLOUT_CONFIG                                 (STD_ON)    ///< 回调配置开关打开
+{%- else %}
+#define CANNM_CALLOUT_CONFIG                                 (STD_OFF)    ///< 回调配置开关关闭
+{%- endif %}
+
+{%- set cannm_multicore = get_cannm_multicore_or_not() %}
+#define CANNM_MULTICORE_ENABLED                                 ({{cannm_multicore}})    ///< CanNm是否支持多核
+{%- if cannm_multicore == "STD_OFF" %}
+{%- set cannm_single_coreid = get_cannm_single_coreid() %}
+#define CANNM_SINGLECORE_COREID                                ({{cannm_single_coreid}}u)    ///< CanNm单核CoreId
+{%- endif %}
+{%- set cannm_core_dict = get_cannm_core_dict() %}
+#define CANNM_CORE_MAX_COUNT                                 ({{cannm_core_dict | length}}u)    ///< CanNm最大核索引
+{%- for cannm_core_index in range(cannm_core_dict | length) %}
+#define {{ cannm_core_dict[cannm_core_index] }}                      ({{cannm_core_index}}u)    ///< CanNm核{{cannm_core_index}}定义
+{%- endfor %}
+
+{%- set cannm_channel_id_dict = get_cannm_channel_id_dict() %}
+
+{%- for cannm_channel_id in range(cannm_channel_id_dict | length) %}
+{%- if (cannm_channel_id_dict[cannm_channel_id] | length) > 0 %}
+#define {{ cannm_channel_id_dict[cannm_channel_id] }}                      ({{cannm_channel_id}}u)    ///< CanNm通道名{{ cannm_channel_id_dict[cannm_channel_id] }}
+{%- endif %}
+{%- endfor %}
+
+{%- if (cannm_channel_list | length) > 0 %}
+{%- set cannm_nm_chnl_transping_mainfunction_period_dict = get_cannm_channel_mapping_mainfunction_period_dict() %}
+{%- for channel_index in range(cannm_nm_chnl_transping_mainfunction_period_dict | length) %}
+#define {{ cannm_channel_id_dict[channel_index] }}_MAINFUNCTION_PERIOD_{{ cannm_nm_chnl_transping_mainfunction_period_dict[channel_index] }}MS        ({{cannm_nm_chnl_transping_mainfunction_period_dict[channel_index]}}u)    ///< CanNm通道名{{ cannm_channel_id_dict[channel_index] }}的主函数周期{{cannm_nm_chnl_transping_mainfunction_period_dict[channel_index]}}ms
+{%- endfor %}
+{%- endif %}
+
+{%- if (cannm_core_dict | length) > 0 %}
+{%- for core_index in range(cannm_core_dict | length) %}
+{%- set cannm_core_include_channel_num = get_cannm_core_include_channel_num(core_index) %}
+{%- set cannm_core_include_channel_num_dict = get_cannm_core_include_channel_num_dict() %}
+#define CANNM_CORE{{ core_index }}_INCLUDE_CHANNEL_NUM                      ({{ cannm_core_include_channel_num_dict[core_index] }}u)    ///< CanNm核{{ core_index }}包括通道个数定义
+{%- endfor %}
+{%- endif %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CANNM_CFG_H */

@@ -1,0 +1,247 @@
+{{get_copyright()}}
+/*!*********************************************************************************************************************
+ * @file        BswM_PBCfg.c
+ * @brief       BswM PostBuild 配置源文件.
+ * @details     BswM PostBuild 配置源文件.
+ * @date		{{get_generation_time()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+/* Including File */
+#include "bswm.h"
+
+{%- set headers = get_headers(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for header in headers %}
+#include "{{header}}"
+{%- endfor %}
+#include "bswm_internal.h"
+#include "bswm_bsw.h"
+
+/* Include UserCallout File */
+{%- set user_callout = judge_usercallout(dict_config["ActiveEcuC"]["BswM"]) %}
+{%- if user_callout %}
+#include "bswm_user_callout.h"
+{%- endif %}
+
+#define  BSWM_START_SEC_CONST
+#include "bswm_memmap.h"
+/* Local Type & Structure Definition */
+{%- set pdugroups = gen_pdugroup(dict_config["ActiveEcuC"]["BswM"]).items() %}
+/* BswM内部使用的 PduGroup */
+{%- for group_name, group_value in pdugroups %}
+static CONST(sint32, BSWM_CONST) {{ group_name[1:-3] }}[] = {
+{%- for compdugroup in group_value %}
+	(sint32)ComConf_ComIPduGroup_{{ get_key_name(compdugroup) }},
+{%- endfor %}
+	-1
+};
+{%- endfor %}
+
+
+{% set pdur_pathgroups = gen_pdur_pathgroup(dict_config["ActiveEcuC"]["BswM"], dict_bsw["dict_pdur"]).items() %}
+/* 不同的 PduRoutingPathGroup */
+{%- for pathgroup_name, pathgroup_value in pdur_pathgroups %}
+static CONST(sint32, BSWM_CONST) {{ pathgroup_name }}[] = {
+{%- for pdurpathgroup in pathgroup_value %}
+	(sint32){{ pdurpathgroup }},
+{%- endfor %}
+	-1
+};
+{%- endfor %}
+
+
+{% set actionlists = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMActionLists") %}
+{%- if actionlists %}
+/* 不同ActionItems 具体内容 */
+{%- for actionlist_name, actionlist_value in actionlists.items() %}
+{%- if actionlist_name != "Tag" %}
+
+{%- for action_name, action_value in actionlist_value["BswMActionListItems"].items() %}
+{%- if action_name != "Tag" %}
+{%- set item_name = get_key_name(action_value["BswMActionListItemRef"]["ValueRef"]) %}
+
+static CONST(bswm_action_list_item_t, BSWM_CONST) bswm_{{actionlist_name}}_{{action_name}} = {
+{%- set item_value = get_dict_by_ref_path(dict_config["ActiveEcuC"]["BswM"], action_value["BswMActionListItemRef"]["ValueRef"]) %}
+{%- set action_type = get_key_name(item_value["DefinitionRef"]) %}
+{%- if action_type == "BswMAction" %}
+	.action_t = BSWM_ATOMIC,
+	.atomic_idx = BSWM_{{ item_name|upper }}_ACTION_IDX,
+{%- elif action_type == "BswMRule" %}
+	.action_t = BSWM_RULE,
+	.rule_idx_ref = (sint16)BSWM_{{ item_name|upper }}_RULE_IDX,
+{%- elif action_type == "BswMActionList" %}
+	.action_t = BSWM_LIST,
+	.list_idx_ref = (sint32)BSWM_{{ item_name|upper }}_LIST_IDX,
+{%- endif %}
+	.dem_fail_report_ref = -1,
+	.stop_if_fail = (boolean){{ gen_switch_macro(action_value["BswMAbortOnFail"]["Value"]) }},
+
+{%- if action_type == "BswMAction" %}
+
+{%- set key_name = get_key_name(action_value["BswMActionListItemRef"]["ValueRef"]) %}
+{%- set key_value = get_dict_by_ref_path(dict_config["ActiveEcuC"]["BswM"], action_value["BswMActionListItemRef"]["ValueRef"]) %}
+{%- if "BswMLinScheduleSwitch" in key_value["BswMAvailableActions"] %}
+{%- set lin_schedule = get_dict_by_ref_path_base(dict_bsw["dict_linsm"], key_value["BswMAvailableActions"]["BswMLinScheduleSwitch"]["BswMLinScheduleRef"]["ValueRef"]) %}
+	.referred_lin_sched = {{ lin_schedule["LinSMScheduleIndex"]["Value"] }}
+{%- endif %}
+
+{%- if "BswMPduGroupSwitch" in key_value["BswMAvailableActions"] %}
+{%- set pdugroup = get_pdugroup(key_name, key_value["BswMAvailableActions"]["BswMPduGroupSwitch"]["BswMDisabledPduGroupRef"]["ValueRef"], key_value["BswMAvailableActions"]["BswMPduGroupSwitch"]["BswMEnabledPduGroupRef"]["ValueRef"]) %}
+	.need_reinit_pdu_group = (boolean){{ gen_switch_macro(key_value["BswMAvailableActions"]["BswMPduGroupSwitch"]["BswMPduGroupSwitchReinit"]["Value"]) }},
+	.inactive_pdu_group = {{ pdugroup[0] }},
+	.active_pdu_group = {{ pdugroup[1] }},
+{%- endif %}
+
+{%- if "BswMDeadlineMonitoringControl" in key_value["BswMAvailableActions"] %}
+{%- set pdugroup = get_pdugroup(key_name, key_value["BswMAvailableActions"]["BswMDeadlineMonitoringControl"]["BswMDisabledDMPduGroupRef"]["ValueRef"], key_value["BswMAvailableActions"]["BswMDeadlineMonitoringControl"]["BswMEnabledDMPduGroupRef"]["ValueRef"]) %}
+	.inactive_pdu_group = {{ pdugroup[0] }},
+	.active_pdu_group = {{ pdugroup[1] }},
+{%- endif %}
+
+{%- if "BswMTimerControl" in key_value["BswMAvailableActions"] %}
+	.timer_id = {{ get_key_name(key_value["BswMAvailableActions"]["BswMTimerControl"]["BswMTimerRef"]["ValueRef"]) }},
+	.timer_value = {{ key_value["BswMAvailableActions"]["BswMTimerControl"]["BswMTimerValue"]["Value"] }},
+{%- endif %}
+
+{%- if "BswMPduRouterControl" in key_value["BswMAvailableActions"] %}
+	.pdu_route_type = {{ key_value["BswMAvailableActions"]["BswMPduRouterControl"]["BswMPduRouterAction"]["Value"] }},
+	.pdu_path_group_ref = &bswm_{{ key_name[:-6] }}_PathGroup[0]
+{%- endif %}
+
+{%- if "BswMNMControl" in key_value["BswMAvailableActions"] %}
+	.nm_action = {{ key_value["BswMAvailableActions"]["BswMNMControl"]["BswMNMAction"]["Value"] }},
+{%- endif %}
+
+{%- endif %}
+};
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+/* 不同ActionListItems 实体 */
+{%- for actionlist_name, actionlist_value in actionlists.items() %}
+{%- if actionlist_name != "Tag" %}
+
+static CONSTP2CONST(bswm_action_list_item_t, AUTOMATIC, BSWM_CONST) BswM_ActionList_{{actionlist_name}}[] = {
+{%- for action_name, action_value in actionlist_value["BswMActionListItems"].items() %}
+{%- if action_name != "Tag" %}
+{%- set item_name = get_key_name(action_value["BswMActionListItemRef"]["ValueRef"]) %}
+	&bswm_{{actionlist_name}}_{{action_name}},
+{%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+{%- endfor %}
+
+/* 行为列表配置数据 */
+
+static CONST(bswm_action_list_t, BSWM_CONST) bswm_action_list_data[BSWM_NUMBER_OF_ACTIONLISTS] = {
+{%- for actionlist_name, actionlist_value in actionlists.items() %}
+{%- if actionlist_name != "Tag" %}
+	[BSWM_{{ actionlist_name|upper }}_LIST_IDX] =
+	{
+		.exec_mode = {{ actionlist_value["BswMActionListExecution"]["Value"] }},
+		.items_count = {{ actionlist_value["BswMActionListItems"]|length-1 }}u,
+		.items = &BswM_ActionList_{{ actionlist_name }}[0]
+	},
+{%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+
+{% set rules = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMRules") %}
+{%- if rules %}
+/* 规则配置数据 */
+
+static CONST(bswm_rule_t, BSWM_CONST) bswm_rule_data[BSWM_NUMBER_OF_RULES] = {
+{%- for rule_name, rule_value in rules.items() %}
+{%- if rule_name != "Tag" %}
+	[BSWM_{{ rule_name|upper }}_RULE_IDX] =
+	{
+	{%- set expression_name = get_key_name(rule_value["BswMRuleExpressionRef"]["ValueRef"]) %}
+	{%- set truelist_name = get_key_name(rule_value["BswMRuleTrueActionList"]["ValueRef"]) %}
+	{%- set falselist_name = get_key_name(rule_value["BswMRuleFalseActionList"]["ValueRef"]) %}
+		.logic_expr_idx = BSWM_{{ expression_name|upper }}_EXP_IDX,
+		.initial_state = (bswm_rule_state_t){{ rule_value["BswMRuleInitState"]["Value"] }},
+		.true_list_idx = (sint32){{ get_actionlist_idx(truelist_name) }},
+		.false_list_idx = (sint32){{ get_actionlist_idx(falselist_name) }}
+	},
+{%- endif %}
+{%- endfor %}
+};
+{%- endif %}
+
+{% set all_rules = get_ruledata(dict_config["ActiveEcuC"]["BswM"]) %}
+/* 延期规则配置数据 */
+static CONST(sint16, BSWM_CONST) bswm_deferred_rules[] = {
+{%- if all_rules["DeferredRules"]|length > 0 %}
+{%- set deferred_rule_set = all_rules["DeferredRules"] %}
+{%- for rule_idx in deferred_rule_set %}
+	(sint16){{rule_idx}},
+{%- endfor %}
+{%- endif %}
+	-1
+};
+
+/* 即时规则配置数据 */
+static CONST(sint16, BSWM_CONST) bswm_immediate_rules[] = {
+{%- if all_rules["ImmediateRules"]|length > 0 %}
+{%- set immediate_rule_set = all_rules["ImmediateRules"].items() %}
+{%- for module_name, rule_idxes in immediate_rule_set %}
+{%- for rule_user,rule_idx in rule_idxes.items() %}
+{%- for idx in rule_idx %}
+	(sint16){{idx}},					/* {{module_name}} {{rule_user}} */
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- else %}
+   -1
+{%- endif %}
+};
+
+/* 即时规则配置数据 */
+CONST(sint16, BSWM_CONST) bswm_immediate_rules_on_init[] = {
+{%- if all_rules["ImmediateRulesOninit"]|length > 0 %}
+{%- set immediate_rules_oninit = all_rules["ImmediateRulesOninit"] %}
+{%- for idx in immediate_rules_oninit %}
+	(sint16){{idx}},	 
+{%- endfor %}
+{%- else %}
+   -1
+{%- endif %}
+};
+
+
+{% set requests = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMModeRequestPorts") %}
+{%- if requests %}
+/* 模式请求初始状态 */
+static CONST(uint32, BSWM_CONST) BswM_ModeReqMirrorsInit[BSWM_NUMBER_OF_REQUESTS] = {
+{%- for req_name, req_value in get_reqinitvalue(requests).items() %}
+	{{ req_name }} = (uint32) {{ req_value }},
+{%- endfor %}
+};
+{%- endif %}
+
+
+/* 规则配置数据 */
+static CONST(bswm_rule_config_t, BSWM_CONST) bswm_rule_config = {
+	.deferred_rule_set  = &bswm_deferred_rules[0],				   /* 延期规则 */
+	.immediate_rule_set = &bswm_immediate_rules[0],				  /* 即时规则 */
+{%- if rules %}
+	.rule_list	   = &bswm_rule_data[0],						/* 规则数据 */
+{%- endif %}
+	.rules_count  = BSWM_NUMBER_OF_RULES					  /* 规则总数 */
+};
+
+/* 总配置数据 */
+CONST(bswm_config_type, BSWM_CONST) bswm_config = {
+	.rule_cfg		 = &bswm_rule_config,						/* 规则配置 */
+{%- if actionlists %}
+	.action_list_data  = &bswm_action_list_data[0],				 /* 行为列表配置 */
+{%- endif %}
+{%- if requests %}
+	.mode_request_data = &BswM_ModeReqMirrorsInit[0]			  /* 模式请求配置 */
+{%- endif %}
+};
+#define  BSWM_STOP_SEC_CONST
+#include "bswm_memmap.h"

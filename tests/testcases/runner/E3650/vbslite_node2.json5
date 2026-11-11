@@ -1,0 +1,17 @@
+{
+    "radius0": [
+        {
+            "name": "basic_tests",
+            "tests": "interaction/basic_tests",
+            "markers": "R0",
+            "type": "interaction",
+            "group": ""
+        }
+    ],
+    "radius1": [
+    ],
+    "radius2": [
+    ],
+    "radius3": [
+    ]
+}

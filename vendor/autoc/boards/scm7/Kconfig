@@ -1,0 +1,8 @@
+if ARCH_BOARD_CUSTOM
+
+config ARCH_BOARD_SCM7
+	bool
+	default y
+	depends on ARCH_CHIP_AUTOC_SCM7
+
+endif

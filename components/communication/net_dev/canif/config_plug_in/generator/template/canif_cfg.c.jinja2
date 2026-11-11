@@ -1,0 +1,632 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  CanIf模块配置文件.
+ */
+
+#include "canif_internal.h"
+#include "canif_cantrcv.h"
+#include "canif_types.h"
+{{""}}
+{%- if sys_cfg['modules_info']['kfg_module_all_list'] | length == 0 %}
+#if defined(CONFIG_MODULE_PDUR) && (CONFIG_MODULE_PDUR == 1)
+#include "pdur.h"
+#include "pdur_canif.h"
+#endif
+
+#if defined(CONFIG_MODULE_CANNM) && (CONFIG_MODULE_CANNM == 1)
+#include "cannm_cbk.h"
+#include "cannm_lcfg.h"
+#endif
+
+#if defined(CONFIG_MODULE_CANSM) && (CONFIG_MODULE_CANSM == 1)
+#include "cansm.h"
+#include "cansm_canif.h"
+#endif
+
+#if defined(CONFIG_MODULE_CANTRCV1145) && (CONFIG_MODULE_CANTRCV1145 == 1)
+#include "cantrcv_tja1145.h"
+#endif
+
+#if defined(CONFIG_SERVM_ECUM) && (CONFIG_SERVM_ECUM == 1)
+#include "sysm_init.h"
+#endif
+
+#if defined(CONFIG_MODULE_CANTSYN) && (CONFIG_MODULE_CANTSYN == 1)
+#include "cantsyn.h"
+#endif
+
+#if defined(CONFIG_MODULE_CANTP) && (CONFIG_MODULE_CANTP == 1)
+#include "cantp.h"
+#endif
+
+{%- else%}
+{%- if is_module_used["is_cantp_used"] == "true" %}
+{%- if 'MODULE_CONFIG_CANTP' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['MODULE_CONFIG_CANTP'] == 'y' %}
+#include "cantp.h"
+#include "cantp_cbk.h"
+#include "cantp_cfg.h"
+{%- endif %}
+{%- endif %}
+
+{%- if is_module_used["is_pdur_used"] == "true" %}
+{%- if 'CONFIG_MODULE_PDUR' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_PDUR'] == 'y' %}
+#include "pdur.h"
+#include "pdur_canif.h"
+{%- endif %}
+{%- endif %}
+
+{%- if is_module_used["is_cannm_used"] == "true" %}
+{%- if 'CONFIG_MODULE_CANNM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_CANNM'] == 'y' %}
+#include "cannm_cbk.h"
+#include "cannm_lcfg.h"
+{%- endif %}
+{%- endif %}
+
+{%- if is_module_used["is_xcp_used"] == "true" %}
+{%- if 'MODULE_CONFIG_XCP' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['MODULE_CONFIG_XCP'] == 'y' %}
+#include "xcp.h"
+{%- endif %}
+{%- endif %}
+
+{%- if is_module_used["is_dlt_used"] == "true" %}
+{%- if 'MODULE_CONFIG_DLT' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['MODULE_CONFIG_DLT'] == 'y' %}
+#include "dlt.h"
+#include "dlt_cfg.h"
+{%- endif %}
+{%- endif %}
+
+{%- if is_module_used["is_ftrace_used"] == "true" %}
+{%- if 'MODULE_CONFIG_FTRACE' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['MODULE_CONFIG_FTRACE'] == 'y' %}
+#include "ftrace_cbk.h"
+#include "ftrace_cfg.h"
+{%- endif %}
+{%- endif %}
+
+{%- if 'CONFIG_MODULE_CANSM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_CANSM'] == 'y' %}
+#include "cansm.h"
+#include "cansm_canif.h"
+{%- endif %}
+
+{%- if 'CONFIG_SERVM_ECUM' in sys_cfg['modules_info']['kfg_module_all_list']  and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_SERVM_ECUM'] == 'y' %}
+#include "sysm_init_cfg.h"
+#include "sysm_init.h"
+{%- endif %}
+
+{%- if is_module_used["is_cantsyn_used"] == "true" %}
+{%- if 'MODULE_CONFIG_CANTSYN' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['MODULE_CONFIG_CANTSYN'] == 'y' %}
+#include "cantsyn.h"
+{%- endif %}
+{%- endif %}
+
+{%- endif%}
+
+{% for hrh_cfgdata in hrh_cfglist %}
+{{  "#define CanHardwareObject_%s    %su" | format(hrh_cfgdata["name"],hrh_cfgdata["hrh_id"]) }}
+{%- endfor %}
+{{""}}
+
+#define CANIF_INVALID_CANID                                    0xFFFFFFFFU
+
+#define CANIF_START_SEC_CONST
+#include "canif_memmap.h"
+
+CONST(canif_rx_pdu_config_type, CANIF_CONST) hrh_rx_pdu_canif_hrh_cfg[CANIF_MAX_NOF_RX_PDU] = {
+{{"      /* %-20s %-20s %-20s %-85s %-20s %-40s %-20s %-20s %-20s */" | format("CanIdIsExtended", "CanIfUserRxIndication", "CanIfCanRxPduDlc", "CanIfCanRxPduId", "index", "CanIf_RxCalloutFctPtr", "CanIfCanRxPduLowerCanId", "CanIfCanRxPduUpperCanId", "CanIfCanRxPduCanId")}}
+{%- for rx_pdu in rx_pdus %}
+{{"/*%3s*/ {%-20s,%-20s,%-20s,%-85s,%-20s,%-40s,%-20s,%-20s,%-20s}," | format((loop.index - 1), "(boolean)" + rx_pdu["is_extend"], to_str(rx_pdu["CanIfUserRxIndication_index"]), to_str(rx_pdu["dlc"]),  "(PduIdType)" + rx_pdu["name"],  to_str(loop.index - 1, '(uint16)'), rx_pdu["calloutfunction_name"], rx_pdu["lower_canid"], rx_pdu["upper_canid"], rx_pdu["canid"])}}
+{%- endfor %}
+};
+
+CONST(canif_hth_config_type, CANIF_CONST) canif_hth_config_data_canif_init_hoh_cfg[CANIF_MAX_NOF_TX_BUFFERS] = {
+{%- for hth_cfg in all_core_txbuffercfgs_inorder_list %}
+{{  "  /* %5s*/ {CANIF_HANDLE_TYPE_%s,             %20s,        0,%12s}, /* %s, CORE%s */" | format((loop.index - 1), hth_cfg["hth_type"], hth_cfg["controller_id"], hth_cfg["hth_id"], hth_cfg["hth_name"], hth_cfg["core_id"]) }}
+{%- endfor %}
+};
+
+CONST(uint16, CANIF_CONST) canif_can_hoh_to_canif_hrh_map_canif_init_hoh_cfg[CANIF_MAX_NOF_HRH_COUNT] = {
+{%- for hrh_cfgdata in hrh_cfglist %}
+{{  " CanHardwareObject_%s,  " | format(hrh_cfgdata["name"]) }}
+{%- endfor %}
+};
+
+CONST(canif_hrh_config_type, CANIF_CONST) canif_hrh_config_data_canif_init_hoh_cfg[CANIF_MAX_NOF_HRH_COUNT] = {
+{%- for hrh_cfgdata in hrh_cfglist %}
+{{"/*%s*/ {CANIF_HANDLE_TYPE_%s,   %-21s,%-30s,  %sU,             NULL,             %s}, "%(hrh_cfgdata["hrh_id"],hrh_cfgdata["hrh_type"],"(boolean)"+hrh_cfgdata["is_software_fliter"],to_str(hrh_cfgdata["controller_id"],"(canif_channel_id_type)"),to_str(hrh_cfgdata["rx_pducount"],"(uint16)"),hrh_cfgdata["rxpdulist_name"]) }}
+{%- endfor %}
+};
+
+CONST(canif_hoh_config_type, CANIF_CONST) canif_hoh_config_data[] = {
+    {
+        .hrh_list_size = sizeof(canif_can_hoh_to_canif_hrh_map_canif_init_hoh_cfg) / sizeof(canif_can_hoh_to_canif_hrh_map_canif_init_hoh_cfg[0]),
+        .can_hoh_to_canif_hrh_map = canif_can_hoh_to_canif_hrh_map_canif_init_hoh_cfg,
+        .canif_hrh_config = canif_hrh_config_data_canif_init_hoh_cfg,
+        .canif_hth_config = canif_hth_config_data_canif_init_hoh_cfg,
+    },
+};
+
+CONST(canif_tx_buffer_config_type, CANIF_CONST) canif_buffer_cfg_data[CANIF_MAX_NOF_TX_BUFFERS] = {
+{%- for tx_buffer in all_core_txbuffercfgs_inorder_list %}
+{{"/* %s */ {&canif_hth_config_data_canif_init_hoh_cfg[%s], %10s, %20s}, /* %s, CORE%s */" | format((loop.index-1), (loop.index-1), tx_buffer["buffer_size"], tx_buffer["buffer_id"], tx_buffer["buffer_name"], tx_buffer["core_id"]) }}
+{%- endfor %}
+};
+
+CONST(canif_tx_pdu_config_type, CANIF_CONST) canif_tx_pdu_config_data[CANIF_MAX_NOF_TX_PDU] = {
+{{ "      /* %-25s %-25s %-25s %-30s %-30s %-85s %-55s %-25s %-45s */" | format("CanIfTxPduPnFilterEnable", "CanIfCanTxPduIdDlc", "CanIfUserTxConfirmation", "CanIfTxPduIdCanIdType", "CanIfCanTxPduType", "CanIfTxPduId", "CanIfTxPduBufferRef", "CanIfCanTxPduIdCanId", "CanIfTxmessageCalloutFctPtr") }}
+{%- for tx_pdu in all_core_tx_pducfgs_list %}
+{{ "/*%3s*/ {%-25s,%-25s,%-25s,%-30s,%-30s,%-85s,%-55s,%-25s,%-45s}, /* %s, %s, CORE%s */" | format((loop.index - 1), "(boolean)" + tx_pdu["CanIfTxPduPnFilterEnable"],  to_str(tx_pdu["dlc"]), to_str(tx_pdu["CanIfUserTxConfirmation_index"]), tx_pdu["canid_type"], "CANIF_PDU_TYPE_" + tx_pdu["txpdu_type"], "(PduIdType)" + tx_pdu["name"], "&canif_buffer_cfg_data[" + to_str(tx_pdu["CanIfTxPduBufferRef"], "") + "]", tx_pdu["canid"], tx_pdu["txCalloutFunctionName"], tx_pdu["CanIfTxPduBufferRefName"], tx_pdu["shortname"], tx_pdu["core_id"]) }}
+{%- endfor %}
+};
+
+CONSTP2CONST(canif_tx_buffer_config_type, AUTOMATIC, CANIF_CONST) canif_ctrl_cfg_buffer_list[CANIF_MAX_NOF_TX_BUFFERS] = {
+{%- for tx_buffer in all_core_txbuffercfgs_inorder_list %}
+{{  "/* %s */   &canif_buffer_cfg_data[%s], /* %s, CORE%s */" | format((loop.index - 1), (loop.index - 1), tx_buffer["buffer_name"], tx_buffer["core_id"]) }}
+{%- endfor %}
+};
+
+CONST(canif_controller_config_type, CANIF_CONST) canif_controller_config[CANIF_CONTROLLER_CHANNEL_CNT] = {
+{%- for CanIfCtrlCfg in canif_controllers_config %}
+{{"{   /* CORE%s, %s  */" | format(CanIfCtrlCfg["core_id"], CanIfCtrlCfg["controller_name"])}}
+{{  "   .canif_ctrl_can_ctrl_id = %s," | format(to_str_noprefix(CanIfCtrlCfg["controller_id"])) }}
+{{  "   .canif_ctrl_tx_buf_num = %s,     " | format(to_str_noprefix(CanIfCtrlCfg["txbuffer_count"])) }}
+{{  "   .canif_ctrl_tx_buf_ref_list = %s,  /* start from: %s */" | format(CanIfCtrlCfg["txBufferRefList"], CanIfCtrlCfg["txBufferRefList_startname"]) }}
+{{  "   .canif_ctrl_pn_filter_set = %s," | format(to_str(CanIfCtrlCfg["is_pnfilter"], "(boolean)")) }}
+{{"},"}}
+{%- endfor %}
+};
+
+CONST(uint8, CANIF_CONST) ctrl_driver_idx_map[CANIF_MAX_CONTROLLER_COUNT] = {
+{%- for CanIfCtrlCfg in canif_controllers_config %}
+{{ "/*  %s */    [%s]                = %s, /* CORE%s, %s */" | format((loop.index - 1), CanIfCtrlCfg["controller_id"], CanIfCtrlCfg["driverIdx"], CanIfCtrlCfg["core_id"], CanIfCtrlCfg["controller_name"])}}
+{%- endfor %}
+};
+
+#if (CANIF_TRCV_WAKEUP_SUPPORT == STD_ON)
+{%- if canif_public_cfg["CanIfWakeupSupport"]["Value"] == true %}
+{%- if trcv_channel_enable_type_count > 0 %}
+CONST(canif_cantrcv_fct_tbl_type, CANIF_CONST) canif_cantrcv_fct_tbl[CANIF_TRANSCEIVER_ENABLE_TYPE_CNT] = {
+{%- for trcv_item in trcv_enable_list %}
+{%- if trcv_item == "CanTrcv1145" and trcv_type_enable["CanTrcv1145"] == "True" %}
+/* 0 */ {&cantrcv_tja1145_wk_flag_check, &cantrcv_tja1145_wk_flag_clear,   &cantrcv_tja1145_wk_check,  &cantrcv_tja1145_bus_wk_reason_get,    &cantrcv_tja1145_op_mode_get, &cantrcv_tja1145_op_mode_set, &cantrcv_tja1145_wk_mode_set }, /* CanTrcv_Tja1145 */
+{%- endif %}
+{%- if  trcv_item == "CanTrcv1043" and trcv_type_enable["CanTrcv1043"] == "True" %}
+/* 1 */ { NULL,  NULL,   &cantrcv_tja1043_check_wake_up,  &cantrcv_tja1043_get_bus_wu_reason,    &cantrcv_tja1043_get_op_mode, &cantrcv_tja1043_set_op_mode, &cantrcv_tja1043_set_wake_up_mode }, /* CanTrcv_Tja1043 */
+{%- endif %}
+
+{%- endfor %}
+};
+{%- else %}
+CONST(canif_cantrcv_fct_tbl_type, CANIF_CONST) canif_cantrcv_fct_tbl[1] = {
+   /* 0 */ {NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+};
+{%- endif %}
+
+CONST(canif_transceiver_config_type, CANIF_CONST) canif_transceiver_config[CANIF_TRANSCEIVER_CHANNEL_CNT] = {
+{% for CanIfTrcvCfg in canif_transceivers_config %}
+{{"{   /* CORE%s, %s */" | format(CanIfTrcvCfg["core_id"], CanIfTrcvCfg["transceiver_name"])}}
+{{"   .canif_cantrcv_wu_sup = %s," | format(to_str(CanIfTrcvCfg["is_wakeup"], "(boolean)")) }}
+{{"   .canif_cantrcv_id_ref = %s," | format(to_str(CanIfTrcvCfg["CanIfTrcvCanTrcvRefName"], "(canif_trcv_id_type)")) }}
+{{"   .canif_cantrcv_id = %s," | format(to_str(CanIfTrcvCfg["transceiver_id"], "(canif_trcv_id_type)")) }}
+{{"   .canif_cantrcv_wu_src = %s," | format(to_str(CanIfTrcvCfg["wakeupsource"], "(ecum_wakeup_source_t)")) }}
+{{"   .canif_cantrcv_to_canif_ctrl_chnl_ref = %s, " | format(to_str(CanIfTrcvCfg["CanIfTrcvChnlToCanIfCtrlChnlRef"], "(canif_channel_id_type)")) }}
+{{"   .canif_cantrcv_fct_grp_id = %s, " | format(CanIfTrcvCfg["CanIfCanTrcvFctGrpId"]) }}
+{{"   .canif_cantrcv_core_id = %s, " | format(CanIfTrcvCfg["core_id"]) }}
+{{"},"}}
+{%- endfor %}
+};
+{%- else %}
+{%- endif %}
+#endif 
+
+CONST(canif_init_config_type, CANIF_CONST) canif_init_config = {
+    .canif_all_tx_pdu_num = {{canif_init_config.canif_all_tx_pdu_num}},
+    .canif_all_tx_pdu_cfg_ptr = canif_tx_pdu_config_data,
+    .canif_all_tx_buf_cfg_ptr = canif_buffer_cfg_data,
+    .canif_all_hoh_cfg_ptr = canif_hoh_config_data,
+};
+
+CONST(canif_config_type, CANIF_CONST) canif_config = {
+    .canif_init_config = &canif_init_config,
+#if (CANIF_TRCV_WAKEUP_SUPPORT == STD_ON)
+{%- if canif_public_cfg["CanIfWakeupSupport"]["Value"] == true %}
+    .canif_trcv_config = canif_transceiver_config,
+    .cantrcv_drv_api = canif_cantrcv_fct_tbl,
+{%- else %}
+    .canif_trcv_config = NULL,
+    .cantrcv_drv_api = NULL,
+{%- endif %}
+#endif
+    .canif_ctrl_config = canif_controller_config
+};
+
+CONST(canif_user_rx_indication_fct_list_type, CANIF_CONST) canif_user_rx_indications[CANIF_ULMOUDLE_COUNT] = {
+{%- if is_module_rx_used["is_pdur_used"] == "true" %}
+    { /*     0 */  { &pdur_canif_rx_indication }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- else %}
+    { /*     0 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_cannm_used"] == "true" %}
+    { /*     1 */  { &cannm_rx_indication }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- else %}
+    { /*     1 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_cantp_used"] == "true" %}
+    { /*     2 */  { &cantp_rx_indication }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- else %}
+    { /*     2 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_xcp_used"] == "true" %}
+    { /*     3 */  { &xcp_canif_rx_indication }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- else %}
+    { /*     3 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_cdd_used"] == "true" %}
+    { /*     4 */  { &{{is_module_rx_used["cdd_indication_name"]}} }, CANIF_RX_INDICATION_TYPE_CDD_TYPE   },
+{%- else %}
+    { /*     4 */  { NULL }, CANIF_RX_INDICATION_TYPE_CDD_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_cantsyn_used"] == "true" %}
+#if (CANTSYN_SLAVE_CONFIGURATION == STD_ON)
+    { /*     5 */  { &cantsyn_rx_indication  }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+#else
+    { /*     5 */  { NULL  }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+#endif
+{%- else %}
+    { /*     5 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_dlt_used"] == "true" %}
+    { /*     6 */  { &dlt_canif_rx_indication }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- else %}
+    { /*     6 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+{%- if is_module_rx_used["is_ftrace_used"] == "true" %}
+    { /*     7 */  { &ftrace_canif_rx_indication }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- else %}
+    { /*     7 */  { NULL }, CANIF_RX_INDICATION_TYPE_ADVANCED_TYPE   },
+{%- endif %}
+};
+
+CONST(canif_user_tx_confirmation_type, CANIF_CONST) canif_user_tx_confirmations[CANIF_ULMOUDLE_COUNT] = {
+{%- if is_module_tx_used["is_pdur_used"] == "true" %}
+    &pdur_canif_tx_confirmation,
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_cannm_used"] == "true" %}
+    &cannm_tx_confirmation,
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_cantp_used"] == "true" %}
+    &cantp_tx_confirmation,
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_xcp_used"] == "true" %}
+    &xcp_canif_tx_confirmation,
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_cdd_used"] == "true" %}
+    &{{is_module_tx_used["cdd_confirmation_name"]}},
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_cantsyn_used"] == "true" %}
+#if (CANTSYN_MASTER_CONFIGURATION == STD_ON)
+    &cantsyn_tx_confirmation,
+#else
+    NULL,
+#endif
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_dlt_used"] == "true" %}
+    &dlt_canif_tx_confirmation,
+{%- else %}
+    NULL,
+{%- endif %}
+{%- if is_module_tx_used["is_ftrace_used"] == "true" %}
+    &ftrace_canif_tx_confirmation,
+{%- else %}
+    NULL,
+{%- endif %}
+};
+
+CONST(canif_dispatch_config_type, CANIF_CONST) canif_dispatch_config =
+{
+{%- if canif_dispatch_cfg["CanIfDispatchUserCtrlBusOffUL"]["Value"] == "CAN_SM" %}
+    .bus_off_notification_fct = &cansm_controller_bus_off,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserCtrlBusOffUL"]["Value"] == "CDD"%}
+    .bus_off_notification_fct = {{canif_dispatch_cfg["CanIfDispatchUserCtrlBusOffName"]["Value"]}},
+{%- else %}
+    .bus_off_notification_fct = NULL,
+{%- endif %}
+
+{%- if canif_dispatch_cfg["CanIfDispatchUserCtrlModeIndicationUL"]["Value"] == "CAN_SM" %}
+    .controller_mode_indication_fct = &cansm_controller_mode_indication,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserCtrlModeIndicationUL"]["Value"] == "CDD"%}
+    .controller_mode_indication_fct = {{canif_dispatch_cfg["CanIfDispatchUserCtrlModeIndicationName"]["Value"]}},
+{%- else %}
+    .controller_mode_indication_fct = NULL,
+{%- endif %}
+
+#if (CANIF_PUBLIC_WAKEUP_CHECK_VALIDATION_SUPPORT == STD_ON)
+{%- if canif_public_cfg["CanIfWakeupSupport"]["Value"] == true %}
+{%- if canif_dispatch_cfg["CanIfDispatchUserValidateWakeupEventUL"]["Value"] == "ECUM" %}
+    .wakeup_valid_notification_fct = &ecum_validate_wakeup_event,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserValidateWakeupEventUL"]["Value"] == "CDD" %}
+    .wakeup_valid_notification_fct = {{canif_dispatch_cfg["CanIfDispatchUserValidateWakeupEventName"]["Value"]}},
+{%- else %}
+    .wakeup_valid_notification_fct = NULL,
+{%- endif %}
+
+{%- else %}
+    .wakeup_valid_notification_fct = NULL,
+{%- endif %}
+#endif
+
+{%- if trcv_api_enable == "STD_ON" %}
+
+{%- if canif_dispatch_cfg["CanIfDispatchUserCheckTrcvWakeFlagIndicationUL"]["Value"] == "CAN_SM" %}
+    .trcv_check_wake_flag_indication_fct = &cansm_check_transceiver_wake_flag_indication,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserCheckTrcvWakeFlagIndicationUL"]["Value"] == "CDD"%}
+    .trcv_check_wake_flag_indication_fct = {{canif_dispatch_cfg["CanIfDispatchUserCheckTrcvWakeFlagIndicationName"]["Value"]}},
+{%- else %}
+    .trcv_check_wake_flag_indication_fct = NULL,
+{%- endif %}
+
+{%- if canif_dispatch_cfg["CanIfDispatchUserClearTrcvWufFlagIndicationUL"]["Value"] == "CAN_SM" %}
+    .trcv_clear_wake_flag_indication_fct = &cansm_clear_trcv_wuf_flag_indication,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserClearTrcvWufFlagIndicationUL"]["Value"] == "CDD"%}
+    .trcv_clear_wake_flag_indication_fct = &{{canif_dispatch_cfg["CanIfDispatchUserClearTrcvWufFlagIndicationName"]["Value"]}},
+{%- else %}
+    .trcv_clear_wake_flag_indication_fct = NULL,
+{%- endif %}
+
+{%- if canif_dispatch_cfg["CanIfDispatchUserConfirmPnAvailabilityUL"]["Value"] == "CAN_SM" %}
+    .trcv_confirm_pn_availability_fct = &cansm_confirm_pn_availability,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserConfirmPnAvailabilityUL"]["Value"] == "CDD"%}
+    .trcv_confirm_pn_availability_fct = &{{canif_dispatch_cfg["CanIfDispatchUserConfirmPnAvailabilityName"]["Value"]}},
+{%- else %}    
+    .trcv_confirm_pn_availability_fct = NULL,
+{%- endif %}
+
+{%- if canif_dispatch_cfg["CanIfDispatchUserTrcvModeIndicationUL"]["Value"] == "CAN_SM" %}
+    .trcv_mode_indication_fct = &cansm_transceiver_mode_indication,
+{%- elif  canif_dispatch_cfg["CanIfDispatchUserTrcvModeIndicationUL"]["Value"] == "CDD"%}
+    .trcv_mode_indication_fct = &{{canif_dispatch_cfg["CanIfDispatchUserTrcvModeIndicationName"]["Value"]}},
+{%- else %}
+    .trcv_mode_indication_fct = NULL,
+{%- endif %}
+
+{%- else %}
+    .trcv_check_wake_flag_indication_fct = NULL,
+    .trcv_clear_wake_flag_indication_fct = NULL,
+    .trcv_confirm_pn_availability_fct = NULL,
+    .trcv_mode_indication_fct = NULL,
+{%- endif %}
+};
+
+#define CANIF_STOP_SEC_CONST
+#include "canif_memmap.h"
+
+
+/* ----------------------------CANIF数据面资源---------------------------*/
+#if (CANIF_PUBLIC_TX_BUFFERING == STD_ON)
+#define CANIF_START_SEC_CONST
+#include "canif_memmap.h"
+
+CONST(canif_tx_buffer_index_range_type, CANIF_CONST) canif_tx_buffer_index_range[CANIF_MAX_ACTIVATED_CORE_CNT] = {
+{%- for core_name, core_attr in multicore_txbuffercfgs_start_end_index_dict.items() %}
+{%- if core_attr["range"][0] == 0xFFFF and  core_attr["range"][1] == 0xFFFF %}
+{{"     {CANIF_INVALID_TXBUFFER_START_INDEX,     CANIF_INVALID_TXBUFFER_END_INDEX},  /* %s */" | format(core_name)}}
+{%- else %}
+{{"     {   %su,    %su},  /* %s */" | format(core_attr["range"][0], core_attr["range"][1], core_name)}}
+{%- endif %}
+{%- endfor %}
+};
+
+CONST(canif_tx_buffer_index_range_type, CANIF_CONST) canif_tx_buffer_lpdu_index_range[CANIF_MAX_ACTIVATED_CORE_CNT] = {
+{%- for core_name, core_attr in max_lpdu_num_cores_txbuf_dict.items() %}
+{%- if core_attr["range"][0] == 0xFFFF and  core_attr["range"][1] == 0xFFFF %}
+{{"     {CANIF_INVALID_TXBUFFER_START_INDEX,     CANIF_INVALID_TXBUFFER_END_INDEX},  /* %s */" | format(core_name)}}
+{%- else %}
+{{"     {   %su,    %su},  /* %s */" | format(core_attr["range"][0], core_attr["range"][1], core_name)}}
+{%- endif %}
+{%- endfor %}
+};
+
+#define CANIF_STOP_SEC_CONST
+#include "canif_memmap.h"
+{{""}}
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" and max_lpdu_num_cores_txbuf_dict["CORE" ~ (loop.index - 1)|string]["lpdu_num"] > 0 %}
+{{"#define CANIF_START_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+
+{{"VAR(canif_buffer_entry_type, CANIF_%s_PRIVATE_BSS) tx_pdu_buffer_core%s[CANIF_MAX_NUM_LPDU_TX_BUF_CORE%s];" | format(app_coreid_dict[loop.index - 1], loop.index - 1, loop.index - 1)}}
+{{""}}
+{{"#define CANIF_STOP_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+{%- endif %}
+{%- endfor %}
+
+#if (CANIF_TX_BUF_FIFO_ENABLE == STD_ON)
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" %}
+{{"#define CANIF_START_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+
+{{"VAR(canif_fifo_buffer_info_type, CANIF_%s_PRIVATE_BSS) fifo_buffer_info_core%s[CANIF_MAX_NOF_TX_BUFFERS_CORE%s];" | format(app_coreid_dict[loop.index - 1], loop.index - 1, loop.index - 1)}}
+{{""}}
+{{"#define CANIF_STOP_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+{%- endif %}
+{%- endfor %}
+#endif
+{{""}}
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" %}
+{{"#define CANIF_START_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+{{"VAR(uint16, CANIF_%s_PRIVATE_BSS) buffer_start_index_core%s[CANIF_MAX_NOF_TX_BUFFERS_CORE%s];" | format(app_coreid_dict[loop.index - 1], loop.index - 1, loop.index - 1)}}
+{{""}}
+{{"#define CANIF_STOP_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+{%- endif %}
+{%- endfor %}
+
+{{"#define CANIF_START_SEC_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+P2VAR(uint16, {{"CANIF_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}, CanIf_VAR_Class) buffer_start_index[CANIF_MAX_ACTIVATED_CORE_CNT] = {
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" %}
+{{"     buffer_start_index_core%s," | format(loop.index - 1)}}
+{%- else %}
+    NULL,
+{%- endif %}
+{%- endfor %}
+};
+
+#if (CANIF_TX_BUF_FIFO_ENABLE == STD_ON)
+P2VAR(canif_fifo_buffer_info_type, {{"CANIF_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}, CanIf_VAR_Class) fifo_buffer_info[CANIF_MAX_ACTIVATED_CORE_CNT] = {
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" %}
+{{"     fifo_buffer_info_core%s," | format(loop.index - 1)}}
+{%- else %}
+    NULL,
+{%- endif %}
+{%- endfor %}
+};
+#endif 
+
+{{"#define CANIF_STOP_SEC_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+{{""}}
+{%-if canif_txbuffer_size_memmap_section == "INIT"%}
+{{"#define CANIF_START_SEC_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+P2VAR(canif_buffer_entry_type, {{"CANIF_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}, CanIf_VAR_Class) tx_pdu_buffer[CANIF_MAX_ACTIVATED_CORE_CNT] = {
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" and max_lpdu_num_cores_txbuf_dict["CORE" ~ (loop.index - 1)|string]["lpdu_num"] > 0 %}
+{{"     tx_pdu_buffer_core%s," | format(loop.index - 1)}}
+{%- else %}
+     NULL,
+{%- endif %}
+{%- endfor %}
+};
+{{""}}
+{{"#define CANIF_STOP_SEC_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+{%- elif canif_txbuffer_size_memmap_section == "ZERO_INIT"%}
+{{"#define CANIF_START_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+P2VAR(canif_buffer_entry_type, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}, CanIf_VAR_Class) tx_pdu_buffer[CANIF_MAX_ACTIVATED_CORE_CNT];
+
+{{"#define CANIF_STOP_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+{%- else %}
+{%- endif %}
+
+#endif 
+
+/* ----------------------------CANIF管理面资源---------------------------*/
+{{"#define CANIF_START_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+VAR(canif_runtime_state_type, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) canif_runtime_state;
+
+{{"#define CANIF_STOP_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+{{"#define CANIF_START_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+VAR(canif_init_status_type, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}})   canif_init_status[CANIF_MAX_ACTIVATED_CORE_CNT];
+
+{{"#define CANIF_STOP_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+/* ----------------------------CANIF全局配置指针---------------------------*/
+{{"#define CANIF_START_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+P2CONST(canif_config_type, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}, CanIf_VAR_Class) canif_config_ptr;
+
+{{"#define CANIF_STOP_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+/* ----------------------------CANIF维测变量---------------------------*/
+/* 报文收发维测变量 */
+{{"#define CANIF_START_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+#if (CANIF_PUBLIC_DEBUG_SUPPORT == STD_ON)
+VAR(uint32, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) tx_messagestatistic[CANIF_MAX_NOF_TX_PDU];
+
+VAR(uint32, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) rx_messagestatistic[CANIF_MAX_NOF_RX_PDU];
+
+VAR(uint32, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) tx_message_busy_count[CANIF_MAX_NOF_TX_PDU];
+
+VAR(uint32, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) tx_message_drop_count[CANIF_MAX_NOF_TX_PDU];
+
+VAR(uint32, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) tx_message_ok_count[CANIF_MAX_NOF_TX_PDU];
+#endif
+
+/* 通道通知状态 */
+#if (CANIF_PUBLIC_TXCONFIRM_POLLING_SUPPORT == STD_ON)
+VAR(canif_notif_status_type, {{"CANIF_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}) canif_tx_conf_state[CANIF_CONTROLLER_CHANNEL_CNT];
+#endif
+
+{{"#define CANIF_STOP_SEC_%s_BSS" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+
+/* CanIfTxBuffer最大深度维测变量 */
+#if (CANIF_PUBLIC_TXBUFFER_MAX_DEPTH_FETCH_SUPPORT == STD_ON)
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" %}
+{{"#define CANIF_START_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+{{""}}
+{{"VAR(uint16, CANIF_%s_PRIVATE_BSS) canif_tx_buffer_max_depth_core%s[CANIF_MAX_NOF_TX_BUFFERS_CORE%s];" | format(app_coreid_dict[loop.index - 1], loop.index - 1, loop.index - 1)}}
+{{""}}
+{{"#define CANIF_STOP_SEC_%s_PRIVATE_BSS" | format(app_coreid_dict[loop.index - 1])}}
+#include "canif_memmap.h"
+{{""}}
+{%- endif %}
+{%- endfor %}
+{{"#define CANIF_START_SEC_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+P2VAR(uint16, {{"CANIF_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}, CanIf_VAR_Class) canif_tx_buffer_max_depth[CANIF_MAX_ACTIVATED_CORE_CNT] = {
+{%- for core_id_enable in all_core_id_enbale_list %}
+{%- if core_id_enable == "TRUE" %}
+{{"     canif_tx_buffer_max_depth_core%s," | format(loop.index - 1)}}
+{%- else %}
+    NULL,
+{%- endif %}
+{%- endfor %}
+};
+{{"#define CANIF_STOP_SEC_%s_DATA" | format(canif_manager_var_multi_app_or_private_master_core)}}
+#include "canif_memmap.h"
+#endif
+
+{{ "" }}

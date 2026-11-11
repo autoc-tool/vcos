@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00048.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE UUID="33022ff3-f082-4548-ab3c-90793765f2d3">
+      <SHORT-NAME>AURIX2G</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE UUID="7e118c10-0a18-49f2-9978-33759fe5e7c2">
+          <SHORT-NAME>EcucDefs</SHORT-NAME>
+          <AR-PACKAGES>
+            <AR-PACKAGE UUID="44ee6418-a6cd-462a-89f0-7c288edb4191">
+              <SHORT-NAME>Can_ib_bswmd</SHORT-NAME>
+              <AR-PACKAGES>
+                <AR-PACKAGE UUID="5a9db9a8-e2e1-4ccc-8e7b-a7a11901cd96">
+                  <SHORT-NAME>BswModuleDescriptions</SHORT-NAME>
+                  <ELEMENTS>
+                    <BSW-MODULE-DESCRIPTION UUID="cf517d2d-3df3-433b-aadb-9ac6069bce65">
+                      <SHORT-NAME>Can</SHORT-NAME>
+                      <INTERNAL-BEHAVIORS>
+                        <BSW-INTERNAL-BEHAVIOR UUID="bfa1a104-ba0d-4735-bd23-184b7f0212e7">
+                          <SHORT-NAME>CanBehavior</SHORT-NAME>
+                          <PROVIDED-ENTRYS>
+                          </PROVIDED-ENTRYS>
+                          <EXCLUSIVE-AREAS>
+                            <EXCLUSIVE-AREA UUID="a23a2646-29bc-4ecb-94f6-edbeece62f52">
+                              <SHORT-NAME>CanIntCtrl</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="cdb43c6b-8df7-461c-bd35-63d81173b3ca">
+                              <SHORT-NAME>CanWrMO</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                            <EXCLUSIVE-AREA UUID="2ee568fe-25d4-4fcf-9952-ce5c186d1bb7">
+                              <SHORT-NAME>IcomMsgCntrVal</SHORT-NAME>
+                            </EXCLUSIVE-AREA>
+                          </EXCLUSIVE-AREAS>
+                          <ENTITYS>
+                          </ENTITYS>
+                          <EVENTS>
+                          </EVENTS>
+                        </BSW-INTERNAL-BEHAVIOR>
+                      </INTERNAL-BEHAVIORS>
+                    </BSW-MODULE-DESCRIPTION>
+                  </ELEMENTS>
+                </AR-PACKAGE>
+              </AR-PACKAGES>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

@@ -1,0 +1,185 @@
+{{get_copyright()}}
+/*!*********************************************************************************************************************
+ * @file		bswm_cfg.h
+ * @brief	    BswM配置头文件
+ * @details	    声明BswM模块的配置相关相关信息
+ * @date		{{get_generation_time()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+#ifndef BSWM_CFG_H
+#define BSWM_CFG_H
+
+#include "stdint.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/* Global Macro Definition */
+
+/* 和 BswM 交互的其他模块宏信息 */
+{%- set module_marcos = get_module_marcos(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for module_marco in module_marcos %}
+#define {{module_marco}}	   (STD_ON) ///< BswM 使能 {{module_marco}} 交互 
+{%- endfor %}
+
+{%- set bswmcores = dict_bsw["dict_ecuc"]["ActiveEcuC"]["EcuC"]["EcucHardware"].items() %}
+{%- set bswmcore_num = bswm_get_coreNums(bswmcores) %}
+#define BSWM_MULTICORE_USAGE (STD_ON)
+#define BSWM_MAX_SUPPORT_CORENUM ({{bswmcore_num}})
+
+/* BswM 和其他BSW 模块交互开关 */
+{%- set generalitems = dict_config["ActiveEcuC"]["BswM"]["BswMGeneral"].items() %}
+{%- for generalitem_name, generalitem_value in generalitems %}
+{%- if generalitem_name != "Tag" and generalitem_name != "DefinitionRef" and generalitem_name != "BswMCommonData" %}
+
+{%- if generalitem_name == "BswMMainFunctionPeriod" %}
+#define BSWM_MAIN_FUNCTION_PERIOD							  ({{float_to_int(dict_config["ActiveEcuC"]["BswM"]["BswMGeneral"]["BswMMainFunctionPeriod"]["Value"]*1000)}}u)  ///< 定义主函数执行周期
+{%- elif generalitem_name == "BswMDevErrorDetect" %}
+#define BSWM_DEV_ERROR_DETECT							  ({{gen_switch_macro(generalitem_value["Value"])}})  ///< BswM 使能/关闭错误检测
+{%- elif generalitem_name == "BswMVersionInfoApi" %}
+#define BSWM_VERSION_INFO_API							  ({{gen_switch_macro(generalitem_value["Value"])}})  ///< BswM 使能/关闭获取版本信息宏
+{%- else %}
+#define BSWM_{{ generalitem_name[4:-7]|upper }}_ENABLED						   ({{gen_switch_macro(generalitem_value["Value"])}})	///< BswM 使能/关闭 {{ generalitem_name[4:-7]|upper }}功能
+{%- endif %}
+
+{%- endif %}
+{%- endfor %}
+
+
+/* 不同 BswM timers */
+{%- set timers = gen_timers(dict_config["ActiveEcuC"]["BswM"]) %}
+{%- if timers|length > 0 %}
+{%- for timer in timers %}
+#define {{timer}}										  ({{ loop.index0 }}u)		  ///< BswM {{timer}} 宏定义
+{%- endfor %}
+
+/* BswM Timer 的数量 */
+#define BSWM_TIMERS_NUM										({{timers|length}}u)	  ///<  BswM Timer 的数量 
+{%- else %}
+#define BSWM_TIMERS_NUM										(0u)					  ///<  BswM Timer 的数量 
+{%- endif %}
+
+/* 不同Actions的数量 */
+{%- set action_num = get_actions_num(dict_config["ActiveEcuC"]["BswM"]) %}
+#define BSWM_PDUGROUPSWITCH_ACTIONS							({{action_num[0]}}u)	  ///< PDU组切换相关的Actions数量
+#define BSWM_DEADLINEMONITORING_ACTIONS						({{action_num[1]}}u)	  ///< 死线监控相关的Actions数量
+#define BSWM_PDUROUTERCONTROL_ACTIONS						  ({{action_num[2]}}u)	  ///< PDU路由控制相关的Actions数量
+#define BSWM_NMCONTROL_ACTIONS								 ({{action_num[3]}}u)	  ///< 网络管理控制相关的Actions数量
+
+{%- set actions = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMActions") %}
+{%- if actions %}
+/* Atomic Actions 的索引 */
+{%- for action_name, action_value in actions.items() %}
+{%- if action_name != "Tag" %}
+#define BSWM_{{ action_name|upper }}_ACTION_IDX			  ({{ loop.index0-1 }}u)  ///< {{ action_name|upper}}Actions 的索引 
+{%- endif %}
+{%- endfor %}
+#define BSWM_NUMBER_OF_ATOMIC_ACTIONS				   ({{actions|length-1}}u)	 ///< BSWM Actions 索引总数 
+{%- endif %}
+
+
+{%- set expressions = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMLogicalExpressions") %}
+{%- if expressions %}
+/* 逻辑表达式的索引 */
+{%- for expression_name, expression_value in expressions.items() %}
+{%- if expression_name != "Tag" %}
+#define BSWM_{{ expression_name|upper }}_EXP_IDX					 ({{ loop.index0-1 }}u) ///< {{ expression_name|upper }}逻辑表达式索引 
+{%- endif %}
+{%- endfor %}
+#define BSWM_NUMBER_OF_LOGICAL_EXPRESSIONS			  ({{expressions|length-1}}u) ///< BSWM逻辑表达式索引总数 
+{%- endif %}
+
+
+{% set immediate_rules_num = get_rule_num(dict_config["ActiveEcuC"]["BswM"]) %}
+{% set immediate_rules_num_init = get_ruledata(dict_config["ActiveEcuC"]["BswM"])["ImmediateRulesOninit"]|length %}
+
+#define BSWM_IMMEDIATE_REQUEST_NEED_RESET_MIRROR_IDX_MAX	   ({{immediate_rules_num+1}}u) ///< 立刻请求需要重置镜像的最大索引
+
+#define BSWM_NUMBER_OF_IMMEDIATE_REQUESTS					  ({{immediate_rules_num}}u)   ///< 立刻请求的数量	 
+
+#define BSWM_NUMBER_OF_IMMEDIATE_ONINIT_REQUESTS					  ({{immediate_rules_num_init}}u) ///< 立刻请求OnInit的数量 
+
+{% set requests = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMModeRequestPorts") %}
+{%- if requests %}
+
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+#define BSWM_{{ req_name|upper }}_REQ_IDX				 ({{ loop.index0-1 }}u)  ///< {{ req_name|upper }}请求索引编号
+{%- endif %}
+{%- endfor %}
+#define BSWM_NUMBER_OF_REQUESTS						 ({{requests|length-1}}u)  ///< 请求索引总数
+{%- else %}
+#define BSWM_NUMBER_OF_REQUESTS						 (0u)				///< 请求索引总数
+{%- endif %}
+
+
+{% set rules = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMRules") %}
+{%- if rules %}
+/* 规则的索引 */
+{%- for rule_name, rule_value in rules.items() %}
+{%- if rule_name != "Tag" %}
+#define BSWM_{{ rule_name|upper }}_RULE_IDX						 ({{ loop.index0-1 }}u) ///< {{ rule_name|upper }}索引规则编号
+{%- endif %}
+{%- endfor %}
+#define BSWM_NUMBER_OF_RULES						 ({{rules|length-1}}u) ///< 索引规则总数
+
+
+/* 规则的最大数量 */
+#define BSWM_NUMBER_OF_RULES_MAX							   ({{rules|length}}u) ///< 索引规则最大总数
+{%- else %}
+#define BSWM_NUMBER_OF_RULES						 (0u)
+#define BSWM_NUMBER_OF_RULES_MAX					 (1u)
+{%- endif %}
+
+#if (BSWM_NUMBER_OF_RULES > BSWM_NUMBER_OF_RULES_MAX)
+#error BswM: Configured maximum number of rules is less than the number of rules in configuration!
+#endif
+
+
+{% set actionlists = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMActionLists") %}
+{%- if actionlists %}
+
+{%- for actionlist_name, actionlist_value in actionlists.items() %}
+{%- if actionlist_name != "Tag" %}
+#define BSWM_{{ actionlist_name|upper }}_LIST_IDX			({{ loop.index0-1 }}u) ///< {{ actionlist_name|upper }} Action索引编号
+{%- endif %}
+{%- endfor %}
+#define BSWM_NUMBER_OF_ACTIONLISTS						 ({{actionlists|length-1}}u)	 ///<	BSWM Action总数	   
+{%- else %}
+#define BSWM_NUMBER_OF_ACTIONLISTS						 (0u)							///<	BSWM Action总数  
+{%- endif %}
+
+{%- set modegroups = get_mode_declaration_groups(dict_base["ActiveEcuC"]["BswM"]) %}
+{%- if  modegroups %}
+
+{%- for modegroup in modegroups %}
+{%- for key,value in modegroup["mode_value"].items()%}
+#ifndef {{key}}
+#define {{key}}	 ({{value}}U) ///<	BSWM {{key}}模式定义
+#endif
+{%- endfor %}
+{%- endfor %}
+{%- endif%}
+{%- set msports = get_modeswitch_request_port(dict_base["ActiveEcuC"]["BswM"]) %}
+{%- for msport in msports %}
+extern uint8_t bswm_{{msport["name"]}}_{{msport["modegroup_name"]}};
+{%- endfor %}
+/*!*********************************************************************************************************************
+ * @brief		  BswM初始状态下的即刻执行规则集合
+ **********************************************************************************************************************/
+extern const sint16 bswm_immediate_rules_on_init[BSWM_NUMBER_OF_IMMEDIATE_ONINIT_REQUESTS];
+/*!*********************************************************************************************************************
+ * @brief		  更新BswM内部的通知镜像状态
+ * @details		该函数负责更新基础软件模块管理器BswM内部的通知镜像
+ * @reentrant	  不可重入
+ * @synchronous	同步
+ **********************************************************************************************************************/
+extern void bswm_internal_update_notification_mirrors(void);
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* BSWM_BSWM_CFG_H */

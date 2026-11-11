@@ -1,0 +1,14 @@
+#ifndef __OS_MEMPOOL_LCFG_H_
+#define __OS_MEMPOOL_LCFG_H_
+
+{%- set coreid_set = os_mempool_all_cfg["coreid_set"] %}
+typedef enum
+{
+	OS_MEMPOOLTYPE_GLOBAL,
+	OS_MEMPOOLTYPE_PRIVATE,
+{%- for coreid in coreid_set %}
+	OS_MEMPOOLTYPE_CORE{{coreid}},
+{%- endfor %}
+}os_mempool_t;
+
+#endif /* __OS_MEMPOOL_LCFG_H_ */

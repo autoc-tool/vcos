@@ -1,0 +1,296 @@
+{
+    "Module": "CanIf",
+    "Description": "Configuration of the CanIf (CanIf) module.",
+    "Containers": {
+        "CanIfCtrlCfgs":{
+            "Description": "public configuration of CanIf module",
+            "Parameters": {
+                {%- set can_controller = get_canif_can_controller()%}
+                {%- set can_controller_num = get_canif_can_controller_num()%}
+                {%- for i in range(can_controller_num) %}
+                {%- set is_last = loop.last %}
+                "{{can_controller[i]}}":{
+                    "name":"{{can_controller[i]}}",
+                    "controller_id":"to be filled by user"
+                {%- if is_last == True %}
+                }
+                {%- else %}
+                },
+                {%- endif %}
+                {%- endfor%}
+            }
+        },
+        "CanIfPublicCfg": {
+            "Description": "public configuration of CanIf module",
+            "Parameters": {
+                "CANIF_AUTOSAR_VERSION": {
+                    "Description": "CanIf Version ",
+                    "Range": [
+                        "CANIF_AUTOSAR_VERSION_431",
+                        "CANIF_AUTOSAR_VERSION_421"
+                    ],
+                    "Value": "CANIF_AUTOSAR_VERSION_431"
+                },
+                "CANIF_PUBLIC_VERSION_INFO_API": {
+                    "Description": "CanIf Version Info API",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "CANIF_PRIVATE_DLC_CHECK": {
+                    "Description": "CanIf DLC Supported",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_ON"
+                },
+                "CANIF_PUBLIC_DEV_ERROR_DETECT": {
+                    "Description": "CanIf DET function support",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "CANIF_CANFD_SUPPORT": {
+                    "Description": "CAN FD Support",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_ON"
+                },
+                "CANIF_TRCV_WAKEUP_SUPPORT": {
+                    "Description": "Can trcv Wakeup Support",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "CANIF_PUBLIC_PN_SUPPORT": {
+                    "Description": "Canif PnTxfliter Support",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "CANIF_PUBLIC_WAKEUP_CHECK_VALID_BY_NM": {
+                    "Description": "only NM message can wakeup CAN network",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "CANIF_PUBLIC_WAKEUP_CHECK_VALIDATION_SUPPORT": {
+                    "Description": "all message can wakeup CAN network",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "CanIfPublicTxConfirmPollingSupport": {
+                    "Description": "This parameter enables/disables the API 'CanIf_GetTxConfirmationState",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                }
+            }
+        },
+        "CanIfDispatchCfg": {
+            "Description": " In this container callback functions are defined which are provided by upper layer modules of the CAN Interface module. ",
+            "Parameters": {
+                "User Ctrl Bus Off Name": {
+                    "Description": "This parameter defines the name of <User_controller_bus_off>.",
+                    "Value": "cansm_controller_bus_off"
+                },
+                "User Ctrl Bus Off UL": {
+                    "Description": "This parameter defines the upper layer (UL) module to which the notifications of all bus off events from the CAN driver modules have to be routed ",
+                    "Value": "CAN_SM"
+                },
+                "User Ctrl Mode Indication Name": {
+                    "Description": "This parameter defines the name of <User_controller_mode_indication>.",
+                    "Value": "cansm_controller_mode_indication "
+                },
+                "User Ctrl Mode Indication UL": {
+                    "Description": "This parameter defines the upper layer (UL) module to which the notifications of all controller transition events from the CAN driver modules have to be routed ",
+                    "Range": [
+                        "CAN_SM",
+                        "CDD"
+                    ],
+                    "Value": "CAN_SM"
+                },
+                "User validate Wakeup Event Name ": {
+                    "Description": "This parameter defines the name of <User_validate_wakeup_event>.",
+                    "Value": "ecum_validate_wakeup_event"
+                },
+                "User validate Wakeup Event UL": {
+                    "Description": "This parameter defines the upper layer (UL) module to which the notifications about positive former requested wake-up events have to be routed",
+                    "Range": [
+                        "ECUM",
+                        "CDD"
+                    ],
+                    "Value": "ECUM"
+                }
+            }
+        },
+        "CanIfTxPduCfgs": {
+            "Description": " This container contains the configuration (parameters) of a transmit CAN L-PDU. It has to be configured as often as a transmit CAN L-PDU is needed. The SHORT-NAME of CanIfTxPduConfig container represents the symolic name of Transmit L-PDU. ",
+            "Parameters": {
+{%- set max_tx_num = get_canif_max_tx_num()%}
+{%- set comm_diag_list = get_canif_json_config()%}
+{%- for comm_diag_name, value in comm_diag_list.items() %}
+{%- for message in value %}
+{%- if "Tx" == message["direction"] %}
+                "{{message["message_name"]}}": {
+                    "message_name":"{{message["message_name"]}}",
+                    "frame_type":"{{message["frame_type"]}}",
+                    "canid":"{{message["frame_id"]}}",
+                    "txpdu_type":{
+                        "Description": "By this parameter the type of the Tx-PDU is set. In case of type DYNAMIC the CAN identifier of Tx-PDU can be set / changed by using of API 'CanIf_SetDynamicTxId'.",
+                        "Range": [
+                            "STATIC",
+                            "DYNAMIC"
+                        ],
+                        "Value": "STATIC"
+                    },
+                    "dlc":{{message["message_size"]}},
+                    "Tx Pdu Pn Filter Pdu":"FALSE",
+                    "txcalloutfunction_name":"NULL",
+                    "tx_confirmation_ul":{
+                        "Description": "This parameter defines the upper layer (UL) module to which the confirmation of the successfully transmitted CANTXPDUID has to be routed",
+                        "Range": [
+                            "PDUR",
+                            "CANNM",
+                            "CANTP",
+                            "XCP"
+                        ],
+                        "Value": "{{message["module"]}}"
+                    },
+                    "txbuffer_ref":{
+                        "Description": "The tx buffer config index to which Tx L-PDU belongs to is referred through this parameter.",
+                        "Value": "to be filled by user"
+                    }
+                {%- if message["number"] == max_tx_num %}
+                }
+                {%- else %}
+                },
+                {%- endif %}
+{%- endif%}
+{%- endfor%}
+{%- endfor%}
+            }
+        },
+        "CanIfRxPduCfgs": {
+            "Description": " This container contains the configuration (parameters) of each receive CAN L-PDU. The SHORT-NAME of CanIfRxPduConfig container itself represents the symolic name of Receive L-PDU.",
+            "Parameters": {
+{%- set max_rx_num = get_canif_max_rx_num()%}
+{%- set comm_diag_list = get_canif_json_config()%}
+{%- for comm_diag_name, value in comm_diag_list.items() %}
+{%- for message in value %}
+{%- if "Rx" == message["direction"] %}
+                "{{message["message_name"]}}": {
+                    "message_name":"{{message["message_name"]}}",
+                    "frame_type":"{{message["frame_type"]}}",
+                    "canid":"{{message["frame_id"]}}",
+                    "dlc":{{message["message_size"]}},
+                    "hrh_ref":{
+                        "Description": "The HRH config index to which Rx L-PDU belongs to is referred through this parameter.NOTE!!!:Messages mapped to the same HRH must be contiguous with each other",
+                        "Value": "to be filled by user"
+                    },
+                    "rxcalloutfunction_name":"NULL",
+                    "rx_indication_ul":{
+                        "Description": "This parameter defines the upper layer (UL) module to which the indication of the successfully received Rx-PDU has to be routed via",
+                        "Range": [
+                            "PDUR",
+                            "CANNM",
+                            "CANTP",
+                            "XCP"
+                        ],
+                        "Value": "{{message["module"]}}"
+                    }
+                {%- if message["number"] == max_rx_num %}
+                }
+                {%- else %}
+                },
+                {%- endif %}
+{%- endif%}
+{%- endfor%}
+{%- endfor%}
+            }
+        },
+        "CanIfBufferCfgs": {
+            "Description": " This container contains the Tx-buffer configuration. Multiple buffers with different sizes could be configured. If CanIfBufferSize (CANIF834_Conf) equals 0, the CanIf Tx L-PDU only refers via this CanIfBufferCfg the corresponding CanIfHthCfg.",
+            "Parameters": {
+                "can0_tx1_0x43e": {
+                    "buffer_size":{
+                        "Description": "This parameter defines the number of CanIf Tx L-PDUs which can be buffered in one Tx-buffer. If this value equals 0, the CAN Interface module does not perform Tx buffering for the CanIf Tx L-PDUs which are assigned to this Tx-buffer ",
+                        "Value": 0
+                    },
+                    "hthcfg":{
+                        "hth_type":{
+                            "Range": [
+                                "BASIC",
+                                "FULL"
+                            ],
+                            "Value": "FULL"
+                        },
+                        "can_controllerid":{
+                            "Description": "Reference to controller id to which the HTH belongs to. A controller can contain one or more HTHs.",
+                            "Value": 0
+                        },
+                        "can_controller_name":"FBCM_BLECAN_Ctrl",
+                        "hth_id":{
+                            "Description": "The parameter refers to a particular HTH object in the CAN driver module configuration. ",
+                            "Value": 41
+                        },
+                        "CanIfHthRangeCfg":{
+                            "CanIfHthRangeBaseId":"0x43e",
+                            "CanIfHthRangeRangeMask":"0x7ff",
+                            "CanIfHthRangeRangeTxPduRangeCanIdType":"STANDARD"
+                        }
+                    }
+                } 
+            }
+        },
+        "CanIfHrhCfgs":{
+            "Description": " This container contains configuration parameters for each hardware receive object (HRH).",
+            "Parameters": {
+                "can0_rx1_0_0ff":{
+                    "name":"can0_rx1_0_0ff",
+                    "hrh_type":{
+                        "Range": [
+                            "BASIC",
+                            "FULL"
+                        ],
+                        "Value": "BASIC"
+                    },
+                    "can_controllerid":{
+                        "Description": "Reference to controller id to which the HRH belongs to. A controller can contain one or more HRHs.",
+                        "Value": 0
+                    },
+                    "can_controller_name":"FBCM_BLECAN_Ctrl",
+                    "hrh_id":{
+                        "Description": "The parameter refers to a particular HRH object in the CAN driver module configuration. ",
+                        "Value": 0
+                    },
+                    "CanIfHrhRangeCfg":{
+                        "CanIfHrhRangeBaseId":"0x0",
+                        "CanIfHrhRangeRangeMask":"0x700",
+                        "CanIfHrhRangeRangeRxPduRangeCanIdType":"STANDARD"
+                    }
+                }
+            }
+        }
+
+    }
+}
+{{ "" }}

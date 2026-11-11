@@ -1,0 +1,70 @@
+From a4632983e9479e47f79824a230062c1ae75779e2 Mon Sep 17 00:00:00 2001
+From: weijiafu <weijiafu@lixiang.com>
+Date: Thu, 6 Feb 2025 14:29:24 +0800
+Subject: [PATCH] patch
+
+---
+ src/lib/rt-sched.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/src/lib/rt-sched.c b/src/lib/rt-sched.c
+index 8023bc7..bae11cf 100644
+--- a/src/lib/rt-sched.c
++++ b/src/lib/rt-sched.c
+@@ -14,11 +14,36 @@
+ 
+ #include "rt-sched.h"
+ 
++#ifdef __NuttX__
++#include <sched.h>
++#include "rt-error.h"
++
++static int nuttx_sched_setattr(pid_t pid,
++		  const struct sched_attr *attr,
++		  unsigned int flags)
++{
++	struct sched_param param;
++	int ret;
++
++	param.sched_priority = attr->sched_priority;
++	if (sched_setscheduler(pid, attr->sched_policy, &param)) {
++		err_msg("%s sched_setscheduler failed!\n", __func__);
++		return -1;
++	}
++
++	//TODO: sched_nice, sched_runtime, sched_deadline, sched_period
++}
++#endif
++
+ int sched_setattr(pid_t pid,
+ 		  const struct sched_attr *attr,
+ 		  unsigned int flags)
+ {
++#ifdef __NuttX__
++	return nuttx_sched_setattr(pid, attr, flags);
++#else
+ 	return syscall(__NR_sched_setattr, pid, attr, flags);
++#endif
+ }
+ 
+ int sched_getattr(pid_t pid,
+@@ -26,5 +51,16 @@ int sched_getattr(pid_t pid,
+ 		  unsigned int size,
+ 		  unsigned int flags)
+ {
++#ifdef __NuttX__
++	struct sched_param param;
++
++	if (sched_getparam(pid, &param)) {
++		err_msg("%s sched_getparam failed!\n", __func__);
++		return -1;
++	}
++	attr->sched_priority = param.sched_priority;
++	attr->sched_policy = sched_getscheduler(pid);
++#else
+ 	return syscall(__NR_sched_getattr, pid, attr, size, flags);
++#endif
+ }
+-- 
+2.25.1
+

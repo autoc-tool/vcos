@@ -1,0 +1,136 @@
+{
+    "project": "rt_demo",
+    "version": "V0.1.0-DEV",
+    "system_version": "V0.1.0-DEV",
+    "compiler": "gcc",
+    "target": "AUTOC",
+    "mode": "release",
+    "generation_limit": "Error",
+    "modules_info": {
+        "enabled_module_list": [
+            "Crc",
+            "EcuC",
+            "EthIf",
+            "MemIf",
+            "Memmap",
+            "NvM",
+            "Os",
+            "Rte",
+            "TcpIp"
+        ],
+        "codegen_module_list": [
+            "Crc",
+            "EthIf",
+            "MemIf",
+            "Memmap",
+            "NvM",
+            "Os",
+            "Rte",
+            "TcpIp"
+        ],
+        "validation_module_list": [
+            "EcuC",
+            "EthIf",
+            "Memmap",
+            "NvM",
+            "Os",
+            "Rte",
+            "TcpIp"
+        ],
+        "codegen_swc_list": [],
+        "bsw_ecuc_hash": {
+            "bsw": {
+                "os": {
+                    "autosar_hash": "00d0d38495a848715a81321ac3810789c67bef7ae054fd19d3f114e44be29ed4",
+                    "code_hash": "233f0073fdaf777f2a497427fdf006e040b9b65680dfa9763a0b4672b0433c6e"
+                },
+                "rte": {
+                    "autosar_hash": "d9a2379fe1c98b17118e79d100619e128c906168e659318e86d973bf90abb551",
+                    "code_hash": "4a3e51f0eb7e5756a11e45d5e478222d5fb35fd94b04e69712b8b19191d73f49"
+                },
+                "ethif": {
+                    "autosar_hash": "28a4355c689e4879dd0fa193f0cfd43678148bf0d71e6fb9ad8a0d52a3190730",
+                    "code_hash": "3bb71e2b70a99abc7eade10424bd6b1d6b8d7126af15a23aa0313f199291815f"
+                },
+                "tcpip": {
+                    "autosar_hash": "1de833df9f3d7830514e8ce2f22a410fb9f3af292f4ceed1fc02cbed81ea51eb",
+                    "code_hash": "d6bfd6957d454b81535ff91bd1dcf810a86d0dc1f74f1dbae8799884ccac8dcb"
+                },
+                "memif": {
+                    "autosar_hash": "a9bba1fc8e5614c656257054b07ce0893c131bbe23e7fbcdb11f312949496af6",
+                    "code_hash": "4125e882370def6264b4978c86701f2e9eb5213f38c8b6782092b4680270f05c"
+                },
+                "nvm": {
+                    "autosar_hash": "9ef660ec4e771773b6c57f8ff9b7c5dc153751e35d2e4eb10ea872774d2f1492",
+                    "code_hash": "8583690f5a26d9d438cb133a9e586e3ccb24e986234c15ab8b91b9b4db6a13cf"
+                },
+                "canif": {
+                    "autosar_hash": "1c4f110d6ebc6bfa21dc56fb6f140bd4f45d272306bfeca5cd14356306b3e3c3",
+                    "code_hash": "EMPTY_DIRECTORY_HASH"
+                },
+                "cansm": {
+                    "autosar_hash": "222369088fc438add3e956908aeb2b44a7488b0362b363147d3073293861444e",
+                    "code_hash": "EMPTY_DIRECTORY_HASH"
+                },
+                "com": {
+                    "autosar_hash": "0905a634934b98d3010b8b9432b9c5d1e0c4df21eb813608588b0788122945f6",
+                    "code_hash": "EMPTY_DIRECTORY_HASH"
+                },
+                "comm": {
+                    "autosar_hash": "4a0ac4cf3ed25b248d97c8529959d127fe730ce0d5e441becc8bc486efb96c1a",
+                    "code_hash": "EMPTY_DIRECTORY_HASH"
+                },
+                "pdur": {
+                    "autosar_hash": "c78b3b6b239fbd64c37c09500a2f9a6303e993265e3940bdf2f0802c746f62d4",
+                    "code_hash": "EMPTY_DIRECTORY_HASH"
+                },
+                "memmap": {
+                    "autosar_hash": "2b92f14aadd13ed8508a4cc3c9e39e5220756a3250ecab3470c333546635c163",
+                    "code_hash": "270e7862a4dad24b53dc43192cb4fb1d2a3bef309f89c6f7c02df87aefde986f"
+                },
+                "crc": {
+                    "autosar_hash": "3eb9d3d792846c6d202b1df04fd95cb07b9f100470dff5d1b761a338e288553d",
+                    "code_hash": "80d87015f46780f384b9837e04e3cef4adb175d7ffdf83d3b390d96ae6e15071"
+                }
+            },
+            "unchanged_modules": []
+        }
+    },
+    "config_path": ".",
+    "gendata_path": "gen_data",
+    "is_add_channel_name": false,
+    "path": {
+        "config_base_path": "config",
+        "swc_template_path": "../../apps/asw_swc",
+        "bswcallout_path": "../../apps/bsw_user_callout",
+        "import_plugin_path_list": [],
+        "user_plugin_output_path": "",
+        "config_file_path": {
+            "ldf": {
+                "num": 0,
+                "list": {}
+            },
+            "dbc": {
+                "num": 0,
+                "list": {}
+            },
+            "cdd": {
+                "num": 0,
+                "single_signal": true,
+                "list": {}
+            },
+            "swc": "config/asw",
+            "eb_arxml": "."
+        },
+        "studio_path": "../../../../vcos_studio/configurator",
+        "application_path": "../../apps",
+        "internal_behavior_path": "config/internal_behavior",
+        "log_path": "log",
+        "service_component_path": "config/service_components",
+        "compiler_path": "",
+        "mcal_path": "../../../../drivers",
+        "mcal_gendata_path": "",
+        "system_path": "../../../../components/configs/configurator_plug_in"
+    },
+    "MCAL_VERSION": "AUTOC"
+}

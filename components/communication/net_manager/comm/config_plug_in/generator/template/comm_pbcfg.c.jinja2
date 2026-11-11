@@ -1,0 +1,91 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  ComM PostBuild 配置源文件.
+ */
+
+/* Including File */
+#include "comm.h"
+#include "comm_cfg.h"
+#if defined (VCOS_MODULE_CONFIG_RTE) && (VCOS_MODULE_CONFIG_RTE == 1)
+#if defined(USE_RTE)
+#include "Rte_ComM.h"
+#endif
+#endif
+
+/* Local Type & Structure Definition */
+#define COMM_START_SEC_CONST 
+#include "comm_memmap.h"
+{% set channels = dict_config["ActiveEcuC"]["ComM"]["ComMConfigSet"]["ComMChannels"].items() %}
+/* 不同ComM 通信频道 */
+static SECTION_POSTBUILD_DATA CONST(comm_channel_config_type, COMM_CONST) comm_channels[COMM_CHANNEL_COUNT] = {
+{%- for channel_name, channel_value in channels %}
+{%- if channel_name != "Tag" %}
+    {
+        .bus_type = {{ channel_value["ComMBusType"]["Value"] }},
+        .comm_channel = {{ channel_value["ComMChannelId"]["Value"] }},
+        .nm_channel = COMM_NETWORK_HANDLE_{{ channel_name }},
+        .nm_variant = COMM_NM_VARIANT_{{ channel_value["ComMNetworkManagement"]["ComMNmVariant"]["Value"] }},
+        .main_func_period = {{ get_time_ms(channel_value["ComMMainFunctionPeriod"]["Value"]) }},
+    },
+{%- endif %}
+{%- endfor %}
+};
+
+{%- if "ComMUsers" in dict_config["ActiveEcuC"]["ComM"]["ComMConfigSet"] %}
+{% set users = dict_config["ActiveEcuC"]["ComM"]["ComMConfigSet"]["ComMUsers"] %}
+{% set channels_base = dict_config["ActiveEcuC"]["ComM"]["ComMConfigSet"]["ComMChannels"] %}
+{%- for user_name, user_value in users.items() %}
+{%- if user_name != "Tag" %}
+static SECTION_POSTBUILD_DATA CONSTP2CONST(comm_channel_config_type, AUTOMATIC, COMM_CONST)  ComM_ComMUser_{{ user_name }}_Channels[] = {
+{%- set user_channels = gen_user_channels(user_name, channels_base) %}
+{%- if user_channels|length > 0 %}
+{%- for user_channel in user_channels %}
+    &comm_channels[ComMConf_ComMChannel_{{ user_channel }}],
+{%- endfor %}
+{%- else %}
+    NULL_PTR
+{%- endif %}
+};
+{%- endif %}
+{%- endfor %}
+
+/* 不同ComM 用户 */
+static SECTION_POSTBUILD_DATA CONST(comm_user_config_type, COMM_CONST) comm_users[COMM_USER_COUNT] = {
+{%- for user_name, user_value in users.items() %}
+{%- if user_name != "Tag" %}
+{%- set user_channels = gen_user_channels(user_name, channels_base) %}
+    {
+        /* @req ComM995 */
+        .channel_num = {{user_channels|length}},
+        .channels = ComM_ComMUser_{{user_name}}_Channels,
+    },
+{%- endif %}
+{%- endfor %}
+};
+{%- else %}
+comm_user_config_type comm_users = NULL_PTR;
+{%- endif %}
+
+/* ComM 配置数据 */
+SECTION_POSTBUILD_DATA CONST(comm_config_type, COMM_CONST) comm_config = {
+    .channels = comm_channels,
+    .users = comm_users,
+};
+#define  COMM_STOP_SEC_CONST
+#include "comm_memmap.h"

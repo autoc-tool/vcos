@@ -1,0 +1,48 @@
+menuconfig TRACED
+    bool "vcos traced support"
+    select SCHED_INSTRUMENTATION
+    select SCHED_INSTRUMENTATION_ABNORMAL
+    select SCHED_INSTRUMENTATION_FILTER
+    select SCHED_INSTRUMENTATION_IRQHANDLER
+    select SCHED_INSTRUMENTATION_SWITCH
+    select SCHED_INSTRUMENTATION_WAKEUP
+    select DRIVERS_NOTE
+    select DRIVERS_NOTECTL
+    depends on !DISABLE_DRIVERS
+    default n
+	---help---
+		Enable the vcos traced module
+if TRACED
+    config TRACE_READ_TIMES_MAX
+        int "Trace read max times"
+        range 1 300
+        default 100
+        ---help---
+            Set the traced read note data max times per cycle.
+            Valid range: 1-300 (default: 150)
+            Note: This value affects the execution time of the runnable
+
+    config TRACE_VAR_SECTION
+        string "Trace section"
+        ---help---
+            Enable section information.
+
+    menu "Trace Network Settings"
+    config TRACE_SERVER_PORT
+        int "Trace server port"
+        range 1 65535
+        default 18888
+        ---help---
+            Set the UDP port number for the trace server.
+            Valid range: 1-65535 (default: 18888).
+            Note: This option requires UDP protocol support
+
+    config TRACE_SERVER_IP
+        string "Trace server IP address"
+        default "192.168.10.254"
+        ---help---
+            Set the IPv4 address of the trace server.
+            Valid range: depends on the IP addr (default: 192.168.10.254).
+            Note: This option requires UDP protocol support
+    endmenu
+endif

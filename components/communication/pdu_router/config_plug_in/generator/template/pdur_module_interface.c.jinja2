@@ -1,0 +1,174 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+{%- set moduleConfig = get_interface_file_config() %}
+{%- set moduleName = moduleConfig['moduleName'] %}
+{%- set moduleType = moduleConfig['type'] %}
+/* Description:  PduR - {{moduleName}}模块源文件 */
+
+/* Including File */
+#include "pdur.h"
+#include "pdur_{{moduleName | lower}}.h"
+#include "pdur_routingcfg.h"
+
+{%- if moduleType == 1 %} {# DoIP/SoAd LoIf #}
+#define PDUR_SERVICE_DUMMY PDUR_{{moduleName.upper()}}_IF
+{%- elif  moduleType == 2 %} {# DoIP/SoAd LoTp #}
+#define PDUR_SERVICE_DUMMY PDUR_{{moduleName.upper()}}_TP
+{%- else %}
+#define PDUR_SERVICE_DUMMY PDUR_{{moduleName.upper()}}
+{%- endif %}
+
+/* Global Fuction Implementation */
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+{%- if moduleType == 1 %} {# DoIP/SoAd LoIf #}
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower }}_if_rx_indication(PduIdType pdu_id, const PduInfoType *pdu_info_ptr)
+{
+    pdur_rx_indication(pdu_id, pdu_info_ptr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower }}_if_tx_confirmation(PduIdType pdu_id)
+{
+    pdur_tx_confirmation(pdu_id, (uint8)E_OK, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower }}_if_trigger_transmit(PduIdType pdu_id, PduInfoType *pdu_info_ptr)
+{
+    return pdur_trigger_transmit(pdu_id, pdu_info_ptr, PDUR_SERVICE_DUMMY);
+}
+
+
+{%- elif  moduleType == 2 %} {# DoIP/SoAd LoTp #}
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_tp_copy_rx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    PduLengthType *BufferSizePtr)
+{
+    return pdur_lo_tp_copy_rx_data(pdu_id, pdu_info_ptr, BufferSizePtr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_tp_rx_indication(PduIdType pdu_id, NotifResultType result)
+{
+    pdur_lo_tp_rx_indication(pdu_id, result, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_tp_start_of_reception(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    PduLengthType TpSduLength, PduLengthType *BufferSizePtr)
+{
+    (void)pdu_info_ptr;
+    return pdur_lo_tp_start_of_reception(pdu_id, TpSduLength, BufferSizePtr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_tp_copy_tx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    RetryInfoType *retry, PduLengthType *AvailableDataPtr)
+{
+    return pdur_lo_tp_copy_tx_data(pdu_id, pdu_info_ptr, retry, AvailableDataPtr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower }}_tp_tx_confirmation(PduIdType pdu_id, NotifResultType result)
+{
+    pdur_tp_tx_confirmation(pdu_id, result, PDUR_SERVICE_DUMMY);
+}
+
+
+{%- elif  moduleType == 3 %} {# LoIf #}
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower }}_rx_indication(PduIdType pdu_id, const PduInfoType *pdu_info_ptr)
+{
+    pdur_rx_indication(pdu_id, pdu_info_ptr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower }}_tx_confirmation(PduIdType pdu_id, NotifResultType result)
+{
+    pdur_tx_confirmation(pdu_id, (uint8)result, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_trigger_transmit(PduIdType pdu_id, PduInfoType *pdu_info_ptr)
+{
+    return pdur_trigger_transmit(pdu_id, pdu_info_ptr, PDUR_SERVICE_DUMMY);
+}
+
+
+{%- elif  moduleType == 4 %} {# LoTp #}
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_copy_rx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    PduLengthType *BufferSizePtr)
+{
+    return pdur_lo_tp_copy_rx_data(pdu_id, pdu_info_ptr, BufferSizePtr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_rx_indication(PduIdType pdu_id, NotifResultType result)
+{
+    pdur_lo_tp_rx_indication(pdu_id, result, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_start_of_reception(PduIdType pdu_id, const PduInfoType *Info,
+    PduLengthType TpSduLength, PduLengthType *BufferSizePtr)
+{
+    (void)Info;
+    return pdur_lo_tp_start_of_reception(pdu_id, TpSduLength, BufferSizePtr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_copy_tx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    RetryInfoType *retry, PduLengthType *AvailableDataPtr)
+{
+    return pdur_lo_tp_copy_tx_data(pdu_id, pdu_info_ptr, retry, AvailableDataPtr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_tx_confirmation(PduIdType pdu_id, NotifResultType result)
+{
+    pdur_tp_tx_confirmation(pdu_id, result, PDUR_SERVICE_DUMMY);
+}
+
+
+{%- elif  moduleType == 5 %} {# UpIf #}
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_transmit(PduIdType pdu_id, const PduInfoType *pdu_info_ptr)
+{
+    return pdur_transmit(pdu_id, pdu_info_ptr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_transmit(PduIdType pdu_id)
+{
+    return pdur_up_cancel_transmit(pdu_id, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_receive(PduIdType pdu_id)
+{
+    return pdur_up_cancel_receive(pdu_id, PDUR_SERVICE_DUMMY);
+}
+
+
+{%- elif  moduleType == 6 %} {# UpTp #}
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_transmit(PduIdType pdu_id, const PduInfoType *pdu_info_ptr)
+{
+    return pdur_transmit(pdu_id, pdu_info_ptr, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_transmit(PduIdType pdu_id)
+{
+    return pdur_up_cancel_transmit(pdu_id, PDUR_SERVICE_DUMMY);
+}
+
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_receive(PduIdType pdu_id)
+{
+    return pdur_up_cancel_receive(pdu_id, PDUR_SERVICE_DUMMY);
+}
+
+{%- else %}
+{%- endif %}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+{{ "" }}

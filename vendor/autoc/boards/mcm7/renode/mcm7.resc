@@ -1,0 +1,28 @@
+:name: autoc mcm7
+:description: Three Cortex-M7 cores, one ELF. Console is Segger RTT.
+
+using sysbus
+
+$name?="mcm7"
+$bin?=@D:/code/haloos/output/rt_demo_mcm7_gcc/rt_demo.elf
+
+include @D:/code/haloos/vcos/vendor/autoc/renode/rtt_console.py
+
+mach create $name
+machine LoadPlatformDescription @D:/code/haloos/vcos/vendor/autoc/boards/mcm7/renode/mcm7.repl
+machine CreateVirtualConsole "rtt"
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    sysbus.coreid0 WriteDoubleWord 0 0
+    sysbus.coreid1 WriteDoubleWord 0 1
+    sysbus.coreid2 WriteDoubleWord 0 2
+    sysbus.cpu0 Reset
+    sysbus.cpu1 Reset
+    sysbus.cpu2 Reset
+    setup_rtt_console sysbus.rtt
+"""
+runMacro $reset
+
+showAnalyzer sysbus.rtt

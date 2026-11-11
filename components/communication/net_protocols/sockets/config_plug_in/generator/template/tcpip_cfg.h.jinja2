@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        TcpIp_Cfg.h
+ * @brief       TcpIp配置头文件
+ * @details     主要包含TcpIp模块的配置相关相关信息
+ * @date        {{get_generation_time_temp()}}
+ **********************************************************************************************************************/
+ {%- set TcpIpConfig = get_TcpIpConfig() %}
+ {%- set TcpIpGeneral = get_TcpIpGeneral() %}
+
+#ifndef TCPIP_CFG_H
+#define TCPIP_CFG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define TCPIP_VERSION_INFO_API               ({{"%s" | format(convert_to_on_or_off(TcpIpGeneral.TcpIpVersionInfoApi.Value))}})    ///< 使能/关闭获取协议栈版本号API
+#define TCPIP_MAIN_FUNCTION_PERIOD_MS        ({{"%s" | format(TcpIpGeneral.TcpIpMainFunctionPeriod.Value)}}u)   ///< 定义主函数执行周期
+#define TCPIP_TCP_ENABLED                    ({{"%s" | format(convert_to_on_or_off(TcpIpGeneral.TcpIpTcpEnabled.Value))}})  ///< 使能/关闭TCP协议
+#define TCPIP_SUPPORT_TCP                    TCPIP_TCP_ENABLED      ///< 使能/关闭TCP协议
+#define TCPIP_UDP_ENABLED                    ({{"%s" | format(convert_to_on_or_off(TcpIpGeneral.TcpIpUdpEnabled.Value))}})    ///< 使能/关闭UDP协议
+#define TCPIP_DEV_ERROR_DETECT               ({{"%s" | format(convert_to_on_or_off(TcpIpGeneral.TcpIpDevErrorDetect.Value))}})    ///< 使能/关闭错误检测
+#define TCPIP_IPV4_ENABLED                   ({{"%s" | format(convert_to_on_or_off(TcpIpGeneral.TcpIpIpV4General.TcpIpIpV4Enabled.Value))}})    ///< 使能/关闭IPV4协议
+#define TCPIP_TCP_SOCKET_MAX           ({{"%s" | format(TcpIpGeneral.TcpIpTcpSocketMax.Value)}}u)   ///< 最大TCP套接字的数量
+#define TCPIP_UDP_SOCKET_MAX           ({{"%s" | format(TcpIpGeneral.TcpIpUdpSocketMax.Value)}}u)   ///< 最大UDP套接字的数量
+#define TCPIP_MAX_NOF_SOCKETS                (TCPIP_TCP_SOCKET_MAX+TCPIP_UDP_SOCKET_MAX)            ///< 最大套接字总数量
+#define TCPIP_NOF_CONTROLLERS          ({{ TcpIpConfig.TcpIpCtrl | length }}u)                      ///< 最大控制器数量
+#define TCPIP_NOF_LOCALADDR            ({{ TcpIpConfig.TcpIpLocalAddr | length }}u)                  ///< 最大本地地址数量
+#define TCPIP_DHCP_CLIENT_ENABLED            (STD_OFF)  ///< 使能/关闭DHCP客户端
+#define TCPIP_IPV6_ENABLED                   (STD_OFF)  ///< 使能/关闭IPV6协议
+#define TCPIP_PATH_MTU_DISCOVERY_ENABLED     (STD_OFF)  ///< 使能/关闭路径最大传输单元发现
+#define TCPIP_RESET_IP_ASSIGNMENT_API        (STD_OFF)  ///< 使能/关闭重置IP分配API
+#define TCPIP_MAX_ONHOLD_STATE_TIMEOUT_MS    (30000u)
+#define TCPIP_MEMMAP_BSW                    ///< 定义内存映射BSW
+
+{% for value in TcpIpConfig.TcpIpCtrl %}
+#define TcpIpConf_TcpIpCtrl_{{"%s" | format(value.ShortName)}} ({{ loop.index0 }}u)   ///< TcpIp控制器序号
+{%- endfor %}
+
+{% for local_addr in TcpIpConfig.TcpIpLocalAddr %}
+#define TcpIpConf_TcpIpLocalAddr_{{"%s" | format(local_addr.ShortName)}} ({{ local_addr.TcpIpAddrId.Value }}u) ///< TcpIp本地地址序号
+{%- endfor %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        TcpIp_LCfg.h
+ * @brief       TcpIp配置头文件
+ * @details     声明TcpIp模块的配置相关相关信息
+ * @date        {{get_generation_time_temp()}}
+ **********************************************************************************************************************/
+ {%- set TcpIpConfig = get_TcpIpConfig() %}
+ {%- set TcpIpGeneral = get_TcpIpGeneral() %}
+
+#ifndef TCPIP_LCFG_H
+#define TCPIP_LCFG_H
+
+#include "tcpip_types.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/*!*********************************************************************************************************************
+ * @brief    定义套接字所属者序号
+ **********************************************************************************************************************/
+typedef enum  {
+{%- for value in TcpIpConfig.TcpIpSocketOwnerConfig.TcpIpSocketOwner %}
+    {{"%s," | format(value.ShortName)}}     ///< 套接字所属者序号
+{%- endfor %}
+    TCPIP_NOF_SOCKETOWNERS                  ///< 套接字所属者最大数量
+} TcpIp_SocketOwnerIdType;
+
+{%- for value in TcpIpConfig.TcpIpSocketOwnerConfig.TcpIpSocketOwner %}
+{{"#define TcpIp_%sGetSocket(_Dom, _Proto, _Id) tcpip_get_socket(%s, _Dom, _Proto, _Id)" | format(value.GetSocket, value.ShortName) }} ///< 套接字获取函数
+{%- endfor %}
+
+#define  TCPIP_START_SEC_CONST
+#include "tcpip_memmap.h"
+extern CONST(tcpip_config_type, TCPIP_CONST) TcpIp_Config;                       //TCPIP配置项指针声明
+#define  TCPIP_STOP_SEC_CONST
+#include "tcpip_memmap.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

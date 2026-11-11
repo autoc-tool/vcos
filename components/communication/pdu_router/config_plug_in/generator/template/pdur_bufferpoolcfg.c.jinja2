@@ -1,0 +1,239 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+/* Including File */
+#include "pdur.h"
+#if defined (VCOS_OS_CONFIG_SPINLOCK) && (VCOS_OS_CONFIG_SPINLOCK == 1)
+#include "Os.h"
+#include "Spinlock_Cfg.h"
+#endif
+#include "pdur_bufferpoolcfg.h"
+#include "Compiler.h"
+{{''}}
+
+{%- set pdur_buffer_pool_list = get_pdur_bufferpool() %}
+{%- set pdur_tx_buffer_list = get_pdur_txbuffer() %}
+
+#define PDUR_BUFFER_POOL_NUM {{pdur_buffer_pool_list | length}}u // BufferPool的总数
+{%- set block_block_num = namespace(value = 0) %}
+{%- for buffer_pool in pdur_buffer_pool_list %}
+    {%- set block_num = buffer_pool["block_num"] %}
+    {%- set block_block_num.value = block_block_num.value + block_num %}
+{%- endfor %}
+#define PDUR_BUFFER_BLOCK_NUM {{block_block_num.value}}u // BufferPool中所有的BufferBlock的总数
+#define PDUR_TX_BUFFER_NUM {{pdur_tx_buffer_list|length}} // TxBuffer的总数
+{{''}}
+{%- if pdur_buffer_pool_list | length != 0 %}
+
+/* 缓存池空间定义 */
+#define PDUR_START_SEC_MULTI_APP_BSS
+#include "pdur_memmap.h"
+{%- for buffer_pool in pdur_buffer_pool_list%}
+    {%- set pool_name = buffer_pool["name"] %}
+    {%- set block_size = buffer_pool["block_size"] %}
+    {%- set block_num = buffer_pool["block_num"] %}
+    {%- if block_size != 0 %} {# BlockSize为0代表这一组BufferManager是适配MemPool的 #}
+static VAR(uint8, PDUR_MULTI_APP_BSS) pdur_{{pool_name | lower}}_data[{{block_num * block_size}}u]; /* Total BufLen = BufSize * BufNum */
+    {%- endif %}
+{%- endfor %}
+#define PDUR_STOP_SEC_MULTI_APP_BSS
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+static VAR(pdur_buffer_manager_type, PDUR_MULTI_APP_DATA) pdur_buffer_manager_list[PDUR_BUFFER_BLOCK_NUM] = {
+{%- set block_total_idx = namespace(value = 0) %}
+{%- set block_pool_idx = namespace(value = 0) %}
+{%- for buffer_pool in pdur_buffer_pool_list %}
+    {%- set pool_name = buffer_pool["name"] %}
+    {%- set block_size = buffer_pool["block_size"] %}
+    {%- set block_num = buffer_pool["block_num"] %}
+    {%- for blockIdx in range (block_num) %}
+    { /* Pool: {{pool_name}}; Idx: {{blockIdx}} - pdur_buffer_manager_list[{{block_total_idx.value}}] */
+    {%- if block_size != 0 %} {# BlockSize为0代表这一组BufferManager是适配MemPool的 #}
+        .pool_idx = {{block_pool_idx.value}}u,
+    {%- else %}
+        .pool_idx = PDUR_BUFFER_POOL_MEMPOOL_IDX,
+    {%- endif %}
+        .self_node_idx = {{block_total_idx.value}}u,
+        .next_node_idx = PDUR_BUFFER_BLOCK_NUM,
+        .queue_next_node_idx = PDUR_BUFFER_BLOCK_NUM,
+        .buffer_write_offset = 0u,
+        .src_pdu_id = PDUR_INVALID_PDU_ID,
+        .pdu_length = 0u,
+    {%- if block_size != 0 %} {# BlockSize为0代表这一组BufferManager是适配MemPool的 #}
+        .buf_length = {{block_size}}u,
+        .buf_addr = &pdur_{{pool_name | lower}}_data[{{block_size * blockIdx}}u],
+    {%- else %}
+        .buf_length = 0u,
+        .buf_addr = NULL,
+    {%- endif %}
+    },
+    {%- set block_total_idx.value = block_total_idx.value + 1 %}
+    {%- endfor %}
+{%- set block_pool_idx.value = block_pool_idx.value + 1 %}
+{%- endfor %}
+};
+#define PDUR_STOP_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+{%- endif %}
+
+#define PDUR_START_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+/* 被使用的BufferManager的管理链表 */
+static VAR(pdur_buffer_manager_header_type, PDUR_MULTI_APP_DATA) pdur_buffer_manager_busy_list = {
+#if defined (VCOS_OS_CONFIG_SPINLOCK) && (VCOS_OS_CONFIG_SPINLOCK == 1)
+    .spinlock_id = (SpinlockIdType)PDUR_BUFFER_MANAGER_BUSYLIST_SPINLOCK_ID,
+#endif
+    .block_length = PDUR_BUFFER_LENGTH_INVALID,
+    .head_node_idx = PDUR_BUFFER_BLOCK_NUM,
+};
+#define PDUR_STOP_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+
+{% if pdur_buffer_pool_list | length != 0 %}
+#define PDUR_START_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+/* 未使用的BufferManager缓存池，根据BufferBlockLength排序 */
+static VAR(pdur_buffer_manager_header_type, PDUR_MULTI_APP_DATA) pdur_buffer_manager_header_list[PDUR_BUFFER_POOL_NUM] = {
+{%- for buffer_pool in pdur_buffer_pool_list %}
+    {%- set pool_name = buffer_pool["name"] %}
+    {%- set block_size = buffer_pool["block_size"] %}
+    {%- set block_num = buffer_pool["block_num"] %}
+    {{"{ "}}{%- if block_size != 0 -%} // 缓存池PduR_{{pool_name}}，每个缓存区块长度为{{block_size}}，有缓存区块{{block_num}}个
+    {%- else -%} // 缓存池PduR_{{pool_name}}，有缓存区块{{block_num}}个    
+    {%- endif %}
+#if defined (VCOS_OS_CONFIG_SPINLOCK) && (VCOS_OS_CONFIG_SPINLOCK == 1)
+        .SpinlockID = (SpinlockIdType)PDUR_BUFFER_POOL_{{pool_name|upper}}_SPINLOCK_ID,
+#endif
+        {% if block_size != 0 -%}.block_length = {{block_size}}u,{%else-%}.block_length = PDUR_BUFFER_LENGTH_INVALID,{%endif%}
+        .head_node_idx = PDUR_BUFFER_BLOCK_NUM,
+    {{"}"}},
+{%- endfor %}
+};
+#define PDUR_STOP_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+{%- endif %}
+
+{%- if pdur_tx_buffer_list | length != 0%}
+#define PDUR_START_SEC_MULTI_APP_BSS
+#include "pdur_memmap.h"
+{%- for tx_buffer_name, tx_buffer in pdur_tx_buffer_list.items() %}
+static VAR(uint8, PDUR_MULTI_APP_BSS) pdur_{{tx_buffer_name | lower}}_data[{{tx_buffer['PduRPduMaxLength']}}];
+{%- endfor %}
+#define PDUR_STOP_SEC_MULTI_APP_BSS
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+static VAR(pdur_buffer_manager_type, PDUR_MULTI_APP_DATA) pdur_buffer_manager_tx_buffer_list[PDUR_TX_BUFFER_NUM] = {
+{%- for tx_buffer_name, tx_buffer in pdur_tx_buffer_list.items() %}
+    { // {{tx_buffer_name}}
+        .pool_idx = PDUR_INVALID_BUFFER_POOL_IDX,
+        .self_node_idx = PDUR_BUFFER_BLOCK_NUM,
+        .next_node_idx = PDUR_BUFFER_BLOCK_NUM,
+        .queue_next_node_idx = PDUR_BUFFER_BLOCK_NUM,
+        .buffer_write_offset = 0u,
+        .src_pdu_id = PDUR_INVALID_PDU_ID,
+        .pdu_length = 0u,
+        .buf_addr = &pdur_{{tx_buffer_name | lower}}_data[0u],
+        .buf_length = {{tx_buffer['PduRPduMaxLength']}}u,
+
+    },
+{%- endfor %}
+};
+#define PDUR_STOP_SEC_MULTI_APP_DATA
+#include "pdur_memmap.h"
+{%- endif %}
+
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC_P2VAR(pdur_buffer_manager_header_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_busy_header_addr(void)
+{
+    return &pdur_buffer_manager_busy_list;
+}
+
+{%- if pdur_buffer_pool_list | length != 0 %}
+FUNC_P2VAR(pdur_buffer_manager_header_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_header_list_addr(void)
+{
+    return &pdur_buffer_manager_header_list[0u];
+}
+
+FUNC_P2VAR(pdur_buffer_manager_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_list_addr(void)
+{
+    return &pdur_buffer_manager_list[0u];
+}
+
+FUNC(uint8, PDUR_CODE) pdur_get_buffer_manager_header_len(void)
+{
+    return PDUR_BUFFER_POOL_NUM;
+}
+
+FUNC(uint8, PDUR_CODE) pdur_get_buffer_manager_len(void)
+{
+    return PDUR_BUFFER_BLOCK_NUM;
+}
+
+{%- else %}
+FUNC_P2VAR(pdur_buffer_manager_header_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_header_list_addr(void)
+{
+    return NULL;
+}
+
+FUNC_P2VAR(pdur_buffer_manager_type, AUTOMATIC, PDUR_CODE) pdur_get_buffer_manager_list_addr(void)
+{
+    return NULL;
+}
+
+FUNC(uint8, PDUR_CODE) pdur_get_buffer_manager_header_len(void)
+{
+    return 0u;
+}
+
+FUNC(uint8, PDUR_CODE) pdur_get_buffer_manager_len(void)
+{
+    return 0u;
+}
+{%- endif %}
+
+{%- if pdur_tx_buffer_list | length != 0%}
+FUNC_P2VAR(pdur_buffer_manager_type, AUTOMATIC, PDUR_CODE) pdur_get_tx_buffer_manager_list_addr(void)
+{
+    return &pdur_buffer_manager_tx_buffer_list[0u];
+}
+
+FUNC(uint8, PDUR_CODE) pdur_get_tx_buffer_manager_len(void)
+{
+    return PDUR_TX_BUFFER_NUM;
+}
+{%- else %}
+FUNC_P2VAR(pdur_buffer_manager_type, AUTOMATIC, PDUR_CODE) pdur_get_tx_buffer_manager_list_addr(void)
+{
+    return NULL;
+}
+
+FUNC(uint8, PDUR_CODE) pdur_get_tx_buffer_manager_len(void)
+{
+    return 0u;
+}
+{%- endif %}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+{{ "" }}

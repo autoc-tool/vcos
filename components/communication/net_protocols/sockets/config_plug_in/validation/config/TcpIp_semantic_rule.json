@@ -1,0 +1,40 @@
+{
+    "TCPIP011004": {
+        "rule_name": "TCPIP011004",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of TcpIpEthIfCtrlRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig/TcpIpCtrl/TcpIpEthIfCtrlRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig/TcpIpCtrl/TcpIpEthIfCtrlRef",
+            "base_path": "/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "TCPIP011005": {
+        "rule_name": "TCPIP011005",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of TcpIpAddrId.",
+        "rule_message": "/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig/TcpIpLocalAddr/TcpIpAddrId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig/TcpIpLocalAddr/TcpIpAddrId",
+            "base_path": "/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "TCPIP016001": {
+        "rule_name": "TCPIP016001",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The check of TcpIpStaticIpAddress.",
+        "rule_message": "TcpIp Static Ip Address should be a valid ip address.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/TcpIp/TcpIpConfig/TcpIpLocalAddr/TcpIpStaticIpAddressConfig/TcpIpStaticIpAddress"],
+                    "judge_expression": "SemanticRuleUtil.check_ipv4_address(%0)"
+                }
+            }
+        }
+    }
+}

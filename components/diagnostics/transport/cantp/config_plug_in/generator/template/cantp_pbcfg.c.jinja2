@@ -1,0 +1,281 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  CanTp的动态代码文件
+ */
+
+#include "cantp.h"
+#include "cantp_cfg.h"
+#include "canif.h"
+#include "canif_pbcfg.h"
+#include "cantp_pbcfg.h"
+#include "pdur.h"
+#include "cantp_internal.h"
+
+{%- set mainfunction_cfg = get_mainfunction_config(CanTpConfig) %}
+{%- if mainfunction_cfg | length == 0 %}
+#define CANTP_CONVERT_MS_TO_MAIN_CYCLES(x)  ((x)/CANTP_MAIN_FUNCTION_PERIOD_TIME_MS)
+{%- endif %}
+
+#define CANTP_START_SEC_CONST
+#include "cantp_memmap.h"
+{%- for _, coreinfo in CanTpChannelByCoreId.items() %}
+/* Core{{coreinfo["CanCoreId"]}} */
+static CONST(cantp_nsdu_type, CANTP_CONST) cantp_nsdu_config_core{{coreinfo["CanCoreId"]}}[] =
+{
+{%- if coreinfo is mapping %}
+{%- for cantp_channel_name, cantp_channel in coreinfo.items() %}
+{%- set channelIndex = loop.index0 %}
+{%- if cantp_channel is mapping %}
+{%- for _, RxNSdu in cantp_channel["Channel_Cfg"]["CanTpRxNSdus"].items() %}
+    {
+        .direction = CANTP_ISO15765_RECEIVE,
+        .cantp_fd_support = (boolean){{ get_enable_value_from_boolean(CanTpGeneral["CanTpFlexibleDataRateSupport"]["Value"]) }},
+        .config_data.cantp_rx_nsdu.canif_fc_pdu_id = {{ get_cantp_tx_fnc_npdu("CANIF_PDU_ID_", RxNSdu, "_oCanTp_CanIf_Tx") }},
+        .config_data.cantp_rx_nsdu.cantp_npdu_len = {{ RxNSdu["CanTpNPduLen"] }},
+        .config_data.cantp_rx_nsdu.pdur_pdu_id = PDUR_PDU_ID_{{ get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]) }}_oCanTp_PduR_Rx,
+        .config_data.cantp_rx_nsdu.cantp_rx_channel = {{ channelIndex }},
+        .config_data.cantp_rx_nsdu.cantp_addressing_format = {{ RxNSdu["CanTpRxAddressingFormat"]["Value"] }}_ADDR,
+        .config_data.cantp_rx_nsdu.cantp_bs = {{ convert_ui_int_value_to_cfg(RxNSdu["CanTpBs"]["Value"]) }},
+
+{%- set mainfunction_cfg = get_mainfunction_config(CanTpConfig) %}
+{%- if mainfunction_cfg | length == 0 %}
+        .config_data.cantp_rx_nsdu.cantp_nar = CANTP_CONVERT_MS_TO_MAIN_CYCLES({{ convert_from_s_to_ms(RxNSdu["CanTpNar"]["Value"]) }}),
+        .config_data.cantp_rx_nsdu.cantp_nbr = CANTP_CONVERT_MS_TO_MAIN_CYCLES({{ convert_from_s_to_ms(RxNSdu["CanTpNbr"]["Value"]) }}),
+        .config_data.cantp_rx_nsdu.cantp_ncr = CANTP_CONVERT_MS_TO_MAIN_CYCLES({{ convert_from_s_to_ms(RxNSdu["CanTpNcr"]["Value"]) }}),
+{%- else %}
+        .config_data.cantp_rx_nsdu.cantp_nar = {{ convert_from_s_to_count(CanTpMainFunc, coreinfo["CanCoreId"], RxNSdu["CanTpNar"]["Value"]) }},  ///> 重复MainFunc周期次数
+        .config_data.cantp_rx_nsdu.cantp_nbr = {{ convert_from_s_to_count(CanTpMainFunc, coreinfo["CanCoreId"], RxNSdu["CanTpNbr"]["Value"]) }},  ///> 重复MainFunc周期次数
+        .config_data.cantp_rx_nsdu.cantp_ncr = {{ convert_from_s_to_count(CanTpMainFunc, coreinfo["CanCoreId"], RxNSdu["CanTpNcr"]["Value"]) }},  ///> 重复MainFunc周期次数
+{%- endif %}
+        .config_data.cantp_rx_nsdu.cantp_rx_padding_activation = {{ RxNSdu["CanTpRxPaddingActivation"]["Value"] }},
+        .config_data.cantp_rx_nsdu.cantp_rx_ta_type = {{ RxNSdu["CanTpRxTaType"]["Value"] }},
+        .config_data.cantp_rx_nsdu.cantp_wft_max = {{ convert_ui_int_value_to_cfg(RxNSdu["CanTpRxWftMax"]["Value"]) }},
+        .config_data.cantp_rx_nsdu.cantp_st_min = {{ convert_from_s_to_ms(RxNSdu["CanTpSTmin"]["Value"]) }},
+        .config_data.cantp_rx_nsdu.cantp_nsa = {{ get_cantp_nsa_value(RxNSdu) }},
+        .config_data.cantp_rx_nsdu.cantp_nta = {{ get_cantp_nta_value(RxNSdu) }}
+    },
+{%- endfor %}
+{%- for _, TxNSdu in cantp_channel["Channel_Cfg"]["CanTpTxNSdus"].items() %}
+    {
+        .direction = CANTP_ISO15765_TRANSMIT,
+        .cantp_fd_support = (boolean){{ get_enable_value_from_boolean(CanTpGeneral["CanTpFlexibleDataRateSupport"]["Value"]) }},
+        .config_data.cantp_tx_nsdu.canif_pdu_id = CANIF_PDU_ID_{{ get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]) }}_oCanTp_CanIf_Tx,
+        .config_data.cantp_tx_nsdu.cantp_npdu_len = {{ TxNSdu["CanTpNPduLen"] }},
+        .config_data.cantp_tx_nsdu.pdur_pdu_id = PDUR_PDU_ID_{{ get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]) }}_oPduR_CanTp_Tx,
+        .config_data.cantp_tx_nsdu.cantp_tx_channel = {{ channelIndex }},
+        .config_data.cantp_tx_nsdu.cantp_addressing_mode = {{ TxNSdu["CanTpTxAddressingFormat"]["Value"] }}_ADDR,
+{%- set mainfunction_cfg = get_mainfunction_config(CanTpConfig) %}
+{%- if mainfunction_cfg | length == 0 %}
+        .config_data.cantp_tx_nsdu.cantp_nas = CANTP_CONVERT_MS_TO_MAIN_CYCLES({{ convert_from_s_to_ms(TxNSdu["CanTpNas"]["Value"])  }}),
+        .config_data.cantp_tx_nsdu.cantp_nbs = CANTP_CONVERT_MS_TO_MAIN_CYCLES({{ convert_from_s_to_ms(TxNSdu["CanTpNbs"]["Value"])  }}),
+        .config_data.cantp_tx_nsdu.cantp_ncs = CANTP_CONVERT_MS_TO_MAIN_CYCLES({{ convert_from_s_to_ms(TxNSdu["CanTpNcs"]["Value"])  }}),
+{%- else %}
+        .config_data.cantp_tx_nsdu.cantp_nas = {{ convert_from_s_to_count(CanTpMainFunc, coreinfo["CanCoreId"], TxNSdu["CanTpNas"]["Value"]) }},  ///> 重复MainFunc周期次数
+        .config_data.cantp_tx_nsdu.cantp_nbs = {{ convert_from_s_to_count(CanTpMainFunc, coreinfo["CanCoreId"], TxNSdu["CanTpNbs"]["Value"]) }},  ///> 重复MainFunc周期次数
+        .config_data.cantp_tx_nsdu.cantp_ncs = {{ convert_from_s_to_count(CanTpMainFunc, coreinfo["CanCoreId"], TxNSdu["CanTpNcs"]["Value"]) }},  ///> 重复MainFunc周期次数
+{%- endif %}
+        .config_data.cantp_tx_nsdu.cantp_tx_padding_activation = {{ TxNSdu["CanTpTxPaddingActivation"]["Value"] }},
+        .config_data.cantp_tx_nsdu.cantp_tx_ta_type = {{ TxNSdu["CanTpTxTaType"]["Value"] }},
+        .config_data.cantp_tx_nsdu.cantp_nsa = {{ get_cantp_nsa_value(TxNSdu) }},
+        .config_data.cantp_tx_nsdu.cantp_nta = {{ get_cantp_nta_value(TxNSdu) }}
+    },
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+};
+{%- endfor %}
+
+{%- for _, coreinfo in CanTpChannelByCoreId.items() %}
+/* Core{{coreinfo["CanCoreId"]}} */
+static CONST(cantp_rx_id_type, CANTP_CONST) cantp_ipdu_config_core{{coreinfo["CanCoreId"]}}[] = {
+{%- if coreinfo is mapping %}
+{%- set ns = namespace(channelIndex=0) %}
+{%- for cantp_channel_name, cantp_channel in coreinfo.items() %}
+{%- set channelpduIndex = loop.index0 %}
+{%- if cantp_channel is mapping %}
+{%- for _, RxNSdu in cantp_channel["Channel_Cfg"]["CanTpRxNSdus"].items() %}
+{%- set ns.channelIndex = ns.channelIndex + 1 %}
+    {
+        .cantp_pdu_id = CANTP_PDU_ID_{{ get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]) }},
+        .cantp_addressing_mode = {{ RxNSdu["CanTpRxAddressingFormat"]["Value"] }}_ADDR,
+        .cantp_nsdu_index = CANTP_SDU_ID_{{ get_rx_nsdu_ref(RxNSdu["CanTpRxNPdu"]) }},
+{%- set TxIndex = get_cantp_tx_fnc_npdu("CANTP_SDU_ID_", RxNSdu, "") %}
+{%- if TxIndex == 'CANTP_NO_REFERRING_TX_INDEX' %}
+        .cantp_referring_tx_index = CANTP_NO_REFERRING_TX_INDEX
+{%- else %}
+        .cantp_referring_tx_index = {{ ns.channelIndex }}
+{%- endif %}
+    },
+{%- endfor %}
+{%- for _, TxNSdu in cantp_channel["Channel_Cfg"]["CanTpTxNSdus"].items() %}
+{%- set ns.channelIndex = ns.channelIndex + 1 %}
+    {
+        .cantp_pdu_id = CANTP_PDU_ID_{{ get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]) }},
+        .cantp_addressing_mode = {{ TxNSdu["CanTpTxAddressingFormat"]["Value"] }}_ADDR,
+        .cantp_nsdu_index = CANTP_SDU_ID_{{ get_tx_nsdu_ref(TxNSdu["CanTpTxNPdu"]) }},
+        .cantp_referring_tx_index = CANTP_NO_REFERRING_TX_INDEX
+    },
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+};
+{%- endfor %}
+
+CONST(cantp_nsdu_config_type, CANTP_CONST) cantp_nsdu_config_core_table[] = {
+{%- for i in range(CanTpMaxCore + 1)%}
+{%- if i in CanTpChannelByCoreId %}
+    {
+        /* Core{{i}} */
+        .nsdu_cfg_addr = &cantp_nsdu_config_core{{i}}[0u],
+        .channel_cfg_table_len = {{CanTpChannelByCoreId[i]["ChannelLen"]}}u,   ///< 最大通道号
+        .number_of_sdus = {{ get_nof_cantp_sdu(CanTpChannelByCoreId[i]) }}u,  ///< Sdu个数,
+    },
+{%- else %}
+    { /* Core{{i}}无通道配置 */
+        .nsdu_cfg_addr = NULL,
+        .channel_cfg_table_len = 0,    ///< 最大通道号
+        .number_of_sdus = 0,  ///< Sdu个数,
+    },
+{%- endif %}
+{%- endfor %}
+};
+
+CONST(cantp_ipdu_config_type, CANTP_CONST) cantp_ipdu_config_core_table[] = {
+{%- for i in range(CanTpMaxCore + 1)%}
+{%- if i in CanTpChannelByCoreId %}
+    {
+        /* Core{{i}} */
+        .ipdu_cfg_addr = &cantp_ipdu_config_core{{i}}[0u],
+        .channel_cfg_table_len = {{CanTpChannelByCoreId[i]["ChannelLen"]}}u,    ///< 最大通道号
+        .number_of_pdus = {{ get_nof_cantp_sdu(CanTpChannelByCoreId[i]) }}u,  ///< Pdu个数,
+    },
+{%- else %}
+    { /* Core{{i}}无通道配置 */
+        .ipdu_cfg_addr = NULL,
+        .channel_cfg_table_len = 0,    ///< 最大通道号
+        .number_of_pdus = 0,  ///< Pdu个数,
+    },
+{%- endif %}
+{%- endfor %}
+};
+
+CONST(uint32, CANTP_CONST) cantp_main_function_period_tab[] = {
+{%- set mainfunction_cfg = get_mainfunction_config(CanTpConfig) %}
+{%- if mainfunction_cfg | length == 0 %}
+    CANTP_MAIN_FUNCTION_PERIOD_TIME_MS
+{%- else %}
+
+{%- for i in range(CanTpMaxCore + 1)%}
+{%- if i in CanTpMainFunc %}
+    /* Core{{i}} */
+    {{CanTpMainFunc[i][0]["name"] | upper}}_PERIOD_TIME_MS,
+{%- else %}
+    /* Core{{i}}无周期配置 */
+    INVAILD_PERIOD_TIME_MS,  ///< Core{{i}}无效周期时间
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+};
+
+static CONST(cantp_general_type, CANTP_CONST) cantp_general_config =
+{
+    .padding_pattern = {{ "0x%02X" | format(CanTpGeneral["CanTpPaddingByte"]["Value"]) }},
+    .padding_activation = {{ get_cantp_padding_activation(CanTpChannelByCoreId) }},
+};
+
+CONST(cantp_config_type, CANTP_CONST) cantp_config =
+{
+    .cantp_general = &cantp_general_config,
+    .cantp_nsdu_channel_info = cantp_nsdu_config_core_table,
+    .cantp_ipdu_channel_info = cantp_ipdu_config_core_table,
+    .cantp_mainfunction_period_list = cantp_main_function_period_tab,
+};
+#define CANTP_STOP_SEC_CONST
+#include "cantp_memmap.h"
+
+#define CANTP_START_SEC_MULTI_APP_BSS
+#include "cantp_memmap.h"
+P2CONST(cantp_config_type, CANTP_MULTI_APP_BSS, CanTp_VAR_Class) cantp_config_ptr;
+#define CANTP_STOP_SEC_MULTI_APP_BSS
+#include "cantp_memmap.h"
+
+#define CANTP_START_SEC_CODE
+#include "cantp_memmap.h"
+FUNC_P2CONST(cantp_config_type, AUTOMATIC, CANTP_CODE ) cantp_get_config_ptr(void)
+{
+    return cantp_config_ptr;
+}
+
+FUNC(void, CANTP_CODE) cantp_set_config_ptr(const cantp_config_type* input)
+{
+    cantp_config_ptr = input;
+    return;
+}
+
+FUNC(PduIdType, CANTP_CODE) cantp_get_pdu_index(uint32 coreid, PduIdType cantp_pdu_id)
+{
+    if (cantp_config_ptr == NULL) {
+        return CANTP_INVALID_PDU_ID;
+    }
+    // 取得对应核的配置表信息
+    const cantp_ipdu_config_type* core_config = &cantp_config_ptr->cantp_ipdu_channel_info[coreid];
+    // 获取此核的PDU配置项
+    const cantp_rx_id_type* config_table = core_config->ipdu_cfg_addr;
+    const uint32 tabLen = core_config->number_of_pdus;
+
+    for (PduIdType i = 0; i < tabLen; ++i) {
+        if (config_table[i].cantp_pdu_id == cantp_pdu_id) {
+            return i;
+        }
+    }
+    return CANTP_INVALID_PDU_ID;
+}
+{{''}}
+
+{%- set mainfunction_cfg = get_mainfunction_config(CanTpConfig) %}
+{%- if mainfunction_cfg | length == 0 %}
+FUNC(void, CANTP_CODE) CanTp_MainFunction(void)
+{
+    cantp_internal_main_function();
+}
+{%- else %}
+
+{%- for _, funcName in CanTpMainFunc.items() %}
+{%- if funcName[0]["name"] != "CanTp_Internal_MainFunction" %}
+{%- if funcName[0]["name"] != "CanTp_MainFunction" %}
+FUNC(void, CANTP_CODE) {{funcName[0]["name"]}}(void)
+{
+    cantp_internal_main_function();
+}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+FUNC(void, CANTP_CODE) CanTp_MainFunction(void)
+{
+    cantp_internal_main_function();
+}
+
+{%- endif %}
+#define CANTP_STOP_SEC_CODE
+#include "cantp_memmap.h"

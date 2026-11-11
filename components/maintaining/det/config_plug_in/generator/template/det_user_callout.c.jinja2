@@ -1,0 +1,73 @@
+#include "Det.h"
+#include <stdint.h>
+{%- set user_codes = get_bsw_callout_user_code_list() %}
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "head_usercode" in user_codes.keys() and user_codes["head_usercode"] != {} and user_codes["head_usercode"] != [] %}
+{%- for value in user_codes["head_usercode"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+
+#define  DET_START_SEC_CODE
+#include "det_memmap.h"
+{% set user_codes = get_bsw_callout_user_code_list() %}
+{%- set DetruntimeCbk = get_runtime_func_config()%}
+{%- for cbk in DetruntimeCbk %}
+{%- if cbk != None%}
+FUNC(Std_ReturnType, DET_CODE) {{cbk}}(uint16 ModuleId,
+	uint8 InstanceId , uint8 ApiId, uint8 ErrorId)
+{
+	Std_ReturnType ret = E_OK;
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if cbk in user_codes.keys() and user_codes[cbk] != {} and user_codes[cbk] != [] %}
+{%- for value in user_codes[cbk] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	return ret;
+}
+{%- endif %}
+{%- endfor %}
+
+{%- for cbk in get_transient_func_config() %}
+{%- if cbk != None%}
+
+FUNC(Std_ReturnType, DET_CODE) {{cbk}}(uint16 ModuleId,
+	uint8 InstanceId , uint8 ApiId, uint8 ErrorId)
+{
+	Std_ReturnType ret = E_OK;
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if cbk in user_codes.keys() and user_codes[cbk] != {} and user_codes[cbk] != [] %}
+{%- for value in user_codes[cbk] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	return ret;
+}
+{%- endif %}
+{%- endfor %}
+
+{%- for cbk in get_errorhook_func_config() %}
+{%- if cbk != None%}
+
+FUNC(Std_ReturnType, DET_CODE) {{cbk}}(uint16 ModuleId,
+	uint8 InstanceId , uint8 ApiId, uint8 ErrorId)
+{
+	Std_ReturnType ret = E_OK;
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if cbk in user_codes.keys() and user_codes[cbk] != {} and user_codes[cbk] != [] %}
+{%- for value in user_codes[cbk] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+	return ret;
+}
+{%- endif %}
+{%- endfor %}
+
+#define  DET_STOP_SEC_CODE
+#include "det_memmap.h"

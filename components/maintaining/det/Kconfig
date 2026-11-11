@@ -1,0 +1,5 @@
+config MODULE_DET
+    bool "det support"
+    default n
+	---help---
+		Enable the MODULE_DET

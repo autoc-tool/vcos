@@ -1,0 +1,219 @@
+{
+    "DEM011001": {
+        "rule_name": "DEM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemDtcValue.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemConfigSet/DemDTC/DemDtcValue should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemConfigSet/DemDTC/DemDtcValue",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemConfigSet/DemDTC/DemDtcValue values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemConfigSet",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM011002": {
+        "rule_name": "DEM011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemEventId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemConfigSet/DemEventParameter/DemEventId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemConfigSet/DemEventParameter/DemEventId",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemConfigSet"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemConfigSet/DemEventParameter/DemEventId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemConfigSet",
+                "value": "1"
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM011003": {
+        "rule_name": "DEM011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemDidIdentifier.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemDidClass/DemDidIdentifier should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemDidClass/DemDidIdentifier",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "DEM011004": {
+        "rule_name": "DEM011004",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemEnableConditionId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemEnableCondition/DemEnableConditionId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemEnableCondition/DemEnableConditionId",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemGeneral/DemEnableCondition/DemEnableConditionId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM011005": {
+        "rule_name": "DEM011005",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemExtendedDataRecordNumber.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemExtendedDataRecordClass/DemExtendedDataRecordNumber should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemExtendedDataRecordClass/DemExtendedDataRecordNumber",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemGeneral/DemExtendedDataRecordClass/DemExtendedDataRecordNumber values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM011006": {
+        "rule_name": "DEM011006",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemOperationCycleId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemOperationCycle/DemOperationCycleId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemOperationCycle/DemOperationCycleId",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemGeneral/DemOperationCycle/DemOperationCycleId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM011007": {
+        "rule_name": "DEM011007",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DemStorageConditionId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemStorageCondition/DemStorageConditionId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemStorageCondition/DemStorageConditionId",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemGeneral/DemStorageCondition/DemStorageConditionId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM013003": {
+        "rule_name": "DEM013003",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of DemEnableConditionId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemEnableCondition/DemEnableConditionId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemEnableCondition/DemEnableConditionId",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+            "disable_sort": true
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemGeneral/DemEnableCondition/DemEnableConditionId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM013004": {
+        "rule_name": "DEM013004",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of DemStorageConditionId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemStorageCondition/DemStorageConditionId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemStorageCondition/DemStorageConditionId",
+            "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+            "disable_sort": true
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dem/DemGeneral/DemStorageCondition/DemStorageConditionId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dem/DemGeneral",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DEM013001": {
+        "rule_name": "DEM013001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of DemDataElementUsePort and DemDataElementReadFnc.",
+        "rule_message": "DemDataElementReadFnc should be empty if DemDataElementUsePort is true.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemDataElementClass/DemExternalCSDataElementClass",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemDataElementClass/DemExternalCSDataElementClass/DemDataElementUsePort",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemDataElementClass/DemExternalCSDataElementClass/DemDataElementReadFnc",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemDataElementClass/DemExternalCSDataElementClass/DemDataElementReadFnc",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ]
+            }
+        }
+    },
+    "DEM016013": {
+        "rule_name": "DEM016013",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The check of DemStoreImmediatelyTime value",
+        "rule_message": "DemStoreImmediatelyTime value should be divisible by DemTaskTime value!",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "judgement": {
+                    "mod_path": [
+                        "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemStoreImmediatelyTime",
+                        "/AUTOSAR/EcucDefs/Dem/DemGeneral/DemTaskTime"
+                    ],
+                    "judge_expression": "True if %0 is None else (divmod(%0 * 1000, %1 * 1000)[1] == 0 and %0 >= %1)"
+                }
+            }
+        }
+    }
+}
+

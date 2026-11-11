@@ -1,0 +1,5 @@
+config MODULE_NVM
+    bool "mem nvm support"
+    default n
+	---help---
+		Enable the MODULE_NVM

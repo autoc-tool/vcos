@@ -1,0 +1,102 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  CanSM的动态代码文件
+ */
+
+#include "cansm.h"
+#include "cansm_cfg.h"
+#include "cansm_lcfg.h"
+#include "canif.h"
+#include "cansm_types.h"
+#include "comm.h"
+#if (CONFIG_MODULE_DEM == 1)
+#include "dem.h"
+#endif
+
+
+/* ComM的ChannelId映射到CanSM的网络Id 
+ ComMChannel句柄                                CanSMNetworkIndex 
+{%- for cansm_network in cansm_networks %}
+{{" %-40s  ->   %d" | format(cansm_network["CanSMComMNetworkHandleRef"], loop.index0) }}
+{%- endfor %}
+*/
+{%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+        {%- if cansm_network_core_list | length != 0 %}
+#define CANSM_CONFIG_TABLE_LEN_CORE{{core_id}} {{cansm_network_core_list|length}}u
+        {%- endif %}
+{%- endfor %}
+
+{%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+#define CANSM_START_SEC_CONST
+#include "cansm_memmap.h"
+static const cansm_network_type cansm_network_config_core{{core_id}}[] = {
+    {%- if cansm_network_core_list | length != 0 %}
+        {%- for cansm_network in cansm_network_core_list%}
+    {
+        .id_net = {{ cansm_network["CanSMComMNetworkHandleRef"] }},
+        .cansm_en_bor_time_tx = {{ (cansm_network["CanSMBorTimeTxEnsured"] / cansm_network["CanSMNetworkCoreMainFuncPeriod"]) | int }},  //{{ cansm_network["CanSMBorTimeTxEnsured"] }}ms
+        .cansm_l1_bor_tm = {{ (cansm_network["CanSMBorTimeL1"] / cansm_network["CanSMNetworkCoreMainFuncPeriod"]) | int }},  //{{ cansm_network["CanSMBorTimeL1"] }}ms
+        .cansm_l2_bor_tm = {{ (cansm_network["CanSMBorTimeL2"] / cansm_network["CanSMNetworkCoreMainFuncPeriod"]) | int }},  //{{ cansm_network["CanSMBorTimeL2"] }}ms
+        .cansm_l1_to_l2_bor_cnt = {{ cansm_network["CanSMBorCounterL1ToL2"] }},
+        .cansm_val_comp = {{ cansm_network["CanSMBusoffCompensationValue"] }},
+#if defined(CONFIG_MODULE_DEM) && (CONFIG_MODULE_DEM == 1)
+        .cansm_bsof_dem_evt_id = {%- if cansm_network["CanSMDemBusOffEventId"] == "DEM_EVENT_ID_NULL" %} DEM_EVENT_ID_NULL {%- else %} DemConf_DemEventParameter_{{ cansm_network["CanSMDemBusOffEventId"] }} {%- endif %},
+#endif
+        .canif_id_ctrl = {{ cansm_network["CanSMControllerId"] }},
+        .can_en_trcv = (boolean){{ cansm_network["CanTrcvAvailable"] }},
+        .cantrcv_en_pn = (boolean){{ cansm_network["CanTrcvPnSupport"] }},
+        .canif_id_trcv = {{ cansm_network["CanSMTransceiverId"] }},
+        .cansm_req_md_rept_tm = {{ (cansm_general["CanSMModeRequestRepetitionTime"] / cansm_network["CanSMNetworkCoreMainFuncPeriod"]) | int }},  //{{ cansm_general["CanSMModeRequestRepetitionTime"] }}ms 
+    },
+        {%- endfor %}
+    {%- endif %}
+};
+#define CANSM_STOP_SEC_CONST
+#include "cansm_memmap.h"
+{{""}}
+{%- endfor %}
+
+#define CANSM_START_SEC_CONST
+#include "cansm_memmap.h"
+static const cansm_network_config_type cansm_network_config_core_table[] = {
+{%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+    { /* Core{{core_id}} */
+    {%- if cansm_network_core_list | length != 0 %}
+        .net_cfg_tbl_add = &cansm_network_config_core{{core_id}}[0u],
+        .network_cfg_tbl_len = CANSM_CONFIG_TABLE_LEN_CORE{{core_id}},
+    {%- else %}
+        .net_cfg_tbl_add = NULL,
+        .network_cfg_tbl_len = 0u,
+    {%- endif %}
+    },
+{%- endfor %}
+};
+#define CANSM_STOP_SEC_CONST
+#include "cansm_memmap.h"
+
+#define CANSM_START_SEC_CONST
+#include "cansm_memmap.h"
+const cansm_config_type cansm_config = {
+    .cansm_mode_request_repetition_max = {{ cansm_general["CanSMModeRequestRepetitionMax"] }},
+    .networks = cansm_network_config_core_table,
+    .bus_off_begin_fnc = CANSM_RUNNABLE_BUSOFF_BEGIN_FNC,
+    .bus_off_end_fnc = CANSM_RUNNABLE_BUSOFF_END_FNC,
+};
+#define CANSM_STOP_SEC_CONST
+#include "cansm_memmap.h"

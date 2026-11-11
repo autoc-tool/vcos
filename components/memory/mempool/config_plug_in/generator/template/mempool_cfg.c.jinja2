@@ -1,0 +1,130 @@
+#include <nuttx/config.h>
+#include "Os.h"
+#include "Os_Types.h"
+#include "rtfw_mempool.h"
+#include "mempool_cfg.h"
+#include "application_cfg.h"
+#include "core_cfg.h"
+#include "spinlock_cfg.h"
+
+#if (CONFIG_RT_FRAMEWORK_MEMPOOL == 1)
+{%- set app_cfg = get_app_cfg() %}
+{%- set os_mempool_pool_cfg = os_mempool_all_cfg["pool_cfg"] %}
+{%- for pool_name in os_mempool_pool_cfg  %}
+    {%- set pool_cfg = os_mempool_pool_cfg[pool_name] %}
+    {%- set app_name = pool_cfg["app_name_list"][0]  %}
+    {%- set pool_type = pool_cfg["MemType"]  %}
+    {%- set memblock_count = pool_cfg["MemBlockCount"]  %}
+    {%- set memblock_size = pool_cfg["MemBlockSize"]  %}
+    {%- set mem_alignment = pool_cfg["MemAlignment"]  %}
+    {%- set coreid = pool_cfg["CoreID"]  %}
+
+    {%- if pool_type == "OS_MEMPOOLTYPE_PRIVATE" or "OS_MEMPOOLTYPE_CORE" in pool_type  %}
+#define OS_START_SEC_{{app_name.upper()}}_PRIVATE_BSW_BSS
+#include "rtfw_memmap.h"
+static VAR(uint8, OS_{{app_name.upper()}}_PRIVATE_BSW_BSS) osmempool_{{pool_name}}_buffer[ {{memblock_count}}*OS_MEMPOOL_ADDR_ROUNDUP({{memblock_size}} + OS_MEMPOOL_ADDR_ROUNDUP(sizeof(os_mempool_block_t), {{mem_alignment}}), {{mem_alignment}}) + {{mem_alignment}}];
+static VAR(os_mempool_inst_t, OS_{{app_name.upper()}}_PRIVATE_BSW_BSS) osmempool_{{pool_name}}_inst;
+#define OS_STOP_SEC_{{app_name.upper()}}_PRIVATE_BSW_BSS
+#include "rtfw_memmap.h"
+    {%- else %}
+#define OS_START_SEC_ALL_APPS_MULTI_APP_SHARE_BSW_BSS
+#include "rtfw_memmap.h"
+static VAR(uint8, OS_ALL_APPS_MULTI_APP_SHARE_BSW_BSS) osmempool_{{pool_name}}_buffer[ {{memblock_count}}*OS_MEMPOOL_ADDR_ROUNDUP({{memblock_size}} + OS_MEMPOOL_ADDR_ROUNDUP(sizeof(os_mempool_block_t), {{mem_alignment}}), {{mem_alignment}}) + {{mem_alignment}}];
+static VAR(os_mempool_inst_t, OS_ALL_APPS_MULTI_APP_SHARE_BSW_BSS) osmempool_{{pool_name}}_inst;
+#define OS_STOP_SEC_ALL_APPS_MULTI_APP_SHARE_BSW_BSS
+#include "rtfw_memmap.h"
+    {%- endif %}
+
+#define OS_START_SEC_CONST
+#include "rtfw_memmap.h"
+CONST(os_mempool_cfg_t, OS_CONST) osmempool_{{pool_name}}_cfg = {
+    .obj_desc = &osmempool_{{pool_name}}_inst,
+{%- if pool_type == "OS_MEMPOOLTYPE_GLOBAL"  %}
+    .lock_mode = OS_MEMPOOLLOCKMODE_SPINLOCKS,
+{%- else %}
+    .lock_mode = OS_MEMPOOLLOCKMODE_INTERRUPTS,
+{%- endif %}
+#if (CONFIG_RT_FRAMEWORK_SPINLOCK == 1)
+{%- if pool_type == "OS_MEMPOOLTYPE_GLOBAL"  %}
+    .spinlock_id = OS_SPINLOCK_MEMPOOL_{{pool_name | upper}}_ID,
+{%- else %}
+    .spinlock_id = OS_SPINLOCK_CNT,
+{%- endif %}
+#endif
+    .block_count = {{memblock_count}},
+    .block_size = {{memblock_size}},
+    .mem_alignment = {{mem_alignment}},
+    .mempool_name = "{{pool_name}}",
+    .mempool_t = {{pool_type}},
+    .core_id = (CoreIdType){{coreid}},
+    .block_start = osmempool_{{pool_name}}_buffer,
+};
+#define OS_STOP_SEC_CONST
+#include "rtfw_memmap.h"
+{%- endfor %}
+
+
+{%- set os_mempool_module_cfg = os_mempool_all_cfg["module_cfg"] %}
+{%- for module_name in os_mempool_module_cfg  %}
+    {%- set module_cfg = os_mempool_module_cfg[module_name] %}
+    {%- set pool_count = module_cfg["pool_count"]  %}
+    {%- set osmempool_cfg_list = module_cfg["mempool_cfg_list"]  %}
+
+#define OS_START_SEC_CONST
+#include "rtfw_memmap.h"
+static CONSTP2CONST(os_mempool_cfg_t, AUTOMATIC, OS_CONST) {{module_name | lower}}_osmempool_cfg_list[] = {
+    {%- for pool_cfg in osmempool_cfg_list %}
+    &osmempool_{{pool_cfg["name"]}}_cfg,
+    {%- endfor %}
+};
+
+CONST(os_mempool_module_cfg_t, OS_CONST) osmempool_module_{{module_name | lower}}_cfg = {
+    .name = "osmempool_module_{{module_name | lower}}_cfg",
+    .pool_count = {{pool_count}},
+    .pools = {{module_name | lower}}_osmempool_cfg_list,
+};
+#define OS_STOP_SEC_CONST
+#include "rtfw_memmap.h"
+{%- endfor %}
+
+#define OS_START_SEC_CONST
+#include "rtfw_memmap.h"
+CONST(os_mempool_module_entry_t, OS_CONST) mempool_module_map[] = {
+{%- set os_mempool_module_cfg = os_mempool_all_cfg["module_cfg"] %}
+{%- for module_name in os_mempool_module_cfg  %}
+    { "{{module_name}}", &osmempool_module_{{module_name | lower}}_cfg },
+{%- endfor %}
+    { NULL, NULL }
+};
+#define OS_STOP_SEC_CONST
+#include "rtfw_memmap.h"
+
+{%- set os_mempool_type_cfg = os_mempool_all_cfg["type_cfg"] %}
+#define OS_START_SEC_CONST
+#include "rtfw_memmap.h"
+{%- for app_name in os_mempool_type_cfg["private"] %}
+static CONSTP2CONST(os_mempool_cfg_t, AUTOMATIC, OS_CONST) {{app_name}}_os_private_mempools[] = {
+{%- for pool_cfg in os_mempool_type_cfg["private"][app_name] %}
+    &osmempool_{{pool_cfg["name"]}}_cfg,
+{%- endfor %}
+    NULL_PTR,
+};
+{%- endfor %}
+
+CONSTP2CONST(os_mempool_cfg_t *, AUTOMATIC, OS_CONST) os_private_mempools[OS_APPLICATION_CNT] = {
+{%- for app_name in os_mempool_type_cfg["private"] %}
+    [{{app_cfg[app_name]["AppId"]}}] = (const os_mempool_cfg_t **)&{{app_name}}_os_private_mempools,
+{%- endfor %}
+};
+
+
+CONSTP2CONST(os_mempool_cfg_t, AUTOMATIC, OS_CONST) os_global_mempools[] = {
+{%- for pool_cfg in os_mempool_type_cfg["global"] %}
+    &osmempool_{{pool_cfg["name"]}}_cfg,
+{%- endfor %}
+    NULL_PTR,
+};
+
+#define OS_STOP_SEC_CONST
+#include "rtfw_memmap.h"
+#endif

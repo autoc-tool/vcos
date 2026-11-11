@@ -1,0 +1,298 @@
+{
+    "DCM011001": {
+        "rule_name": "DCM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmDsdSidTabServiceId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService/DcmDsdSidTabServiceId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService/DcmDsdSidTabServiceId",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService/DcmDsdSidTabServiceId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DCM011002": {
+        "rule_name": "DCM011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmDsdSubServiceId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService/DcmDsdSubService/DcmDsdSubServiceId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService/DcmDsdSubService/DcmDsdSubServiceId",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService/DcmDsdSubService/DcmDsdSubServiceId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsd/DcmDsdServiceTable/DcmDsdService",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DCM011003": {
+        "rule_name": "DCM011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmDslProtocolRxConnectionId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol/DcmDslProtocolRow/DcmDslConnection/DcmDslMainConnection/DcmDslProtocolRxConnectionId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol/DcmDslProtocolRow/DcmDslConnection/DcmDslMainConnection/DcmDslProtocolRxConnectionId",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol/DcmDslProtocolRow/DcmDslConnection/DcmDslMainConnection/DcmDslProtocolRxConnectionId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DCM011004": {
+        "rule_name": "DCM011004",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmDslProtocolRxPduRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol/DcmDslProtocolRow/DcmDslConnection/DcmDslMainConnection/DcmDslProtocolRx/DcmDslProtocolRxPduRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol/DcmDslProtocolRow/DcmDslConnection/DcmDslMainConnection/DcmDslProtocolRx/DcmDslProtocolRxPduRef",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsl/DcmDslProtocol"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "DCM011005": {
+        "rule_name": "DCM011005",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmDspSecurityLevel.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityLevel should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityLevel",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityLevel values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DCM011006": {
+        "rule_name": "DCM011006",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmDspSessionLevel.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSession/DcmDspSessionRow/DcmDspSessionLevel should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSession/DcmDspSessionRow/DcmDspSessionLevel",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSession"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSession/DcmDspSessionRow/DcmDspSessionLevel values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSession",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "DCM011007": {
+        "rule_name": "DCM011007",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of DcmArgumentRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmProcessingConditions/DcmModeRule/DcmArgumentRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmProcessingConditions/DcmModeRule/DcmArgumentRef",
+            "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmProcessingConditions/DcmModeRule"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "DCM012001": {
+        "rule_name": "DCM012001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of DcmDspSecurityUsePort and DcmDspSecurityCompareKeyFnc.",
+        "rule_message": "DcmDspSecurityCompareKeyFnc should be congfigured if DcmDspSecurityUsePort is 'USE_ASYNCH_FNC'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityUsePort",
+                        "value_operator": "==",
+                        "value": "USE_ASYNCH_FNC",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityCompareKeyFnc",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityCompareKeyFnc",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "DCM012002": {
+        "rule_name": "DCM012002",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of DcmDspSecurityUsePort and DcmDspSecurityGetSeedFnc.",
+        "rule_message": "DcmDspSecurityGetSeedFnc should be congfigured if DcmDspSecurityUsePort is 'USE_ASYNCH_FNC'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityUsePort",
+                        "value_operator": "==",
+                        "value": "USE_ASYNCH_FNC",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityGetSeedFnc",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityGetSeedFnc",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "DCM012003": {
+        "rule_name": "DCM012003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of DcmDspSecurityAttemptCounterEnabled, DcmDspSecurityUsePort and DcmDspSecurityGetAttemptCounterFnc.",
+        "rule_message": "DcmDspSecurityGetAttemptCounterFnc should be congfigured if DcmDspSecurityUsePort is 'USE_ASYNCH_FNC' and DcmDspSecurityAttemptCounterEnabled is true.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityUsePort",
+                        "value_operator": "==",
+                        "value": "USE_ASYNCH_FNC",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityAttemptCounterEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityGetAttemptCounterFnc",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityGetAttemptCounterFnc",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "DCM012004": {
+        "rule_name": "DCM012004",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of DcmDspSecurityAttemptCounterEnabled, DcmDspSecurityUsePort and DcmDspSecuritySetAttemptCounterFnc.",
+        "rule_message": "DcmDspSecuritySetAttemptCounterFnc should be congfigured if DcmDspSecurityUsePort is 'USE_ASYNCH_FNC' and DcmDspSecurityAttemptCounterEnabled is true.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityUsePort",
+                        "value_operator": "==",
+                        "value": "USE_ASYNCH_FNC",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityAttemptCounterEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecuritySetAttemptCounterFnc",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecuritySetAttemptCounterFnc",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "DCM013001": {
+        "rule_name": "DCM013001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of DcmDspSecurityAttemptCounterEnabled and DcmDspSecurityNumAttDelay.",
+        "rule_message": "DcmDspSecuritySetAttemptCounterFnc should not be None or 0 if DcmDspSecurityAttemptCounterEnabled is true.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityAttemptCounterEnabled",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityNumAttDelay",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Dcm/DcmConfigSet/DcmDsp/DcmDspSecurity/DcmDspSecurityRow/DcmDspSecurityNumAttDelay",
+                        "value_operator": "!=",
+                        "value": 0,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    }
+}

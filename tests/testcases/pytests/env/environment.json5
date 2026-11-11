@@ -1,0 +1,71 @@
+{
+    /* 当前的测试环境 - HW: 硬件开发板，SIM: 模拟器 */
+    "RUNNING_ENV": "HW",
+    /* 测试的芯片架构 */
+    "TARGET": "",
+    /* 测试的demo工程 */
+    "EXAMPLE_NAME": "tc397_demo",
+    /* shell设置，PORT为串口设备名，BAUDRATE为波特率，PROMPT为shell提示符 */
+    "SHELL": {
+        "PORT": "COM6",
+        "BAUDRATE": 115200,
+        "PROMPT": "nsh> "
+    },
+    /* ethernet的IP地址和端口 */
+    "ETHERNET": {
+        "TARGET": {
+            "IP": "192.168.10.71",
+            "PORT": 5000
+        },
+        "HOST": {
+            "IP": "192.168.10.254",
+            "PORT": 5000
+        },
+        "GATEWAY": {
+            "IP": "192.168.10.1",
+        },
+        "VLAN": 0,
+        "ETH_PORT": "ETH10"
+    },
+    /* 继电器设置, PORT为继电器的串口设备名, BAUDRATE为波特率, ON_CMD为上电命令, OFF_CMD为下电命令 */
+    "RELAY": {
+        "PORT": "/dev/ttyUSB0",
+        "BAUDRATE": 9600,
+        "ON_CMD": "",
+        "OFF_CMD": ""
+    },
+    "CAN": {
+        "CHANNEL0": {
+            "SERIAL": "",
+            "PORT": 0
+        },
+        "CHANNEL1": {
+            "SERIAL": "",
+            "PORT": 1
+        },
+        "CHANNEL2": {
+            "SERIAL": "",
+            "PORT": 2
+        },
+        "CHANNEL3": {
+            "SERIAL": "",
+            "PORT": 3
+        },
+        "CHANNEL4": {
+            "SERIAL": "",
+            "PORT": 4
+        },
+        "CHANNEL5": {
+            "SERIAL": "",
+            "PORT": 5
+        },
+        "CHANNEL6": {
+            "SERIAL": "",
+            "PORT": 6
+        },
+        "CHANNEL7": {
+            "SERIAL": "",
+            "PORT": 7
+        }
+    }
+}

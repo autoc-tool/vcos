@@ -1,0 +1,860 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  Dem source File
+ */
+
+{%- set dem_config_set = get_dem_config_set_config() %}
+{%- set dem_dtc_classes = get_dem_dtc_classes_config() %}
+{%- set dem_event_parameters_config = get_dem_event_parameters_config() %}
+{%- set dem_event_classes_config = get_dem_event_classes_config() %}
+{%- set dem_general = get_dem_general_config() %}
+{%- set dem_data_classes = get_dem_data_classes_config() %}
+{%- set dem_ext_data_record_classes = get_dem_ext_data_record_config() %}
+{%- set dem_ext_data_class_config = get_dem_ext_data_class_config() %}
+{%- set dem_time_based_classes_config = get_dem_time_based_classes_config() %}
+{%- set dem_counter_based_classes = get_dem_counter_based_classes_config() %}
+{%- set dem_debounce_classes = get_dem_debounce_classes_config() %}
+{%- set dem_did_pid_class_config = get_dem_did_pid_class_config() %}
+{%- set dem_freeze_frame_classes = get_dem_freeze_frame_class_config() %}
+{%- set dem_obd_freeze_frame_classes = get_dem_obd_freeze_frame_class_config() %}
+{%- set dem_freeze_frame_recnum_class_config = get_dem_freeze_frame_recnum_class_config() %}
+{%- set dem_client_config = get_dem_client_config() %}
+{%- set dem_dtc_sta_chg_cbk_config = get_dem_dtc_status_changed_cbk_config() %}
+{%- set dem_enable_conditions_config = get_dem_enable_conditions_config() %}
+{%- set dem_enable_condition_groups_config = get_dem_enable_condition_groups_config() %}
+{%- set dem_storage_conditions_config = get_dem_storage_conditions_config() %}
+{%- set dem_storage_condition_groups_config = get_dem_storage_condition_groups_config() %}
+{%- set dem_nvm_blocks = get_dem_nvm_blocks_config() %}
+{%- set dem_dtc_group_list_config = get_dem_dtc_group_list_config() %}
+{%- set dem_clear_dtc_notification_start_list_config = get_dem_clear_dtc_notification_start_list_config() %}
+{%- set dem_clear_dtc_notification_finish_list_config = get_dem_clear_dtc_notification_finish_list_config() %}
+{%- set dem_indicators_config = get_dem_indicators_config() %}
+{%- set dem_indicator_Attributes = get_dem_indicator_attributes_config() %}
+{%- set dem_indicator_attribute_groups = get_dem_indicator_attribute_groups_config() %}
+{%- set dem_event_memory_set_config = get_dem_event_memory_set_config()  %}
+{%- set temp_global_search_auxiliary = namespace(value = 0) %}
+{%- set dem_opcycles_config = get_dem_opcycles_config() %}
+{%- set dem_satellite_config = get_dem_satellite_config() %}
+{%- set dem_event_available_data_length_config = get_dem_event_available_data_length_config() %}
+{%- set dem_callback_file_config = get_dem_callback_file_config() %}
+{%- set dem_event_combined_groups_config = get_dem_event_combined_groups_config() %}
+{%- set dem_master_memmap_tag_str = get_dem_master_memmap_tag_str() %}
+{%- set dem_master_core = get_dem_master_core() %}
+
+{%- if dem_callback_file_config > 0 %}
+#include "dem_callout_stub.h"
+{%- endif %}
+#include "dem.h"
+#include "dem_cfg.h"
+#include "dem_lcfg.h"
+#include "dem_lcfg_internal.h"
+{%- if 'CONFIG_MODULE_NVM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_NVM'] == 'y' %}
+#include "nvm.h"
+#include "nvm_cfg.h"
+{%- endif %}
+{%- if 'CONFIG_MODULE_RTE' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_RTE'] == 'y' %}
+{%- if dem_general["DemSatelliteEnable"] == "True" %}
+#include "Rte_DemMaster_{{ dem_general["DemMasterApplicationName"] }}.h"
+{%- else %}
+#include "Rte_Dem.h"
+{%- endif %}
+{%- endif %}
+{%- if 'CONFIG_MODULE_OS' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_OS'] == 'y' %}
+#include "application_cfg.h"
+{%- endif %}
+#include "Compiler.h"
+
+#define DEM_START_SEC_{{ dem_master_memmap_tag_str }}PRIVATE_BSS
+#include "dem_memmap.h"
+
+#if (CONFIG_MODULE_NVM == 1) && (DEM_USE_NVM == STD_ON)
+VAR(dem_nvm_block_status_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_nvm_block_status[DEM_NOF_SUPPORTED_NVM_BLOCKS];
+P2CONST(dem_general_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS, Dem_VAR_Class) g_dem_nvm_mgr;
+#endif
+
+#if (DEM_EVENT_DISPLACEMENT_SUPPORT == STD_ON)
+VAR(uint32, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_event_timestamp;
+#endif
+
+#if (DEM_IMMEDIATE_NV_STORAGE == STD_ON)
+VAR(uint16, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_nvm_storage_time;
+#endif
+
+VAR(dem_dtc_record_update_disable_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_dtc_record_disabled;
+
+#if defined(DEM_USE_INDICATORS)
+VAR(dem_indicator_info_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_indicator_mem_data[DEM_NOF_EVENT_INDICATORS];
+#endif
+
+VAR(dem_mgmt_mem_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_mgmt_mem_data;
+
+VAR(dem_status_mem_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_status_mem_data;
+
+{% if dem_general.DataAgedCounter == "STD_ON" -%}
+VAR(dem_aged_mem_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_aged_mem_data;
+{%- endif %}
+
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+{% if dem_general.global_debounce_storage_event_count > 0 -%}
+VAR(dem_cfg_debounce_data_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_cfg_debounce_data;
+{% endif -%}
+{% endif -%}
+
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+VAR(dem_cfg_event_available_data_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_event_available_mem_data;
+{%- endif %}
+
+#if (DEM_USE_PRIMARY_MEMORY_SUPPORT == STD_ON)
+/**********************************************************************************************************************
+  g_dem_pri_mem_data
+**********************************************************************************************************************/
+VAR(dem_primary_mem_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_pri_mem_data[DEM_MAX_NUMBER_EVENT_PRI_MEM];
+#endif
+
+{% if dem_general.OBDSupport == "STD_ON" %}
+#if (DEM_USE_PERMANENT_MEMORY_SUPPORT == STD_ON)
+/**********************************************************************************************************************
+  g_dem_perm_mem_data
+**********************************************************************************************************************/
+VAR(dem_perm_mem_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_perm_mem_data;
+
+VAR(dem_obd_ff_mem_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_obd_ff_mem_data;
+#endif
+{%- endif %}
+
+/**********************************************************************************************************************
+  g_dem_client_selector
+**********************************************************************************************************************/
+VAR(dem_dtc_selector_data_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_client_selector[{{dem_client_config | length}}];
+
+/**********************************************************************************************************************
+  g_dem_client_dtc_filter
+**********************************************************************************************************************/
+VAR(dem_dtc_filter_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_client_dtc_filter[{{dem_client_config | length}}];
+
+/**********************************************************************************************************************
+  g_dem_ff_record_filter
+**********************************************************************************************************************/
+VAR(dem_ff_record_filter_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_ff_record_filter[{{dem_client_config | length}}];
+
+/**********************************************************************************************************************
+  g_dem_prestore_ff_record
+**********************************************************************************************************************/
+VAR(dem_prestore_entry_type, DEM_{{ dem_master_memmap_tag_str }}PRIVATE_BSS) g_dem_prestore_ff_record[DEM_MAX_NUMBER_PRESTORED_FF];
+
+#define DEM_STOP_SEC_{{ dem_master_memmap_tag_str }}PRIVATE_BSS
+#include "dem_memmap.h"
+
+/**********************************************************************************************************************/
+#define DEM_START_SEC_CONST
+#include "dem_memmap.h"
+CONST(dem_dtc_class_type, DEM_CONST) g_dem_dtc_class_list[] = {
+{%- for dtc_class_name, dtc_class in dem_dtc_classes.items() %}
+    {   /* {{dtc_class_name}} */
+        .uds_dtc = {{ "0x%06X" | format(dtc_class["DemDtcValue"]["Value"]) }},
+{%- if dtc_class["OBDDTC"] != 'DEM_NO_OBDDTC' %}
+        .obd_dtc = {{ "0x%04X" | format(dtc_class["OBDDTC"]) }},
+{%- else %}
+        .obd_dtc = DEM_NO_OBDDTC,
+{%- endif %}
+#if (DEM_DTC_SUPPRESSION_SUPPORT == STD_ON)
+        .dtc_index = {{ dtc_class["DTCIndex"] }},
+#endif
+        .immediate_nv_storage = {{ dtc_class["ImmediateNvStorage"] }},
+        .dtc_functional_unit = {{ "0x%02X" | format(dtc_class["DemDTCFunctionalUnit"]["Value"]) }},
+        .dtc_severity = {{ dtc_class["DemDTCSeverity"]["Value"] }},
+    },
+{%- endfor %}
+};
+
+static CONST(dem_data_elem_class_type, DEM_CONST) g_dem_data_elem_list[] = {
+{%- for data_class_name, data_class in dem_data_classes.items() %}
+    {   /* {{ data_class_name }} */
+        .endianness = {{ data_class["Endianness"] }},
+        .data_size = {{ data_class["DataSize"] }},
+{%- if data_class["DataElementReadFnc"] != "NULL" %}
+        .data_elem_read_fnc = &{{ data_class["DataElementReadFnc"] }},
+{%- else %}
+        .data_elem_read_fnc = {{ data_class["DataElementReadFnc"] }},
+{%- endif %}
+        .data_elem_use_port = {{ data_class["DataElementUsePort"] }},
+        .internal_data_type = {{ data_class["InternalDataType"] }},
+    },
+{%- endfor %}
+};
+
+static CONST(uint8, DEM_CONST) g_dem_ext_data_record_data_class_map_list[] = {
+{%- for ext_data_record_class_name, ext_data_record_class in dem_ext_data_record_classes.items() %}
+    /* {{ ext_data_record_class_name }} */
+    {%- for dem_data_class_ref in ext_data_record_class["DataClassRefList"] %}
+    {{ dem_data_class_ref }},
+    {%- endfor %}
+{%- endfor %}
+};
+
+{% if dem_ext_data_record_classes | length -%}
+static CONST(dem_ext_data_record_class_type, DEM_CONST) g_dem_ext_data_record_list[] = {
+{%- for ext_data_record_class_name, ext_data_record_class in dem_ext_data_record_classes.items() %}
+    {   /* {{ ext_data_record_class_name }} */
+        .recnum = {{ ext_data_record_class["DemExtendedDataRecordNumber"]["Value"] }},
+        .record_trigger = {{ ext_data_record_class["DemExtendedDataRecordTrigger"]["Value"] }},
+        .data_class_ref_start = {{ ext_data_record_class["DataClassRefStart"] }},
+        .data_class_num = {{ ext_data_record_class["DataClassNum"] }},
+        .update_rule = {{ ext_data_record_class["DemExtendedDataRecordUpdate"]["Value"] }},
+    },
+{%- endfor %}
+};
+{%- endif %}
+
+CONST(dem_ext_data_class_type, DEM_CONST) g_dem_ext_data_class_list[] = {
+{%- for ext_data_class_name, ext_data_class in dem_ext_data_class_config.items() %}
+    {   /* {{ ext_data_class_name }} */
+        .ext_data_record_class_ref = {
+            {%- for ext_data_record_ref in ext_data_class["ExtendedDataRecordClassRefList"] %}
+            &g_dem_ext_data_record_list[{{ ext_data_record_ref }}],
+            {%- endfor %}
+            NULL,
+        },
+    },
+{%- endfor %}
+};
+
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+{% if dem_counter_based_classes | length -%}
+static CONST(dem_debounce_counter_based_type, DEM_CONST) g_dem_debounce_counter[] = {
+{%- for counter_base_class_name, counter_base_class_class in dem_counter_based_classes.items() %}
+    {   /* {{ counter_base_class_name }} */
+        .jump_up = {{ counter_base_class_class["DemDebounceCounterJumpUp"] }},
+        .jump_down = {{ counter_base_class_class["DemDebounceCounterJumpDown"] }},
+        .increment_step_size = {{ counter_base_class_class["DemDebounceCounterIncrementStepSize"]["Value"] }},
+        .decrement_step_size = {{ counter_base_class_class["DemDebounceCounterDecrementStepSize"]["Value"] }},
+        .jump_down_value = {{ counter_base_class_class["DemDebounceCounterJumpDownValue"]["Value"] }},
+        .jump_up_value = {{ counter_base_class_class["DemDebounceCounterJumpUpValue"]["Value"] }},
+        .failed_threshold = {{ counter_base_class_class["DemDebounceCounterFailedThreshold"]["Value"] }},
+        .passed_threshold = {{ counter_base_class_class["DemDebounceCounterPassedThreshold"]["Value"] }},
+    },
+{%- endfor %}
+};
+{%- endif %}
+{%- endif %}
+
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+{% if dem_time_based_classes_config | length -%}
+static CONST(dem_debounce_time_based_type, DEM_CONST) g_dem_debounce_time[] = {
+{%- for time_base_class_name, time_base_class in dem_time_based_classes_config.items() %}
+    {   /* {{ time_base_class_name }} */
+        .time_failed_threshold = {{ time_base_class["DemDebounceTimeFailedThreshold"] }},
+        .time_passed_threshold = {{ time_base_class["DemDebounceTimePassedThreshold"] }},
+        .index = {{ time_base_class["DemDebounceTimeIndex"] }},
+    },
+{%- endfor %}
+};
+{%- endif %}
+{%- endif %}
+
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+{% if dem_debounce_classes | length -%}
+static CONST(dem_debounce_algorithm_class_type, DEM_CONST) g_dem_debounce_class_list[] = {
+{%- for dem_debounce_class_name, dem_debounce_class in dem_debounce_classes.items() %}
+    {   /* {{dem_debounce_class_name}} */
+        .debounce_name = {{ dem_debounce_class["PreDebounceName"] }},
+        {%- if dem_debounce_class["PreDebounceName"] == "DEM_PRE_DEBOUNCE_COUNTER_BASED" %}
+        .debounce_algorithm = {
+            .debounce_counter_based = &g_dem_debounce_counter[{{ dem_debounce_class["PreDebounceAlgorithmIndex"] }}]
+        },
+        {%- elif dem_debounce_class["PreDebounceName"] == "DEM_PRE_DEBOUNCE_TIME_BASED" %}
+        .debounce_algorithm = {
+            .debounce_time_based = &g_dem_debounce_time[{{ dem_debounce_class["PreDebounceAlgorithmIndex"] }}]
+        },
+        {%- endif %}
+    },
+{%- endfor %}
+};
+{%- endif %}
+{%- endif %}
+
+static CONST(uint8, DEM_CONST) g_dem_did_data_class_map_list[] = {
+{%- for did_pid_class_name, did_pid_class in dem_did_pid_class_config.items() %}
+    /* {{ did_pid_class_name }} */
+    {%- for did_pid_data_class_ref in did_pid_class["DataClassRefList"] %}
+    {{ did_pid_data_class_ref }},
+    {%- endfor %}
+{%- endfor %}
+};
+
+static CONST(dem_callback_dtc_status_changed_fnc_type, DEM_CONST) g_dem_client_dtc_sta_chg_callback_map_list[] = {
+{%- for cbk_name, ckb_func in dem_dtc_sta_chg_cbk_config.items() %}
+    /* {{ cbk_name }} */
+    {%- if ckb_func == 'NULL' %}
+    {{ ckb_func }},
+    {%- else %}
+    &{{ ckb_func }},
+    {%- endif %}
+{%- endfor %}
+};
+
+{% if dem_did_pid_class_config | length -%}
+static CONST(dem_pid_or_did_type, DEM_CONST) g_dem_did_list[] = {
+{%- for did_pid_class_name, did_pid_class in dem_did_pid_class_config.items() %}
+    {   /* {{ did_pid_class_name }} */
+        .identifier = {{ "0x%04X" | format(did_pid_class["DemDidIdentifier"]["Value"]) }},
+        .data_class_ref_start = {{ did_pid_class["DataClassRefStart"] }},
+        .data_class_num = {{ did_pid_class["DataClassNum"] }},
+        .dem_eol = FALSE
+    },
+{%- endfor %}
+    {   /* Symbol of End Of List */
+        .dem_eol = TRUE
+    }
+};
+{%- endif %}
+
+{% if dem_freeze_frame_classes | length -%}
+static CONSTP2CONST(dem_pid_or_did_type, AUTOMATIC, DEM_CONST) g_dem_ff_class_did_ref_list[] = {
+{%- for freeze_frame_class_name, freeze_frame_class in dem_freeze_frame_classes.items() %}
+    /* {{ freeze_frame_class_name }} */
+    {%- if freeze_frame_class["FFIdClassRefList"] | length %}
+        {%- for freeze_frame_did_class_ref_index in freeze_frame_class["FFIdClassRefList"] %}
+    &g_dem_did_list[{{ freeze_frame_did_class_ref_index }}],
+        {%- endfor %}
+    {%- endif %}
+    &g_dem_did_list[{{ dem_did_pid_class_config | length }}], /* Symbol of End Of List */
+{%- endfor %}
+};
+{%- endif %}
+
+CONST(dem_ff_class_type, DEM_CONST) g_dem_ff_class_list[] = {
+{%- for freeze_frame_class_name, freeze_frame_class in dem_freeze_frame_classes.items() %}
+    {   /* {{ freeze_frame_class_name }} */
+        .ff_kind = {{ freeze_frame_class['Type'] }},
+        .ff_id_class_ref = &g_dem_ff_class_did_ref_list[{{ freeze_frame_class["FFIdClassRefIndex"] }}],
+    },
+{%- endfor %}
+};
+
+CONST(dem_ff_recnum_class_type, DEM_CONST) g_dem_ff_recnum_class_list[] = {
+{%- for freeze_frame_recnum_class_name, freeze_frame_recnum_class in dem_freeze_frame_recnum_class_config.items() %}
+    {
+        .ff_recnum = {
+            {%- for freeze_frame_recnum in freeze_frame_recnum_class.FreezeFrameRecordNumberList %}
+            {{ freeze_frame_recnum }},
+            {%- endfor %}
+            DEM_FREEZEFRAME_RECORD_NUMBER_EOL,
+        },
+    },
+{%- endfor %}
+};
+
+{% if dem_general.EnableConditionSupport == "STD_ON" -%}
+static CONST(dem_enable_condition_type, DEM_CONST) g_dem_enable_condition_list[] = {
+{%- for enable_condition_name, enable_condition in dem_enable_conditions_config.items() %}
+    {   /* {{ enable_condition_name }} */
+        .enable_condition_id = {{ enable_condition["DemEnableConditionId"]["Value"] }},
+        .enable_condition_status = {{ enable_condition["DemEnableConditionStatus"] }},
+    },
+{%- endfor %}
+};
+
+CONSTP2CONST(dem_enable_condition_type, AUTOMATIC, DEM_CONST) g_dem_enable_condition_group_class_list[] = {
+{%- for enable_condition_group_name, enable_condition_group in dem_enable_condition_groups_config.items() %}
+	/* {{enable_condition_group_name}} */
+    {%- for dem_enable_condition_group_class in enable_condition_group["DemEnableConditionRef"] %}
+	&g_dem_enable_condition_list[{{ dem_enable_condition_group_class }}],
+    {%- endfor %}
+{%- endfor %}
+};
+
+CONST(dem_enable_condition_group_type, DEM_CONST) g_dem_enable_condition_group[] = {
+{%- for enable_condition_group_name, enable_condition_group in dem_enable_condition_groups_config.items() %}
+    {   /* {{ enable_condition_group_name }} */
+        .nof_enable_conditions = {{ enable_condition_group["nofEnableConditions"] }},
+        .enable_condition_base_index = {{ enable_condition_group["EnableConditionListIndex"] }},
+    },
+{%- endfor %}
+};
+{%- endif %}
+
+{% if dem_general.StorageConditionSupport == "STD_ON" -%}
+static CONST(dem_storage_condition_type, DEM_CONST) g_dem_storage_condition_list[] = {
+{%- for storage_condition_name, storage_condition in dem_storage_conditions_config.items() %}
+    {   /* {{ storage_condition_name }} */
+        .storage_condition_id = {{ storage_condition["DemStorageConditionId"]["Value"] }},
+        .storage_condition_status = {{ storage_condition["DemStorageConditionStatus"] }},
+    },
+{%- endfor %}
+};
+
+CONSTP2CONST(dem_storage_condition_type, AUTOMATIC, DEM_CONST) g_dem_storage_condition_group_class_list[] = {
+{%- for storage_condition_group_name, storage_condition_group in dem_storage_condition_groups_config.items() %}
+	/* {{storage_condition_group_name}} */
+    {%- for dem_storage_condition_group_class in storage_condition_group["DemStorageConditionRef"] %}
+	&g_dem_storage_condition_list[{{ dem_storage_condition_group_class }}],
+    {%- endfor %}
+{%- endfor %}
+};
+
+CONST(dem_storage_condition_group_type, DEM_CONST) g_dem_storage_condition_group[] = {
+{%- for storage_condition_group_name, storage_condition_group in dem_storage_condition_groups_config.items() %}
+    {   /* {{ storage_condition_group_name }} */
+        .nof_storage_conditions = {{ storage_condition_group["nofStorageConditions"] }},
+        .storage_condition_base_index = {{ storage_condition_group["StorageConditionListIndex"] }},
+    },
+{%- endfor %}
+};
+{%- endif %}
+
+{% if dem_general.DemSupportIndicator == "TRUE" -%}
+static CONST(dem_event_id_type, DEM_CONST) g_dem_indicator_event_list[] = {
+{%- for EventParameterName, EventParameter in dem_event_parameters_config.items() %}
+    {{ EventParameter["EventId"] }},
+{%- endfor %}
+    0
+};
+
+static CONSTP2CONST(dem_event_id_type, AUTOMATIC, DEM_CONST) g_dem_indicator_event_group[] = {
+{%- for indicator_name, indicator in dem_indicators_config.items() %}
+    /* {{ indicator_name }} */
+    {%- if "IndicatorEventGroupList" in indicator %}
+	{%- for IndicatorEvent in indicator["IndicatorEventGroupList"] %}
+	&g_dem_indicator_event_list[{{ IndicatorEvent }}],
+	{%- endfor %}
+    {%- endif %}
+	&g_dem_indicator_event_list[{{ dem_event_parameters_config | length }}],
+{%- endfor %}
+};
+
+static CONST(dem_indicator_type, DEM_CONST) g_dem_indicator_list[] = {
+{%- for indicator_name, indicator in dem_indicators_config.items() %}
+    {   /* {{ indicator_name }} */
+        .event_list_size = {{ indicator["EventListSize"] }},
+        {%- if indicator["EventListSize"] > 0 %}
+        .event_list = &g_dem_indicator_event_group[{{ indicator["EventListRefIndex"] }}],
+        {%- else %}
+        .event_list = NULL,
+        {%- endif %}
+        .indicator_id = {{ indicator_name.upper() }},
+    },
+{%- endfor %}
+};
+
+{% if dem_indicator_attribute_groups | length -%}
+static CONST(dem_indicator_attribute_type, DEM_CONST) g_dem_indicator_attribute_list[] = {
+{%- for IndicatorAttributeName, IndicatorAttribute in dem_indicator_Attributes.items() %}
+    {   /* {{ IndicatorAttributeName }} */
+        .indicator_buffer_index = {{ IndicatorAttribute["IndicatorBufferIndex"] }},
+        {%- if IndicatorAttribute["IndicatorRefIndex"] < 0 %}
+        .indicator_ref = NULL,
+        {%- else %}
+        .indicator_ref = &g_dem_indicator_list[{{ IndicatorAttribute["IndicatorRefIndex"] }}],
+        {%- endif %}
+        .indicator_behaviour = {{ IndicatorAttribute["IndicatorBehaviour"] }},
+        ///< 如果是关联OBD的MIL灯，则其操作周期为DemOBDPFCCycleRef，如果不是，则关联DemOperationCycleRef
+        .indicator_failure_cycle = {{ IndicatorAttribute["IndicatorFailureCycle"] }},
+        .indicator_failure_cycle_source = {{ IndicatorAttribute["IndicatorFailureCycleSource"] }},
+        .indicator_failure_cycle_threshold = {{ IndicatorAttribute["IndicatorFailureCycleThreshold"] }},
+        ///< 同indicator_failure_cycle
+        .indicator_healing_cycle = {{ IndicatorAttribute["IndicatorHealingCycle"] }},
+        .indicator_healing_cycle_threshold = {{ IndicatorAttribute["IndicatorHealingCycleThreshold"] }},
+        .dem_eol = FALSE,
+    },
+{%- endfor %}
+    {   /* Symbol of End Of List */
+        .dem_eol = TRUE
+    }
+};
+
+CONSTP2CONST(dem_indicator_attribute_type, AUTOMATIC, DEM_CONST) g_dem_indicator_attribute_group[] = {
+{%- for IndicatorAttributeGroupName, IndicatorAttributeGroup in dem_indicator_attribute_groups.items() %}
+    /* {{ IndicatorAttributeGroupName }} */
+	{%- for IndicatorAttributeIndex in IndicatorAttributeGroup %}
+	&g_dem_indicator_attribute_list[{{ IndicatorAttributeIndex }}],
+	{%- endfor %}
+{%- endfor %}
+};
+{%- endif %}
+{%- endif %}
+
+{% if dem_event_classes_config | length -%}
+static CONST(dem_event_class_type, DEM_CONST) g_dem_event_class_list[] = {
+{%- for event_class_name, event_class in dem_event_classes_config.items() %}
+    {   /* {{ event_class_name }} */
+        .event_destination = {{ event_class["EventDestination"] }},
+{%- if dem_indicator_Attributes | length %}
+        {%- if event_class["IndicatorAttributeGroupRefIndex"] >= 0 %}
+        .indicator_attribute_index = {{ event_class["IndicatorAttributeGroupRefIndex"] }},
+        {%- else %}
+        .indicator_attribute_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+{%- endif %}
+        .event_priority = {{ event_class["EventPriority"] }}u,
+        .ff_prestorage_supported = {%if event_class["FreezeFramePrestorageSupport"] == 'NONE'%}FALSE{%else%}{{event_class["FreezeFramePrestorageSupport"]}}{%endif%},
+        .opcycle_ref = {{ event_class["OperationCycleRef"] }},
+{% if dem_general.DemDebounceDisable == "STD_OFF" -%}
+        {%- if event_class["DebounceAlgorithmClassRefIndex"] >= 0 %}
+        .debounce_algorithm_class = &g_dem_debounce_class_list[{{ event_class["DebounceAlgorithmClassRefIndex"] }}],
+        {%- else %}
+        .debounce_algorithm_class = NULL,
+        {%- endif %}
+{%- endif %}
+        .aging_allowed = {{ event_class["AgingAllowed"] }},
+        .aging_cycle_counter_threshold = {{ event_class["AgingCounterThreshold"] }}u,
+        .aging_cycle_ref = {{ event_class["AgingCycleRef"] }},
+        .failure_cycle_ref = {{ event_class["FailureCycleRef"] }},
+        .failure_cycle_counter_threshold = {{ event_class["FailureCounterThreshold"] }}u,
+{%- if dem_general.EnableConditionSupport == "STD_ON" %}
+        {%- if event_class["EnableConditionGroupRefIndex"] >= 0 %}
+        .enable_condition_group_ref_index = {{ event_class["EnableConditionGroupRefIndex"] }},
+        {%- else %}
+        .enable_condition_group_ref_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+{%- endif %}
+{%- if dem_general.StorageConditionSupport == "STD_ON" %}
+        {%- if event_class["StorageConditionGroupRefIndex"] >= 0 %}
+        .storage_condition_group_ref_index = {{ event_class["StorageConditionGroupRefIndex"] }},
+        {%- else %}
+        .storage_condition_group_ref_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+{%- endif %}
+    },
+{%- endfor %}
+};
+{%- endif %}
+
+static CONST(dem_event_parameter_type, DEM_CONST) g_dem_event_parameter_list[] = {
+{%- for event_parameter_name, event_parameter in dem_event_parameters_config.items() %}
+{   /* {{ event_parameter_name }} */
+        .event_id = DemConf_DemEventParameter_{{ event_parameter_name }},
+{%- if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}
+        {%- if event_parameter.EventCombinedGroupIndex >= 0 %}
+        .event_combined_groups_index = {{ event_parameter.EventCombinedGroupIndex }}u,
+        {%- else %}
+        .event_combined_groups_index = DEM_EVENT_COMBINED_INVALID_GROUP_INDEX,
+        {%- endif %}
+{%- endif %}
+{%- if dem_general.DemEventKindSupport == "STD_ON" -%}
+        .event_kind = {{ event_parameter["EventKind"] }},
+{%- endif %}
+{%- if dem_general.DataAgedCounter == "STD_ON" -%}
+{%- if event_parameter["DemEventAgedData"] >= 0 %}
+        .event_aged_data_index = {{ event_parameter["DemEventAgedData"] }},
+{%- else %}
+        .event_aged_data_index = DEM_INVALID_ADEG_DATA_INDEX,
+{%- endif %}
+{%- endif %}
+        .event_dtc_kind = {{ event_parameter["EventDTCKind"] }},
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+        .event_available = {{ event_parameter["EventAvailable"] }},
+{%- endif %}
+        {%- if event_parameter["EventClassRefIndex"] >= 0 %}
+        .event_class_ref = &g_dem_event_class_list[{{ event_parameter["EventClassRefIndex"] }}],
+        {%- else %}
+        .event_class_ref = NULL,
+        {%- endif %}
+        {%- if event_parameter["DTCClassRefIndex"] >= 0 %}
+        .dtc_class_ref_index = {{ event_parameter["DTCClassRefIndex"] }},
+        {%- else %}
+        .dtc_class_ref_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+        {%- if event_parameter["ExtendedDataClassRefIndex"] >= 0 %}
+        .ext_data_class_ref_index = {{ event_parameter["ExtendedDataClassRefIndex"] }},
+        {%- else %}
+        .ext_data_class_ref_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+        .max_number_ff_records = {{ event_parameter["MaxNumberFreezeFrameRecords"] }},
+        {%- if event_parameter["FreezeFrameRecNumClassRef"] >= 0 %}
+        .ff_recnum_class_ref_index = {{ event_parameter["FreezeFrameRecNumClassRef"] }},
+        {%- else %}
+        .ff_recnum_class_ref_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+        {%- if event_parameter["FreezeFrameClassRef"] >= 0 %}
+        .ff_class_ref_index = {{ event_parameter["FreezeFrameClassRef"] }},
+        {%- else %}
+        .ff_class_ref_index = DEM_INVALID_U16_REF_INDEX,
+        {%- endif %}
+{%- if dem_general.DemCallbackInitMforESupport == "STD_ON" %}
+        .callback_init_m_for_e = {{ event_parameter["CallbackInitMforE"] }},
+{%- endif %}
+{%- if dem_general.DemCallbackEventUdsStatusChangedSupport == "STD_ON" %}
+        .callback_event_status_changed = {{ event_parameter["CallbackEventStatusChanged"] }},
+{%- endif %}
+{%- if dem_general.DemCallbackClearEventAllowedSupport == "STD_ON" %}
+    {%- if event_parameter["CallbackClearEventAllowed"] != "NULL" %}
+        .callback_clear_event_allowed = &{{ event_parameter["CallbackClearEventAllowed"] }},
+    {%- else %}
+        .callback_clear_event_allowed = {{ event_parameter["CallbackClearEventAllowed"] }},
+    {%- endif %}
+{%- endif %}
+{%- if dem_general.DemCallbackEventDataChangedSupport == "STD_ON" %}
+        .callback_event_data_changed = {{ event_parameter["CallbackEventDataChanged"] }},
+{%- endif %}
+        .satellite_id = DEM_SATELLITE_ID_{{event_parameter["DemSatellitId"].upper()}},
+        .satellite_event_idx = {{ event_parameter["SatelliteEventIdx"] }},
+    },
+{%- endfor %}
+};
+
+static CONST(dem_group_of_dtc_type, DEM_CONST) g_dem_dtc_groups[] = {
+{%- for dtc_group in dem_dtc_group_list_config %}
+    {   /* {{ dtc_group[0] }} */
+        .dem_group_dtcs = {{ "0x%X" | format(dtc_group[1]["DemGroupDTCs"]["Value"]) }}u,
+        .dem_eol = FALSE
+    },
+{%- endfor %}
+    {   /* DemGroupOfDTC_ALL */
+        .dem_group_dtcs = 0xFFFFFFUL,
+        .dem_eol = TRUE
+    }
+};
+
+{% if dem_clear_dtc_notification_start_list_config | length -%}
+static CONST(dem_clear_dtc_notification_fnc_type, DEM_CONST) g_dem_clear_dtc_notification_start_fnc_list[] = {
+{%- for clear_dtc_notification in dem_clear_dtc_notification_start_list_config %}
+    {%- if clear_dtc_notification == 'NULL' %}
+    {{clear_dtc_notification}},
+    {%- else %}
+    &{{clear_dtc_notification}},
+    {%- endif %}
+{%- endfor %}
+    NULL
+};
+{%- endif %}
+
+{% if dem_clear_dtc_notification_finish_list_config | length -%}
+static CONST(dem_clear_dtc_notification_fnc_type, DEM_CONST) g_dem_clear_dtc_notification_finish_fnc_list[] = {
+{%- for clear_dtc_notification in dem_clear_dtc_notification_finish_list_config %}
+    {%- if clear_dtc_notification == 'NULL' %}
+    {{clear_dtc_notification}},
+    {%- else %}
+    &{{clear_dtc_notification}},
+    {%- endif %}
+{%- endfor %}
+    NULL
+};
+{%- endif %}
+
+{% if dem_nvm_blocks | length -%}
+static CONST(nvram_block_id_index, DEM_CONST) g_dem_nvram_block_id_list[] = {
+{%- for nvm_block_name in dem_nvm_blocks.keys() %}
+    {{nvm_block_name}},
+{%- endfor %}
+};
+{%- endif %}
+
+static CONST(dem_opcycle_type, DEM_CONST) g_dem_opcycle_list[] = {
+{%- if dem_opcycles_config | length %}
+{%- for opcycle_name, opcycle in dem_opcycles_config.items() %}
+    {
+        .opcycle_autostart = {{ ([opcycle["DemOperationCycleAutostart"]["Value"]] | join).upper() }},
+        .opcycle_id = {{ opcycle_name.upper() }},
+    },
+{%- endfor %}
+{%- endif %}
+};
+
+{% for event_memoty_set_name, event_memoty_set in dem_event_memory_set_config.items() -%}
+static CONST(dem_cfg_primary_memory_type, DEM_CONST) g_{{event_memoty_set_name}}_dem_primary_memory = {
+    .environment_data_capture = {{ event_memoty_set["DemPrimaryMemory"]["DemEnvironmentDataCapture"]["Value"] }},
+    .event_displacement_strategy = {{ event_memoty_set["DemPrimaryMemory"]["DemEventDisplacementStrategy"]["Value"] }},
+    .occctr_processing = {{ event_memoty_set["DemPrimaryMemory"]["DemOccurrenceCounterProcessing"]["Value"] }},
+    .ff_recnum_type = {{ event_memoty_set["DemPrimaryMemory"]["DemTypeOfFreezeFrameRecordNumeration"]["Value"] }},
+};
+{%- endfor %}
+
+static CONST(dem_event_memory_set_type, DEM_CONST) g_dem_event_memory_set_list[] = {
+{%- for event_memoty_set_name, event_memoty_set in dem_event_memory_set_config.items() %}
+    {
+        .primary_memory = &g_{{event_memoty_set_name}}_dem_primary_memory,
+{%- if dem_general.DemSupportIndicator == "TRUE" %}
+        {%- if event_memoty_set["MILIndicatorRefIndex"]["Value"] >= 0 %}
+        .mil_indicator_ref = &g_dem_indicator_list[{{event_memoty_set["MILIndicatorRefIndex"]["Value"]}}],
+        {%- else %}
+        .mil_indicator_ref = NULL,
+        {%- endif %}
+{%- endif %}
+    },
+{%- endfor %}
+};
+
+static CONST(dem_client_type, DEM_CONST) g_dem_client_list[] = {
+{%- for client_name, client in dem_client_config.items() %}
+    {
+        .client_id = {{ client["DemClientId"]["Value"] }},
+        .cbk_dtc_status_changed_start = {{ client["startIdx"] }},
+        .cbk_dtc_status_changed_num = {{ client["num"] }},
+        {%- if client["EventMemorySetIndex"] >= 0 %}
+        .event_memory_set_ref = &g_dem_event_memory_set_list[{{client["EventMemorySetIndex"]}}],
+        {%- else %}
+        .event_memory_set_ref = NULL,
+        {%- endif %}
+    },
+{%- endfor %}
+};
+
+static CONST(dem_config_set_type, DEM_CONST) dem_config_set = {
+    .event_parameter = g_dem_event_parameter_list,
+    .dtc_class = g_dem_dtc_class_list,
+    {%- if dem_obd_freeze_frame_classes == 0xFFFFFFFF %}
+    .global_obd_ff_class_ref = NULL,
+    {%- else %}
+    .global_obd_ff_class_ref = &g_dem_ff_class_list[{{dem_obd_freeze_frame_classes}}],
+    {%- endif %}
+{%- if dem_general.EnableConditionSupport == "STD_ON" %}
+    .enable_condition = g_dem_enable_condition_list,
+{%- endif %}
+{%- if dem_general.StorageConditionSupport == "STD_ON" %}
+    .storage_condition = g_dem_storage_condition_list,
+{%- endif %}
+    .group_of_dtc = g_dem_dtc_groups,
+{%- if dem_clear_dtc_notification_start_list_config | length %}
+    .clear_dtc_notification_start_fnc = g_dem_clear_dtc_notification_start_fnc_list,
+{%- endif %}
+{%- if dem_clear_dtc_notification_finish_list_config | length %}
+    .clear_dtc_notification_finish_fnc = g_dem_clear_dtc_notification_finish_fnc_list,
+{%- endif %}
+    .data_elem = g_dem_data_elem_list,
+};
+
+static CONST(dem_cfg_helper_type, DEM_CONST) dem_cfg_helper = {
+    .ext_data_data_elem_map = g_dem_ext_data_record_data_class_map_list,
+    .did_data_elem_map = g_dem_did_data_class_map_list,
+    .dtc_status_changed_cbk_map = g_dem_client_dtc_sta_chg_callback_map_list,
+};
+
+static CONST(dem_general_type, DEM_CONST) dem_general = {
+{%- if dem_nvm_blocks | length %}
+    .nvram_block_id = g_dem_nvram_block_id_list,
+{%- else %}
+    .nvram_block_id = NULL,
+{%- endif %}
+    .event_memory_set = g_dem_event_memory_set_list,
+    .client = g_dem_client_list,
+    .ff_recnum_type = DEM_FF_RECNUM_CALCULATED,
+    .ff_class = g_dem_ff_class_list,
+    .ff_recnum_class = g_dem_ff_recnum_class_list,
+{%- if dem_general.DemSupportIndicator == "TRUE" %}
+    .indicator = g_dem_indicator_list,
+{%- endif %}
+    .opcycle = g_dem_opcycle_list,
+};
+
+CONST(dem_config_type, DEM_CONST) dem_config = {
+    .config_set = &dem_config_set,
+    .cfg_helper = &dem_cfg_helper,
+    .general = &dem_general,
+};
+
+CONST(dem_satellite_event_id_type, DEM_CONST) g_dem_satellite_event_table[DEM_MAX_NUMBER_EVENT] = {
+{%- for satellite_name, satellite in dem_satellite_config.items() %}
+    {%- for EventId in satellite.EventList %}
+        {{ EventId }}u,         /* {{ satellite_name }} */
+    {%- endfor %}
+{%- endfor %}
+};
+
+#define DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+
+#define DEM_START_SEC_MULTI_APP_BSS
+#include "dem_memmap.h"
+
+P2CONST(dem_cfg_helper_type, DEM_MULTI_APP_BSS, Dem_VAR_Class) g_dem_cfg_helper;
+P2CONST(dem_general_type, DEM_MULTI_APP_BSS, Dem_VAR_Class) g_dem_general_set;
+P2CONST(dem_config_set_type, DEM_MULTI_APP_BSS, Dem_VAR_Class) g_dem_config_set;
+
+VAR(dem_disable_dtc_setting_type, DEM_MULTI_APP_BSS) g_dem_disable_dtc_set;
+VAR(dem_opcycle_state_type, DEM_MULTI_APP_BSS) g_dem_opcycle_state_list[DEM_OPERATION_CYCLE_ID_ENDMARK];
+VAR(dem_event_info_rec_type, DEM_MULTI_APP_BSS) g_dem_event_info_rec[DEM_MAX_NUMBER_EVENT];
+
+#if (DEM_ENABLE_CONDITION_SUPPORT == STD_ON)
+VAR(boolean, DEM_MULTI_APP_BSS) g_dem_enable_conditions[DEM_NUM_ENABLECONDITIONS];
+#endif
+#if (DEM_STORAGE_CONDITION_SUPPORT == STD_ON)
+VAR(boolean, DEM_MULTI_APP_BSS) g_dem_storage_conditions[DEM_NUM_STORAGECONDITIONS];
+#endif
+
+#if (DEM_DTC_SUPPRESSION_SUPPORT == STD_ON)
+VAR(dem_dtc_suppression_type, DEM_MULTI_APP_BSS) g_dem_dtc_suppressed[DEM_NOF_DTCS];
+#endif
+
+#if (DEM_DEBOUNCE_DISABLE == STD_OFF)
+#if defined(DEM_USE_TIME_BASE_PREDEBOUNCE)
+VAR(dem_time_base_debounce_status_type, DEM_MULTI_APP_BSS) g_dem_time_base_deb[DEM_NOF_TIME_BASE_PREDEB];
+#endif
+#endif
+
+{% for satellite_name, satellite in dem_satellite_config.items() -%}
+VAR(dem_satellite_info_type_{{ satellite_name.lower() }}, DEM_MULTI_APP_BSS) g_dem_satellite_info_{{ satellite_name.lower() }};
+{% endfor %}
+
+#define DEM_STOP_SEC_MULTI_APP_BSS
+#include "dem_memmap.h"
+
+#define DEM_START_SEC_CONST
+#include "dem_memmap.h"
+
+CONST(dem_satellite_info_type, DEM_CONST) g_dem_satellite_info[{{ dem_satellite_config | length }}] = {
+{%- for satellite_name, satellite in dem_satellite_config.items() %}
+    {   /* {{ satellite_name }} */
+        .event_count = {{ satellite["EventCount"] }},
+        .event_table_ind_start_idx = {{ satellite["EventTableIndStartIdx"] }},
+        .satellite_id = DEM_SATELLITE_ID_{{ satellite_name.upper() }},
+        .application_id = (OS_APPLICATIONID_DEF){{ satellite["ApplicationId"] }},
+        .satellite_status = &g_dem_satellite_info_{{ satellite_name.lower() }}.satellite_status,
+        .satellite_data = &g_dem_satellite_info_{{ satellite_name.lower() }}.satellite_data[0]
+    },
+{%- endfor %}
+};
+
+#define DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+
+{%- if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}
+
+#define DEM_START_SEC_MULTI_APP_BSS
+#include "dem_memmap.h"
+
+VAR(uint8, DEM_MULTI_APP_BSS) g_dem_event_combined_group_status[{{ dem_event_combined_groups_config | length }}];
+
+#define DEM_STOP_SEC_MULTI_APP_BSS
+#include "dem_memmap.h"
+
+#define DEM_START_SEC_CONST
+#include "dem_memmap.h"
+
+CONST(uint8, DEM_CONST) g_dem_combined_event_id_table[{{ dem_general.DemCombinedEventNumber }}] = {
+{%- for event_combined_group in dem_event_combined_groups_config.values() %}
+    {%- for EventId in event_combined_group.EventList %}
+        {{ EventId }}u,
+    {%- endfor %}
+{%- endfor %}
+};
+
+CONST(dem_event_combined_group_type, DEM_CONST) g_dem_event_combined_groups[{{ dem_event_combined_groups_config | length }}] = {
+{%- for event_combined_group in dem_event_combined_groups_config.values() %}
+    {
+        .start_combined_event_id_index = {{ event_combined_group.StartCombinedEventIdIndex }},
+        .end_combined_event_id_index = {{ event_combined_group.EndCombinedEventIdIndex }},
+    },
+{%- endfor %}
+};
+
+#define DEM_STOP_SEC_CONST
+#include "dem_memmap.h"
+{%- endif %}

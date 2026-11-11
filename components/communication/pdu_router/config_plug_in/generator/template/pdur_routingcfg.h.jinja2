@@ -1,0 +1,202 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        pdur_routingcfg.h
+ * @brief       PduR路由配置头文件
+ * @details     主要包含PduR路由的配置
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef PDUR_ROUTINGCFG_H
+#define PDUR_ROUTINGCFG_H
+
+#include "pdur_types.h"
+#include "comstack_types.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/* Global Macro Definition */
+{%- set pdur_bsw_modules = get_pdur_bsw_modules_routing_config() %}
+
+{%- set module_idx = namespace(value = 0) %}
+{{  ("%-80s" | format("#define PDUR_UP_MODULES"))}}{{ module_idx.value }}u ///< 上层模块
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- set Up_module_list = pdur_bsw_modules['Up_module_list'] %}
+{%- for module_name in Up_module_list %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper()))}}{{ module_idx.value }}u
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- endfor %}
+{{  ("%-80s" | format("#define PDUR_LOIF_MODULES"))}}{{ module_idx.value }}u ///< 下层IF模块
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- set LoIf_withIf_module_list = pdur_bsw_modules['LoIf_withIf_module_list'] %}
+{%- for module_name in LoIf_withIf_module_list %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper()))}}{{ module_idx.value }}u
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- endfor %}
+{%- set LoIf_withoutIf_module_list = pdur_bsw_modules['LoIf_withoutIf_module_list'] %}
+{%- for module_name in LoIf_withoutIf_module_list %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper()))}}{{ module_idx.value }}u
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- endfor %}
+{{  ("%-80s" | format("#define PDUR_LOTP_MODULES"))}}{{ module_idx.value }}u ///< 下层TP模块
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- set LoTp_withTp_module_list = pdur_bsw_modules['LoTp_withTp_module_list'] %}
+{%- for module_name in LoTp_withTp_module_list %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper()))}}{{ module_idx.value }}u
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- endfor %}
+{%- set LoTp_withoutTp_module_list = pdur_bsw_modules['LoTp_withoutTp_module_list'] %}
+{%- for module_name in LoTp_withoutTp_module_list %}
+{{  ("%-80s" | format("#define PDUR_" ~ module_name.upper()))}}{{ module_idx.value }}u
+{%- set module_idx.value = module_idx.value + 1 %}
+{%- endfor %}
+{{  ("%-80s" | format("#define PDUR_END_OF_MODULES"))}}{{ module_idx.value }}u ///< 结束
+
+{%- set cancel_recv_module_list = pdur_bsw_modules['cancel_recv_module_list'] %}
+{%- set cancel_tran_module_list = pdur_bsw_modules['cancel_tran_module_list'] %}
+{{  ("%-80s" | format("#define PDUR_SUPPORT_CANCELTRANSMIT"))}} {%-if cancel_recv_module_list | length != 0%}{{"STD_ON"}}{%-else%}{{"STD_OFF"}}{%-endif%}
+{{  ("%-80s" | format("#define PDUR_SUPPORT_CANCELRECEIVE"))}} {%-if cancel_tran_module_list | length != 0%}{{"STD_ON"}}{%-else%}{{"STD_OFF"}}{%-endif%}
+/* Global Enumeration Definition */
+
+/* Global Type & Structure Definition */
+/* IF和TP类型Transmit函数指针定义 */
+typedef Std_ReturnType (*pdur_route_transmit_func_ptr)(PduIdType pdu_id, const PduInfoType *pdu_info_ptr);
+/* IF类型TriggerTransmit函数指针定义 */
+typedef Std_ReturnType (*pdur_route_trigger_transmit_func_Ptr)(PduIdType pdu_id, PduInfoType *pdu_info_ptr);
+/* IF类型RxIndication函数指针定义 */
+typedef void (*pdur_route_rx_indication_func_ptr)(PduIdType pdu_id, const PduInfoType *pdu_info_ptr);
+/* TP类型RxIndication函数指针定义 */
+typedef void (*pdur_route_tp_rx_indication_func_ptr)(PduIdType pdu_id, NotifResultType result);
+/* IF类型TxConfirmation函数指针定义 */
+typedef void (*pdur_route_tx_confirmation_func_ptr)(PduIdType pdu_id, NotifResultType result);
+/* TP类型TxConfirmation函数指针定义 */
+typedef void (*pdur_route_tp_tx_confirmation_func_ptr)(PduIdType pdu_id, NotifResultType result);
+/* TP类型CopyRxData函数指针定义 */
+typedef BufReq_ReturnType (*pdur_route_copy_rx_data_func_ptr)(PduIdType pdu_id, const PduInfoType *info,
+    PduLengthType *buffer_size_ptr);
+/* TP类型CopyTxData函数指针定义 */
+typedef BufReq_ReturnType (*pdur_route_copy_tx_data_func_ptr)(PduIdType pdu_id, const PduInfoType *info,
+    const RetryInfoType *retry, PduLengthType *available_data_ptr);
+/* TP类型StartOfReception函数指针定义 */
+typedef BufReq_ReturnType (*pdur_route_start_of_reception_func_ptr)(PduIdType pdu_id, const PduInfoType *info,
+    PduLengthType TpSduLength, PduLengthType *buffer_size_ptr);
+/* CancelTransmit函数指针定义 */
+typedef Std_ReturnType (*pdur_route_cancel_transmit_func_ptr)(PduIdType pdu_id);
+/* CancelReceive函数指针定义 */
+typedef Std_ReturnType (*pdur_route_cancel_receive_func_ptr)(PduIdType pdu_id);
+
+typedef struct {
+    pdur_route_transmit_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_transmit_func_table_type;
+
+typedef struct {
+    pdur_route_trigger_transmit_func_Ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_trigger_transmit_func_table_type;
+
+typedef struct {
+    pdur_route_rx_indication_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_rx_indication_func_table_type;
+
+typedef struct {
+    pdur_route_tp_rx_indication_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_tp_rx_indication_func_table_type;
+
+typedef struct {
+    pdur_route_tx_confirmation_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_tx_confirmation_func_table_type;
+
+typedef struct {
+    pdur_route_tp_tx_confirmation_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_tp_tx_confirmation_func_table_type;
+
+typedef struct {
+    pdur_route_copy_rx_data_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_copy_rx_data_func_table_type;
+
+typedef struct {
+    pdur_route_copy_tx_data_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_copy_tx_data_func_table_type;
+
+typedef struct {
+    pdur_route_start_of_reception_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_start_of_reception_func_table_type;
+
+typedef struct {
+    pdur_route_cancel_transmit_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_cancel_transmit_func_table_type;
+
+typedef struct {
+    pdur_route_cancel_receive_func_ptr func_ptr;
+    pdur_module_type module_id;
+} pdur_route_cancel_receive_func_table_type;
+
+
+/* Global Variable Declaration */
+
+/* Global Function Declaration */
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC_P2CONST(pdur_route_transmit_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_transmit_func_table(void);
+FUNC_P2CONST(pdur_route_trigger_transmit_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_trigger_transmit_func_table(void);
+FUNC_P2CONST(pdur_route_rx_indication_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_rx_indication_func_table(void);
+FUNC_P2CONST(pdur_route_tp_rx_indication_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_tp_rx_indication_func_table(void);
+FUNC_P2CONST(pdur_route_tx_confirmation_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_tx_confirmation_func_table(void);
+FUNC_P2CONST(pdur_route_tp_tx_confirmation_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_tp_tx_confirmation_func_table(void);
+FUNC_P2CONST(pdur_route_copy_rx_data_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_copy_rx_data_func_table(void);
+FUNC_P2CONST(pdur_route_copy_tx_data_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_copy_tx_data_func_table(void);
+FUNC_P2CONST(pdur_route_start_of_reception_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_start_of_reception_func_table(void);
+FUNC_P2CONST(pdur_route_cancel_transmit_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_cancel_transmit_func_table(void);
+FUNC_P2CONST(pdur_route_cancel_receive_func_table_type, AUTOMATIC, PDUR_CODE) pdur_get_route_cancel_receive_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_transmit_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_trigger_transmit_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_rx_indication_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_tp_rx_indication_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_tx_confirmation_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_tp_tx_confirmation_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_copy_rx_data_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_copy_tx_data_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_start_of_reception_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_cancel_transmit_func_table(void);
+FUNC(uint8, PDUR_CODE) pdur_get_len_of_route_cancel_receive_func_table(void);
+FUNC(boolean, PDUR_CODE) pdur_is_up_module(uint8 input);
+FUNC(boolean, PDUR_CODE) pdur_is_if_module(uint8 input);
+FUNC(boolean, PDUR_CODE) pdur_is_tp_module(uint8 input);
+FUNC(boolean, PDUR_CODE) pdur_is_lo_module(uint8 input);
+
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+/* Global Function Implementation */
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif	 /* PDUR_ROUTINGCFG_H */
+

@@ -1,0 +1,568 @@
+{
+    "CANIF013002": {
+        "rule_name": "CANIF013002",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfRxPduCanIdType and CanIfRxPduCanId.",
+        "rule_message": "If CanIfRxPduCanIdType is STANDARD_CAN or STANDARD_FD_CAN, then CanIfRxPduCanId must >= 0 and <= 0x7ff. If CanIfRxPduCanIdType is EXTENDED_CAN or EXTENDED_FD_CAN, then CanIfRxPduCanId must >= 0 and <= 0x1ffffff",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "STANDARD_CAN",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "STANDARD_FD_CAN",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanId",
+                        "value_operator": ">=",
+                        "value": "0",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanId",
+                        "value_operator": "<=",
+                        "value": "0x7ff",
+                        "logical_operator": "and"
+                    }
+                ]
+            },
+            "ruleset_02": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "EXTENDED_CAN",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "EXTENDED_FD_CAN",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanId",
+                        "value_operator": ">=",
+                        "value": "0",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduCanId",
+                        "value_operator": "<=",
+                        "value": "0x1fffffff",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF011001": {
+        "rule_name": "CANIF011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfTxPduId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduId",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "CANIF011002": {
+        "rule_name": "CANIF011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfCtrlId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg/CanIfCtrlCfg/CanIfCtrlId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg/CanIfCtrlCfg/CanIfCtrlId",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg"
+        },
+        "manual_solve_list": []
+    },
+    "CANIF011003": {
+        "rule_name": "CANIF011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfTxPduRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduRef",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF011004": {
+        "rule_name": "CANIF011004",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfRxPduId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduId",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "CANIF011005": {
+        "rule_name": "CANIF011005",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfCtrlCanCtrlRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg/CanIfCtrlCfg/CanIfCtrlCanCtrlRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg/CanIfCtrlCfg/CanIfCtrlCanCtrlRef",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF011006": {
+        "rule_name": "CANIF011006",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfRxPduRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduRef",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF011007": {
+        "rule_name": "CANIF011007",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of CanIfCtrlId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg/CanIfCtrlCfg/CanIfCtrlId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg/CanIfCtrlCfg/CanIfCtrlId",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfCtrlDrvCfg"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF011008": {
+        "rule_name": "CANIF011008",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of CanIfTrcvId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvId",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF011009": {
+        "rule_name": "CANIF011009",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of CanIfTrcvId.",
+        "rule_message": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvId",
+            "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "CANIF013003": {
+        "rule_name": "CANIF013003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfDispatchUserCtrlBusOffUL and CanIfDispatchUserCtrlBusOffName.",
+        "rule_message": "If CanIfDispatchUserCtrlBusOffUL is 'CAN_SM', then CanIfDispatchUserCtrlBusOffName must be 'cansm_controller_bus_off'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfDispatchCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfDispatchCfg/CanIfDispatchUserCtrlBusOffUL",
+                        "value_operator": "==",
+                        "value": "CAN_SM",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfDispatchCfg/CanIfDispatchUserCtrlBusOffName",
+                        "value_operator": "==",
+                        "value": "cansm_controller_bus_off",
+                        "logical_operator": "or"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF016001": {
+        "rule_name": "CANIF016001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfTxPduCanIdType and CanIfTxPduCanId.",
+        "rule_message": "If CanIfTxPduCanIdType is STANDARD_CAN or STANDARD_FD_CAN, then CanIfRxPduCanId must >= 0 and <= 0x7ff. If CanIfRxPduCanIdType is EXTENDED_CAN or EXTENDED_FD_CAN, then CanIfRxPduCanId must >= 0 and <= 0x1ffffff.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "STANDARD_CAN",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "STANDARD_FD_CAN",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanId",
+                        "value_operator": "<=",
+                        "value": "0x7ff",
+                        "logical_operator": "and"
+                    }
+                ]
+            },
+            "ruleset_02": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "EXTENDED_CAN",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "EXTENDED_FD_CAN",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanId",
+                        "value_operator": "<=",
+                        "value": "0x1fffffff",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF016002": {
+        "rule_name": "CANIF016002",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfTxPduDataLength and CanIfTxPduCanIdType.",
+        "rule_message": "if CanIfTxPduCanIdType is 'STANDARD_CAN' or 'EXTENDED_CAN, then CanIfTxPduDataLength must <= 8, if CanIfTxPduCanIdType is 'STANDARD_FD_CAN' or 'EXTENDED_FD_CAN', then CanIfTxPduDataLength must <= 64.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "STANDARD_CAN",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "EXTENDED_CAN",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduDataLength",
+                        "value_operator": "<=",
+                        "value": "8",
+                        "logical_operator": "and"
+                    }
+                ]
+            },
+            "ruleset_02": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "STANDARD_FD_CAN",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduCanIdType",
+                        "value_operator": "==",
+                        "value": "EXTENDED_FD_CAN",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduDataLength",
+                        "value_operator": "<=",
+                        "value": "64",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF016005": {
+        "rule_name": "CANIF016005",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfPublicTxBuffering and CanIfPublicTxBufferMaxDepthFetchSupport.",
+        "rule_message": "If CanIfPublicTxBufferMaxDepthFetchSupport is set to true, then CanIfPublicTxBuffering must also be set to true.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfPublicCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfPublicCfg/CanIfPublicTxBufferMaxDepthFetchSupport",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfPublicCfg/CanIfPublicTxBuffering",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF016003": {
+        "rule_name": "CANIF016003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfRxPduDataLengthCheck and CanIfRxPduUserRxIndicationUL.",
+        "rule_message": "If CanIfRxPduDataLengthCheck is true, then CanIfRxPduUserRxIndicationUL can not be 'CAN_TP'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduDataLengthCheck",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduUserRxIndicationUL",
+                        "value_operator": "!=",
+                        "value": "CAN_TP",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF015008": {
+        "rule_name": "CANIF015008",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfTrcvCanTrcv and CanIfTrcvChnlToCanIfCtrlChnlRef.",
+        "rule_message": "If CanIfTrcvCanTrcv is configured, then CanIfTrcvChnlToCanIfCtrlChnlRef can not be empty.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvCanTrcv",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvCanTrcv",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvChnlToCanIfCtrlChnlRef",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvChnlToCanIfCtrlChnlRef",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF015009": {
+        "rule_name": "CANIF015009",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfTrcvCanTrcv and CanIfTrcvChnlToCanIfCtrlChnlRef.",
+        "rule_message": "If CanIfTrcvChnlToCanIfCtrlChnlRef is configured, then CanIfTrcvCanTrcv can not be empty.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvCanTrcv",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvCanTrcv",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvCanTrcv",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfTrcvDrvCfg/CanIfTrcvCfg/CanIfTrcvCanTrcv",
+                        "value_operator": "!=",
+                        "value": null,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF013008": {
+        "rule_name": "CANIF013008",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfRxPduUserRxCalloutName and CanIfPublicUserCbkHeaderFile.",
+        "rule_message": "CanIfPublicUserCbkHeaderFile must be configured, if CanIfRxPduUserRxCalloutName is configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduUserRxCalloutName"],
+                    "judge_expression": "%0 != None and %0 != ''"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanIf/CanIfPublicCfg/CanIfPublicUserCbkHeaderFile"],
+                    "judge_expression": "%0 != [] and %0 != None and %0 != ''"
+                }
+            }
+        }
+    },
+    "CANIF013009": {
+        "rule_name": "CANIF013009",
+        "rule_type": "diff_container_linkage_check",
+        "rule_summary": "The linkage check of CanIfTxPduUserTxCalloutName and CanIfPublicUserCbkHeaderFile.",
+        "rule_message": "CanIfPublicUserCbkHeaderFile must be configured, if CanIfTxPduUserTxCalloutName is configured.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "condition": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduUserTxCalloutName"],
+                    "judge_expression": "%0 != None and %0 != ''"
+                },
+                "judgement": {
+                    "mod_path": ["/AUTOSAR/EcucDefs/CanIf/CanIfPublicCfg/CanIfPublicUserCbkHeaderFile"],
+                    "judge_expression": "%0 != [] and %0 != None and %0 != ''"
+                }
+            }
+        }
+    },
+    "CANIF015006": {
+        "rule_name": "CANIF015006",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The check of CanIfTxPduUserTxConfirmationUL.",
+        "rule_message": "The value of CanIfTxPduUserTxConfirmationUL can not be 'NONE' or empty.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg",
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduUserTxConfirmationUL",
+                        "value_operator": "!=",
+                        "value": "NONE",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduUserTxConfirmationUL",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfTxPduCfg/CanIfTxPduUserTxConfirmationUL",
+                        "value_operator": "!=",
+                        "value": "<empty>",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "CANIF015007": {
+        "rule_name": "CANIF015007",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The check of CanIfRxPduUserRxIndicationUL.",
+        "rule_message": "The value of CanIfRxPduUserRxIndicationUL can not be 'NONE' or empty.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg",
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduUserRxIndicationUL",
+                        "value_operator": "!=",
+                        "value": "NONE",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduUserRxIndicationUL",
+                        "value_operator": "!=",
+                        "value": "",
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/CanIf/CanIfInitCfg/CanIfRxPduCfg/CanIfRxPduUserRxIndicationUL",
+                        "value_operator": "!=",
+                        "value": "<empty>",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    }
+}

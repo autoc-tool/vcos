@@ -1,0 +1,29 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_ICUM
+	tristate "\"Hello, World!\" example"
+	default n
+	---help---
+		Enable the \"Hello, World!\" example
+
+if EXAMPLES_ICUM
+
+config EXAMPLES_ICUM_PROGNAME
+	string "Program name"
+	default "icum"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_ICUM_PRIORITY
+	int "icum task priority"
+	default 100
+
+config EXAMPLES_ICUM_STACKSIZE
+	int "icum stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

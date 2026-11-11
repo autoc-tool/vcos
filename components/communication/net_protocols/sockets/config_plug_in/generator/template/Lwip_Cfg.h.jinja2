@@ -1,0 +1,148 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        Lwip_Cfg.h
+ * @brief       TcpIp配置头文件
+ * @details     主要包含和lwip相关的配置信息
+ * @date        {{get_generation_time_temp()}}
+ **********************************************************************************************************************/
+#ifndef LWIP_CFG_H
+#define LWIP_CFG_H
+
+{%- set config = get_json_config() %}
+{%- set TcpIpCoreIdListConfig = get_TcpIpCoreIdList() %}
+
+/* MEM_SIZE: the size of the heap memory. If the application will send
+a lot of data that needs to be copied, this should be set high. */
+/* @req 4.4.0/ECUC_TcpIp_00016 */
+#define {{"MEM_SIZE                %s" | format(config.TcpIpGeneral.TcpIpBufferMemory.Value) }} /* Support */
+/* @req 4.4.0/ECUC_TcpIp_00183 */
+#define {{"LWIP_DHCP               (%su)" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpDhcpServerEnabled.Value))  }} /* FIXME: Not Support */
+
+{%- for TcpIpArpConfig in config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpArpConfig %}
+/** @req 4.4.0/ECUC_TcpIp_00052 */
+#define {{"ARP_TABLE_SIZE          %s" | format(TcpIpArpConfig.TcpIpArpTableSizeMax.Value)  }}
+/** @req 4.4.0/ECUC_TcpIp_00170 */
+#define {{"ARP_QUEUEING            %s" | format(convert_to_zero_and_one(TcpIpArpConfig.TcpIpArpPacketQueueEnabled.Value))  }}
+/** @req 4.4.0/ECUC_TcpIp_00053 */
+#define {{"ARP_MAXAGE              %s" | format(TcpIpArpConfig.TcpIpArpTableEntryTimeout.Value)  }}
+/** @req 4.4.0/ECUC_TcpIp_00218 */
+#define {{"ARP_TMR_INTERVAL          %s" | format(convert_to_ms_from_s(TcpIpArpConfig.TcpIpArpRequestTimeout.Value))  }}
+{%- if 'TcpIpArpPacketQueueLength' in TcpIpArpConfig %}
+{%- if TcpIpArpConfig.TcpIpArpPacketQueueLength.Value != '' and TcpIpArpConfig.TcpIpArpPacketQueueLength.Value != None%}
+#define {{"ARP_QUEUE_LEN            %s" | format(TcpIpArpConfig.TcpIpArpPacketQueueLength.Value)  }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+/* ---------- IP Reassembly options ---------- */
+{%- if 'TcpIpIpFragmentationConfig' in  config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config %}
+/* @req 4.4.0/ECUC_TcpIp_00077 */
+#define {{"IP_REASSEMBLY           %s" | format(convert_to_zero_and_one(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIpFragmentationConfig.TcpIpIpFragmentationRxEnabled.Value))  }}
+#define {{"IP_FRAG                 %s" | format(convert_to_zero_and_one(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIpFragmentationConfig.TcpIpIpFragmentationTxEnabled.Value))  }}
+/* @req 4.4.0/ECUC_TcpIp_00079 */
+#define {{"IP_REASS_MAXAGE         %s" | format(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIpFragmentationConfig.TcpIpIpReassTimeout.Value)  }}
+/* @req 4.4.0/ECUC_TcpIp_00078 */
+#define {{"MEMP_NUM_REASSDATA      %s" | format(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIpFragmentationConfig.TcpIpIpNumReassDgrams.Value)  }}
+#define {{"IP_FRAG_MAX_NUM         %s" | format(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIpFragmentationConfig.TcpIpIpNumFragments.Value)  }}
+#define IP_REASS_MAX_PBUFS         MEMP_NUM_REASSDATA * IP_FRAG_MAX_NUM
+{% endif %}
+/* @req 4.4.0/ECUC_TcpIp_00006 */
+#define {{"LWIP_ARP                %s" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpIpV4General.TcpIpArpEnabled.Value))  }}
+/* ---------- DHCP options ---------- */
+/* @req 4.4.0/ECUC_TcpIp_00011 */
+#define {{"LWIP_AUTOIP             (%su)" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpIpV4General.TcpIpAutoIpEnabled.Value))  }} /* FIXME: Not Support */
+/* @req 4.4.0/ECUC_TcpIp_00010 */
+#define {{"LWIP_DHCP_AUTOIP_COOP   (%su)" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpIpV4General.TcpIpDhcpClientEnabled.Value)) }} /* FIXME: Not Support */
+/* @req 4.4.0/ECUC_TcpIp_00088 */
+#define {{"LWIP_IPV4               %s" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpIpV4General.TcpIpIpV4Enabled.Value))  }}
+/* @req 4.4.0/ECUC_TcpIp_00014 */
+#define {{"MAX_SOCKETS_TCP         %s" | format(config.TcpIpGeneral.TcpIpTcpSocketMax.Value)  }}
+/* @req 4.4.0/ECUC_TcpIp_00015 */
+#define {{"MAX_SOCKETS_UDP         %s" | format(config.TcpIpGeneral.TcpIpUdpSocketMax.Value)  }}
+
+{%- for coreid in TcpIpCoreIdListConfig['list'] %}
+#define {{"LWIP_MEMPOOLTYPE_CORE        OS_MEMPOOLTYPE_CORE%d" | format(coreid)  }}
+{% endfor %}
+
+/* ---------- TCP options ---------- */
+/* @req 4.4.0/ECUC_TcpIp_00008 */
+#define {{"LWIP_TCP                %s" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpTcpEnabled.Value))  }}
+{%- if 'TcpIpTcpConfig' in  config.TcpIpConfig %}
+/* @req 4.4.0/ECUC_TcpIp_00072 */
+#define {{"TCP_TTL                 %s" | format(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpTtl.Value)  }}
+{%- endif %}
+{%- if 'TcpIpTcpConfig' in  config.TcpIpConfig %}
+/* @req 4.4.0/ECUC_TcpIp_00082 */
+#define {{"LWIP_TCP_KEEPALIVE      %s" | format(convert_to_zero_and_one(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpKeepAliveEnabled.Value))  }}
+/* @req 4.4.0/ECUC_TcpIp_00064 */
+#define {{"TCP_SYNMAXRTX           %s" | format(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpSynMaxRtx.Value)  }}
+/* @req 4.4.0/ECUC_TcpIp_00065 */
+#define {{"TCP_SYN_RCVD_TIMEOUT    %s" | format(convert_to_ms_from_s(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpSynReceivedTimeout.Value))  }}
+{%- if 'TcpIpTcpReceiveWindowMax' in  config.TcpIpConfig.TcpIpTcpConfig %}
+/* @req 4.4.0/ECUC_TcpIp_00073 */
+#define {{"TCP_WND                 %s" | format(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpReceiveWindowMax.Value)  }}
+{%- endif %}
+/* TCP Maximum segment size. */
+#define TCP_MSS                 1460  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
+{%- if 'TcpIpTcpSendBufferMax' in  config.TcpIpConfig.TcpIpTcpConfig %}
+#define {{"TCP_SND_BUF             (%s * TCP_MSS)" | format(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpSendBufferMax.Value)  }}
+{%- endif %}
+{%- if 'TcpIpTcpRetransmissionTimeout' in  config.TcpIpConfig.TcpIpTcpConfig %}
+/* @req 4.4.0/ECUC_TcpIp_00068 */
+#define {{"TCP_RETRANS_TIMEOUT     %s" | format(convert_to_ms_from_s(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpRetransmissionTimeout.Value))  }}
+{%- endif %}
+#define {{"TCP_FIN_WAIT_TIMEOUT    %s" | format(convert_to_ms_from_s(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpFinWait2Timeout.Value))  }}
+#define {{"TCP_KEEPINTVL_DEFAULT                 %s" | format(convert_to_ms_from_s(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpKeepAliveInterval.Value))  }}
+#define {{"TCP_KEEPCNT_DEFAULT                 %s" | format(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpKeepAliveProbesMax.Value)  }}
+#define {{"TCP_KEEPIDLE_DEFAULT                 %s" | format(convert_to_ms_from_s(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpKeepAliveTime.Value))  }}
+{%- if 'TcpIpTcpMaxRtx' in  config.TcpIpConfig.TcpIpTcpConfig %}
+#define {{"TCP_MAXRTX                 %s" | format(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpMaxRtx.Value)  }}
+{%- endif %}
+#define {{"TCP_MSL                 %s" | format(convert_to_ms_from_s(config.TcpIpConfig.TcpIpTcpConfig.TcpIpTcpMsl.Value))  }}
+{%- endif %}
+
+/* ---------- ICMP options ---------- */
+/* @req 4.4.0/ECUC_TcpIp_00007 */
+#define {{"LWIP_ICMP               %s" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpIpV4General.TcpIpIcmpEnabled.Value))  }}
+{%- if 'TcpIpIcmpConfig' in  config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config %}
+/* @req 4.4.0/ECUC_TcpIp_00055 */
+#define {{"ICMP_TTL                %s" | format(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIcmpConfig.TcpIpIcmpTtl.Value)  }}
+#define {{"ICMP_UNREACH_ENABLE     %s" | format(convert_to_zero_and_one(config.TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIcmpConfig.TcpIpIcmpUnreachReplyEnabled.Value))  }}
+{%- endif %}
+
+/* ---------- UDP options ---------- */
+/* @req 4.4.0/ECUC_TcpIp_00009 */
+#define {{"LWIP_UDP                %s" | format(convert_to_zero_and_one(config.TcpIpGeneral.TcpIpUdpEnabled.Value))  }}
+{%- if 'TcpIpUdpConfig' in  config.TcpIpConfig %}
+/* @req 4.4.0/ECUC_TcpIp_00075 */
+#define {{"UDP_TTL                 %s" | format(config.TcpIpConfig.TcpIpUdpConfig.TcpIpUdpTtl.Value)  }}
+{%- endif %}
+
+/* ---------- Statistics options ---------- */
+/* @req 4.4.0/ECUC_TcpIp_00217 */
+{%- if config.TcpIpGeneral.TcpIpGetAndResetMeasurementDataApi %}
+#define LWIP_STATS             1 //STD_ON
+#define LWIP_STATS_DISPLAY     1
+#define MEMP_STATS             1
+{%- else %}
+#define LWIP_STATS             0 //STD_OFF
+#define LWIP_STATS_DISPLAY     0
+#define MEMP_STATS             0
+{% endif %}
+
+#define LWIP_MEMMAP_BSW
+
+#endif /* LWIP_CFG_H */

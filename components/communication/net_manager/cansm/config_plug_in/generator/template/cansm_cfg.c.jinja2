@@ -1,0 +1,285 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  CanSM的动态代码文件
+ */
+
+#include "cansm.h"
+#include "cansm_cfg.h"
+#include "cansm_lcfg.h"
+#include "Compiler.h"
+#include "cansm_types.h"
+#include "SchM_CanSM.h"
+#include "cansm_internal.h"
+#include "Os.h"
+
+
+/*!*********************************************************************************************************************
+ * @brief          CanSM内部每个核的Network数量
+ **********************************************************************************************************************/
+    {%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+        {%- if cansm_network_core_list | length != 0 %}
+#define CANSM_NETWORK_CORE_TABLE_LEN_CORE{{core_id}} {{cansm_network_core_list|length}}u
+        {%- endif %}
+    {%- endfor %}
+
+/* ComM的ChannelId映射到CanSM的网络Id
+           ComMChannel句柄                                CanSMNetworkIndex
+    {%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+        {%- if cansm_network_core_list | length != 0 %}
+{{"CoreId %d" | format(core_id) }}
+            {%- for cansm_network in cansm_network_core_list%}
+{{"           %-50s  ->   %d" | format(cansm_network["CanSMComMNetworkHandleRef"], loop.index0) }}
+            {%- endfor %}
+        {%- endif %}
+    {%- endfor %}
+*/
+{{""}}
+    {%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+        {%- if cansm_network_core_list | length != 0 %}
+/* Core{{core_id}} CAN网络状态机分核独享区部分 */
+#define CANSM_START_SEC_MULTI_APP_BSS
+#include "cansm_memmap.h"
+static VAR(cansm_internal_network_type, CANSM_MULTI_APP_BSS) cansm_internal_networks_core{{core_id}}[{{cansm_network_core_list|length}}];
+#define CANSM_STOP_SEC_MULTI_APP_BSS
+#include "cansm_memmap.h"
+{{""}}
+        {%- endif %}
+    {%- endfor %}
+{{""}}
+    {%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+        {%- if cansm_network_core_list | length != 0 %}
+/* Core{{core_id}} CAN网络状态机全局区部分 */
+#define CANSM_START_SEC_MULTI_APP_BSS
+#include "cansm_memmap.h"
+static VAR(cansm_external_network_type, CANSM_MULTI_APP_BSS) cansm_external_networks_core{{core_id}}[{{cansm_network_core_list|length}}];
+#define CANSM_STOP_SEC_MULTI_APP_BSS
+#include "cansm_memmap.h"
+{{""}}
+        {%- endif %}
+    {%- endfor %}
+
+#define CANSM_START_SEC_CONST
+#include "cansm_memmap.h"
+static const cansm_network_core_table_type cansm_network_and_core_table[CANSM_MULTICORE_CORE_NUMBER] = {
+{%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+    { /* Core{{core_id}} */
+    {%- if cansm_network_core_list | length != 0 %}
+        .network_table_addr = &cansm_internal_networks_core{{core_id}}[0u],
+        .network_table_len = CANSM_NETWORK_CORE_TABLE_LEN_CORE{{core_id}},
+    {%- else %}
+        .network_table_addr = NULL,
+        .network_table_len = 0u,
+    {%- endif %}
+    },
+{%- endfor %}
+};
+#define CANSM_STOP_SEC_CONST
+#include "cansm_memmap.h"
+
+#define CANSM_START_SEC_CONST
+#include "cansm_memmap.h"
+static const cansm_global_network_core_table_type cansm_global_network_and_core_table[CANSM_MULTICORE_CORE_NUMBER] = {
+{%- for core_id, cansm_network_core_list in cansm_network_coreid.items() %}
+    { /* Core{{core_id}} */
+    {%- if cansm_network_core_list | length != 0 %}
+        .network_table_addr = &cansm_external_networks_core{{core_id}}[0u],
+        .network_table_len = CANSM_NETWORK_CORE_TABLE_LEN_CORE{{core_id}},
+    {%- else %}
+        .network_table_addr = NULL,
+        .network_table_len = 0u,
+    {%- endif %}
+    },
+{%- endfor %}
+};
+#define CANSM_STOP_SEC_CONST
+#include "cansm_memmap.h"
+
+#define CANSM_START_SEC_MULTI_APP_BSS
+#include "cansm_memmap.h"
+static P2CONST(cansm_config_type, CANSM_MULTI_APP_BSS, CanSM_VAR_Class) cansm_config_ptr;
+static VAR(cansm_internal_init_status_type, CANSM_MULTI_APP_BSS) cansm_init_status_list[CANSM_MULTICORE_CORE_NUMBER];
+#define CANSM_STOP_SEC_MULTI_APP_BSS
+#include "cansm_memmap.h"
+
+#define CANSM_START_SEC_CONST
+#include "cansm_memmap.h"
+static const cansm_transition_type cansm_transition_config[CANSM_T_NOF_TRANSITIONS] = {
+    [CANSM_T_CC_STOPPED_CC_SLEEP] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = CANSM_CANIF_CTRLMODE_STOP},
+        .SecondAction = CANSM_A_CC_MODE,
+        .SecondMode = {.ccMode = CANSM_CANIF_CTRLMODE_SLEEP}
+    },
+    [CANSM_T_CC_SLEEP_TRCV_NORMAL] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_SLEEP},
+        .SecondAction = CANSM_A_TRCV_MODE,
+        .SecondMode = {.trcv_mode = CANTRCV_TRCVMODE_NORMAL}
+    },
+    [CANSM_T_TRCV_NORMAL_TRCV_STANDBY] = {
+        .FirstAction = CANSM_A_TRCV_MODE,
+        .FirstMode = {.trcv_mode = CANTRCV_TRCVMODE_NORMAL},
+        .SecondAction = CANSM_A_TRCV_MODE,
+        .SecondMode = {.trcv_mode = CANTRCV_TRCVMODE_STANDBY}
+    },
+    [CANSM_T_TRCV_STANDBY_NONE] = {
+        .FirstAction = CANSM_A_TRCV_MODE,
+        .FirstMode = {.trcv_mode = CANTRCV_TRCVMODE_STANDBY},
+        .SecondAction = CANSM_A_NO_MODE,
+        .SecondMode = {.ccMode = (canif_controller_mode_type)0}
+    },
+    [CANSM_T_TRCV_NORMAL_CC_STOPPED] = {
+        .FirstAction = CANSM_A_TRCV_MODE,
+        .FirstMode = {.trcv_mode = CANTRCV_TRCVMODE_NORMAL},
+        .SecondAction = CANSM_A_CC_MODE,
+        .SecondMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_STOP}
+    },
+    [CANSM_T_PN_CLEAR_WUF_CC_STOPPED] = {
+        .FirstAction = CANSM_A_WUF,
+        .FirstMode = {.wufAction = CANSM_CLEAR_WUF},
+        .SecondAction = CANSM_A_CC_MODE,
+        .SecondMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_STOP}
+    },
+    [CANSM_T_CC_STOPPED_TRCV_NORMAL] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_STOP},
+        .SecondAction = CANSM_A_TRCV_MODE,
+        .SecondMode = {.trcv_mode = CANTRCV_TRCVMODE_NORMAL}
+    },
+    [CANSM_T_TRCV_STANDBY_CC_SLEEP] = {
+        .FirstAction = CANSM_A_TRCV_MODE,
+        .FirstMode = {.trcv_mode = CANTRCV_TRCVMODE_STANDBY},
+        .SecondAction = CANSM_A_CC_MODE,
+        .SecondMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_SLEEP}
+    },
+    [CANSM_T_CC_SLEEP_CHECK_WUF_IN_CC_SLEEP] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_SLEEP},
+        .SecondAction = CANSM_A_WUF,
+        .SecondMode = {.wufAction = CANSM_CHECK_WUF}
+    },
+    [CANSM_T_CHECK_WUF_IN_CC_SLEEP_NONE] = {
+        .FirstAction = CANSM_A_WUF,
+        .FirstMode = {.wufAction = CANSM_CHECK_WUF},
+        .SecondAction = CANSM_A_NO_MODE,
+        .SecondMode = {.ccMode = (canif_controller_mode_type)0}
+    },
+    [CANSM_T_CHECK_WUF_IN_NOT_CC_SLEEP_PN_CLEAR_WUF] = {
+        .FirstAction = CANSM_A_WUF,
+        .FirstMode = {.wufAction = CANSM_CHECK_WUF},
+        .SecondAction = CANSM_A_WUF,
+        .SecondMode = {.wufAction = CANSM_CLEAR_WUF}
+    },
+    [CANSM_T_CC_SLEEP_NONE] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_SLEEP},
+        .SecondAction = CANSM_A_NO_MODE,
+        .SecondMode = {.ccMode = (canif_controller_mode_type)0}
+    },
+    [CANSM_T_CC_STOPPED_CC_STARTED] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_STOP},
+        .SecondAction = CANSM_A_CC_MODE,
+        .SecondMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_START}
+    },
+    [CANSM_T_CC_STARTED_NONE] = {
+        .FirstAction = CANSM_A_CC_MODE,
+        .FirstMode = {.ccMode = (cansm_canif_ctrl_mode)CANSM_CANIF_CTRLMODE_START},
+        .SecondAction = CANSM_A_NO_MODE,
+        .SecondMode = {.ccMode = (canif_controller_mode_type)0}
+    }
+};
+#define CANSM_STOP_SEC_CONST
+#include "cansm_memmap.h"
+
+#define CANSM_START_SEC_CODE
+#include "cansm_memmap.h"
+FUNC(cansm_internal_init_status_type, CANSM_CODE) cansm_get_module_status(void)
+{
+    uint8 core_id = (uint8)GetCoreID();
+    if (core_id >= CANSM_MULTICORE_CORE_NUMBER) {
+        return CANSM_STATUS_UNINIT;
+    }
+    return cansm_init_status_list[core_id];
+}
+
+FUNC(void, CANSM_CODE) cansm_set_module_status(cansm_internal_init_status_type ModuleStatus)
+{
+    uint8 core_id = (uint8)GetCoreID();
+    if (core_id >= CANSM_MULTICORE_CORE_NUMBER) {
+        return;
+    }
+    cansm_init_status_list[core_id] = ModuleStatus;
+    return;
+}
+
+FUNC_P2CONST(cansm_network_core_table_type, AUTOMATIC, CANSM_CODE) cansm_get_network_core_table(void)
+{
+    return &cansm_network_and_core_table[0u];
+}
+
+FUNC_P2CONST(cansm_global_network_core_table_type, AUTOMATIC, CANSM_CODE) cansm_get_global_network_core_table(void)
+{
+    return &cansm_global_network_and_core_table[0u];
+}
+
+FUNC_P2CONST(cansm_config_type, AUTOMATIC, CANSM_CODE) cansm_get_config_ptr(void)
+{
+    return cansm_config_ptr;
+}
+
+FUNC(void, CANSM_CODE) cansm_set_config_ptr(const cansm_config_type* config_ptr)
+{
+    cansm_config_ptr = config_ptr;
+    return;
+}
+#define CANSM_STOP_SEC_CODE
+#include "cansm_memmap.h"
+{{''}}
+{%- for funcItem in cansm_mainfunc %}
+{%- if funcItem['name'] != 'cansm_internal_main_function' %}
+{%- if funcItem['name'] != 'CanSM_MainFunction' %}
+#define CANSM_START_SEC_CODE
+#include "cansm_memmap.h"
+FUNC(void, CANSM_CODE) {{funcItem['name']}}(void)
+{
+    cansm_internal_main_function();
+}
+#define CANSM_STOP_SEC_CODE
+#include "cansm_memmap.h"
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+#define CANSM_START_SEC_CODE
+#include "cansm_memmap.h"
+FUNC(void, CANSM_CODE) CanSM_MainFunction(void)
+{
+    cansm_internal_main_function();
+}
+#define CANSM_STOP_SEC_CODE
+#include "cansm_memmap.h"
+
+#define CANSM_START_SEC_CODE
+#include "cansm_memmap.h"
+FUNC_P2CONST(cansm_transition_type, AUTOMATIC, CANSM_CODE) cansm_get_transition_config(void)
+{
+    return &cansm_transition_config[0u];
+}
+#define CANSM_STOP_SEC_CODE
+#include "cansm_memmap.h"

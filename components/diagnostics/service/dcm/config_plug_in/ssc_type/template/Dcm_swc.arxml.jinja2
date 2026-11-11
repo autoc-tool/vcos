@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00046.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+      <SHORT-NAME>AUTOSAR</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+          <SHORT-NAME>{{dcm_package["short_name"]}}</SHORT-NAME>
+          {%- set mode_declaration_groups_list = dcm_package["mode_declaration"] %}
+          {%- if mode_declaration_groups_list|length > 0 %}
+          <ELEMENTS>
+            {%- for mode_declaration_group in mode_declaration_groups_list %}
+            <MODE-DECLARATION-GROUP UUID="123456{#{get_uuid_str()}#}">
+              <SHORT-NAME>Dcm{{mode_declaration_group["short_name"]}}</SHORT-NAME>
+              <CATEGORY>EXPLICIT_ORDER</CATEGORY>
+              <INITIAL-MODE-REF DEST="MODE-DECLARATION">/AUTOSAR/Dcm_swc/Dcm{{mode_declaration_group["short_name"]}}/{{mode_declaration_group["initial_value"]}}</INITIAL-MODE-REF>
+                <MODE-DECLARATIONS>
+                  {%- for mode in mode_declaration_group["modes"] %}
+                  <MODE-DECLARATION UUID="123456{#{get_uuid_str()}#}">
+                    <SHORT-NAME>{{mode}}</SHORT-NAME>
+                    <VALUE>{%- if mode_declaration_group["short_name"] == "DiagnosticSessionControl" %}{{loop.index}}{%- else %}{{loop.index0}}{%- endif %}</VALUE>
+                  </MODE-DECLARATION>
+                  {%- endfor %}
+                </MODE-DECLARATIONS>
+                <ON-TRANSITION-VALUE>255</ON-TRANSITION-VALUE>
+            </MODE-DECLARATION-GROUP>
+            {%- endfor %}
+            <DATA-TYPE-MAPPING-SET UUID="123456{#{get_uuid_str()}#}">
+              <SHORT-NAME>DcmMappingSet</SHORT-NAME>
+              <DESC>
+                <L-2 L="FOR-ALL">Contains mapping for ModeDeclarationGroups which are provided by Dcm.</L-2>
+              </DESC>
+              <MODE-REQUEST-TYPE-MAPS>
+                {%- for mode_declaration_group in mode_declaration_groups_list %}
+                <MODE-REQUEST-TYPE-MAP>
+                  <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/Dcm_swc/DataTypes/Dcm_{{mode_declaration_group["short_name"]}}Type</IMPLEMENTATION-DATA-TYPE-REF>
+                  <MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP">/AUTOSAR/Dcm_swc/Dcm{{mode_declaration_group["short_name"]}}</MODE-GROUP-REF>
+                </MODE-REQUEST-TYPE-MAP>
+                {%- endfor %}
+              </MODE-REQUEST-TYPE-MAPS>
+            </DATA-TYPE-MAPPING-SET>
+          </ELEMENTS>
+          {%- endif %}
+          <AR-PACKAGES>
+            <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+              <SHORT-NAME>DataTypes</SHORT-NAME>
+              <ELEMENTS>
+                {%- set data_types_elements_list =  dcm_package["datatypes_pkg"]["elements"]%}
+                {%- for data_types_element in data_types_elements_list %}
+                <IMPLEMENTATION-DATA-TYPE UUID="123456{#{get_uuid_str()}#}">
+                  <SHORT-NAME>{{data_types_element["short_name"]}}</SHORT-NAME>
+                  {%- if data_types_element["category"] == "Type" %}
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  {%- elif data_types_element["category"] == "Array" %}
+                  <CATEGORY>ARRAY</CATEGORY>
+                  {%- endif %}
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        {%- if "compu_method_ref" in data_types_element["sw_data_def"].keys()%}
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/AUTOSAR/Dcm_swc/DataTypes/CompuMethods/{{data_types_element["sw_data_def"]["compu_method_ref"]}}</COMPU-METHOD-REF>
+                        {%- endif %}
+                        {%- if "data_constr_ref" in data_types_element["sw_data_def"].keys()%}
+                        <DATA-CONSTR-REF DEST="DATA-CONSTR">/AUTOSAR/Dcm_swc/DataTypes/DataConstrs/{{data_types_element["sw_data_def"]["data_constr_ref"]}}</DATA-CONSTR-REF>
+                        {%- endif %}
+                        {%- if "implementation_data_type" in data_types_element["sw_data_def"].keys()%}
+                        {%- if data_types_element["sw_data_def"]["IsType"]|lower == "false" %}
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/{{data_types_element["sw_data_def"]["implementation_data_type"]}}</IMPLEMENTATION-DATA-TYPE-REF>
+                        {%- else %}
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/Dcm_swc/DataTypes/{{data_types_element["sw_data_def"]["implementation_data_type"]}}</IMPLEMENTATION-DATA-TYPE-REF>
+                        {%- endif %}
+                        {%- endif %}
+                        {%- if "calibration_access" in data_types_element["sw_data_def"].keys()%}
+                        <SW-CALIBRATION-ACCESS>{{data_types_element["sw_data_def"]["calibration_access"]}}</SW-CALIBRATION-ACCESS>
+                        {%- endif %}
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                  {%- if "sub_element" in data_types_element.keys()%}
+                  <SUB-ELEMENTS>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{data_types_element["short_name"]}}Element</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <ARRAY-SIZE>{{data_types_element["sub_element"]["array_size"]}}</ARRAY-SIZE>
+                      <ARRAY-SIZE-SEMANTICS>FIXED-SIZE</ARRAY-SIZE-SEMANTICS>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/{{data_types_element["sub_element"]["element_type"]}}</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                  </SUB-ELEMENTS>
+                  {%- endif %}
+                </IMPLEMENTATION-DATA-TYPE>
+                {%- endfor %}
+              </ELEMENTS>
+              <AR-PACKAGES>
+                {%- set data_constrs =  dcm_package["datatypes_pkg"]["data_constrs"] %}
+                <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+                  <SHORT-NAME>DataConstrs</SHORT-NAME>
+                  <ELEMENTS>
+                    {%- set data_constrs_elements_list = data_constrs["elements"] %}
+                    {%- for data_constrs_element in data_constrs_elements_list %}
+                    <DATA-CONSTR UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{data_constrs_element["short_name"]}}</SHORT-NAME>
+                      {%- set data_constrs_rules_list = data_constrs_element["data_constr_rules"] %}
+                      <DATA-CONSTR-RULES>
+                        {%- for data_constrs_rule in data_constrs_rules_list %}
+                        <DATA-CONSTR-RULE>
+                          <INTERNAL-CONSTRS>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{data_constrs_rule["internal_consters"]["lower_limit"]}}</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">{{data_constrs_rule["internal_consters"]["upper_limit"]}}</UPPER-LIMIT>
+                          </INTERNAL-CONSTRS>
+                        </DATA-CONSTR-RULE>
+                        {%- endfor %}
+                      </DATA-CONSTR-RULES>
+                    </DATA-CONSTR>
+                    {%- endfor %}
+                  </ELEMENTS>
+                </AR-PACKAGE>
+                {%- set compu_methods = dcm_package["datatypes_pkg"]["compu_methods"] %}
+                <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+                  <SHORT-NAME>CompuMethods</SHORT-NAME>
+                  <ELEMENTS>
+                    {%- set compu_methods_elements_list = compu_methods["elements"]%}
+                    {%- for compu_methods_element in compu_methods_elements_list %}
+                    <COMPU-METHOD UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{compu_methods_element["short_name"]}}</SHORT-NAME>
+                      <CATEGORY>{{compu_methods_element["category"]}}</CATEGORY>
+                      <COMPU-INTERNAL-TO-PHYS>
+                        <COMPU-SCALES>
+                          {%- set compu_scale_list = compu_methods_element["compu_scales"]%}
+                          {%- for compu_scale in compu_scale_list %}
+                          <COMPU-SCALE>
+                            <SHORT-LABEL>{{compu_scale["short_label"]}}</SHORT-LABEL>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{compu_scale["lower_limit"]}}</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">{{compu_scale["upper_limit"]}}</UPPER-LIMIT>
+                            <COMPU-CONST>
+                              <VT>{{compu_scale["short_label"]}}</VT>
+                            </COMPU-CONST>
+                          </COMPU-SCALE>
+                          {%- endfor %}
+                        </COMPU-SCALES>
+                      </COMPU-INTERNAL-TO-PHYS>
+                    </COMPU-METHOD>
+                    {%- endfor %}
+                  </ELEMENTS>
+                </AR-PACKAGE>
+              </AR-PACKAGES>
+            </AR-PACKAGE>
+            {%- set interfaces_pkg = dcm_package["interfaces_pkg"] %}
+            <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+              <SHORT-NAME>Interfaces</SHORT-NAME>
+              <ELEMENTS>
+                {%- set mode_switch_interfaces_list = interfaces_pkg["mode_switch"]%}
+                {%- set client_server_interfaces_list = interfaces_pkg["client_server"]%}
+                {%- if mode_switch_interfaces_list|length > 0 %}
+                {%- for mode_switch_interface in mode_switch_interfaces_list %}
+                <MODE-SWITCH-INTERFACE UUID="123456{#{get_uuid_str()}#}">
+                  <SHORT-NAME>{{mode_switch_interface["short_name"]}}</SHORT-NAME>
+                  <IS-SERVICE>{{mode_switch_interface["is_server"]|lower}}</IS-SERVICE>
+                  <SERVICE-KIND>DIAGNOSTIC-COMMUNICATION-MANAGER</SERVICE-KIND>
+                  <MODE-GROUP UUID="123456{#{get_uuid_str()}#}">
+                    <SHORT-NAME>{{mode_switch_interface["mode_group"]}}</SHORT-NAME>
+                    <TYPE-TREF DEST="MODE-DECLARATION-GROUP">/AUTOSAR/Dcm_swc/{{mode_switch_interface["mode_group"]}}</TYPE-TREF>
+                  </MODE-GROUP>
+                </MODE-SWITCH-INTERFACE>
+                {%- endfor %}
+                {%- endif %}
+                {%- if client_server_interfaces_list|length > 0 %}
+                {%- for client_server_interface in client_server_interfaces_list %}
+                <CLIENT-SERVER-INTERFACE UUID="123456{#{get_uuid_str()}#}">
+                  <SHORT-NAME>{{client_server_interface["short_name"]}}</SHORT-NAME>
+                  <IS-SERVICE>{{client_server_interface["is_server"]|lower}}</IS-SERVICE>
+                  <SERVICE-KIND>DIAGNOSTIC-COMMUNICATION-MANAGER</SERVICE-KIND>
+                  <OPERATIONS>
+                    {%- set interface_operations_list =  client_server_interface["operations"] %}
+                    {%- for interface_operation in interface_operations_list %}
+                    <CLIENT-SERVER-OPERATION UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{interface_operation["short_name"]}}</SHORT-NAME>
+                      <DESC>
+                        <L-2 L="FOR-ALL"/>
+                      </DESC>
+                      <ARGUMENTS>
+                        {%- set operation_arguments_list = interface_operation["arguments"]%}
+                        {%- for operation_argument in operation_arguments_list %}
+                        <ARGUMENT-DATA-PROTOTYPE UUID="123456{#{get_uuid_str()}#}">
+                          <SHORT-NAME>{{operation_argument["short_name"]}}</SHORT-NAME>
+                          <DESC>
+                            <L-2 L="FOR-ALL"/>
+                          </DESC>
+                          {%- if operation_argument["IsType"]|lower == "true" %}
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/Dcm_swc/DataTypes/{{operation_argument["TypeTref"]}}</TYPE-TREF>
+                          {%- else %}
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/{{operation_argument["TypeTref"]}}</TYPE-TREF>
+                          {%- endif %}
+                          <DIRECTION>{{operation_argument["Direction"]}}</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                        {%- endfor %}
+                      </ARGUMENTS>
+                      <POSSIBLE-ERROR-REFS>
+                        {%- set error_refs_list = interface_operation["possible_errors"]%}
+                        {%- for error_ref in error_refs_list %}
+                        <POSSIBLE-ERROR-REF DEST="APPLICATION-ERROR">/AUTOSAR/Dcm_swc/Interfaces/{{client_server_interface["short_name"]}}/{{error_ref}}</POSSIBLE-ERROR-REF>
+                        {%- endfor %}
+                      </POSSIBLE-ERROR-REFS>
+                    </CLIENT-SERVER-OPERATION>
+                    {%- endfor %}
+                  </OPERATIONS>
+                  <POSSIBLE-ERRORS>
+                    {%- set possible_errors_list =  client_server_interface["possible_errors"] %}
+                    {%- for possible_error in possible_errors_list %}
+                    <APPLICATION-ERROR UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{possible_error["short_name"]}}</SHORT-NAME>
+                      <ERROR-CODE>{{possible_error["error_code"]}}</ERROR-CODE>
+                    </APPLICATION-ERROR>
+                    {%- endfor %}
+                  </POSSIBLE-ERRORS>
+                </CLIENT-SERVER-INTERFACE>
+                {%- endfor %}
+                {%- endif %}
+              </ELEMENTS>
+            </AR-PACKAGE>
+            {%- set componenttypes_pkg = dcm_package["componenttypes_pkg"] %}
+            {%- set main_function_runnable = componenttypes_pkg["main_function"] %}
+            <AR-PACKAGE UUID="123456{#{get_uuid_str()}#}">
+              <SHORT-NAME>ComponentTypes</SHORT-NAME>
+              <ELEMENTS>
+                <SERVICE-SW-COMPONENT-TYPE UUID="123456{#{get_uuid_str()}#}">
+                  <SHORT-NAME>Dcm</SHORT-NAME>
+                  <CATEGORY>SERVICE_COMPONENT</CATEGORY>
+                  <PORTS>
+                    {%- set pports_list = componenttypes_pkg["pports"] %}
+                    {%- if pports_list|length > 0 %}
+                    {%- for pport in pports_list %}
+                    <P-PORT-PROTOTYPE UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{pport["short_name"]}}</SHORT-NAME>
+                      {%- if pport["interface_type"] == "client_server" %}
+                      <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/AUTOSAR/Dcm_swc/Interfaces/{{pport["interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                      {%- elif pport["interface_type"] == "sender_receiver" %}
+                      <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/AUTOSAR/Dcm_swc/Interfaces/{{pport["interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                      {%- elif pport["interface_type"] == "mode_switch" %}
+                      <PROVIDED-COM-SPECS>
+                        <MODE-SWITCH-SENDER-COM-SPEC>
+                          <ENHANCED-MODE-API>false</ENHANCED-MODE-API>
+                          <MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/AUTOSAR/Dcm_swc/Interfaces/{{pport["interface_ref"]}}/{{pport["mode_group_ref"]}}</MODE-GROUP-REF>
+                          <QUEUE-LENGTH>1</QUEUE-LENGTH>
+                        </MODE-SWITCH-SENDER-COM-SPEC>
+                      </PROVIDED-COM-SPECS>
+                      <PROVIDED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">/AUTOSAR/Dcm_swc/Interfaces/{{pport["interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                      {%- endif %}
+                    </P-PORT-PROTOTYPE>
+                    {%- endfor %}
+                    {%- endif %}
+                    {%- set rports_list = componenttypes_pkg["rports"] %}
+                    {%- if rports_list|length > 0 %}
+                    {%- for rport in rports_list %}
+                    <R-PORT-PROTOTYPE UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>{{rport["short_name"]}}</SHORT-NAME>
+                      {%- if rport["interface_type"] == "client_server" %}
+                      <REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/AUTOSAR/Dcm_swc/Interfaces/{{rport["interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                      {%- elif rport["interface_type"] == "sender_receiver" %}
+                      <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/AUTOSAR/Dcm_swc/Interfaces/{{rport["interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                      {%- elif rport["interface_type"] == "mode_switch" %}
+                      <REQUIRED-COM-SPECS>
+                        <MODE-SWITCH-RECEIVER-COM-SPEC>
+                          <ENHANCED-MODE-API>false</ENHANCED-MODE-API>
+                          <MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/AUTOSAR/Dcm_swc/Interfaces/{{rport["interface_ref"]}}/{{rport["mode_group_ref"]}}</MODE-GROUP-REF>
+                        </MODE-SWITCH-RECEIVER-COM-SPEC>
+                      </REQUIRED-COM-SPECS>
+                      <REQUIRED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">/AUTOSAR/Dcm_swc/Interfaces/{{rport["interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                      {%- endif %}
+                    </R-PORT-PROTOTYPE>
+                    {%- endfor %}
+                    {%- endif %}
+                  </PORTS>
+                  <INTERNAL-BEHAVIORS>
+                    <SWC-INTERNAL-BEHAVIOR UUID="123456{#{get_uuid_str()}#}">
+                      <SHORT-NAME>DcmInternalBehavior</SHORT-NAME>
+                      <DATA-TYPE-MAPPING-REFS>
+                        <DATA-TYPE-MAPPING-REF DEST="DATA-TYPE-MAPPING-SET">/AUTOSAR/Dcm_swc/DcmMappingSet</DATA-TYPE-MAPPING-REF>
+                      </DATA-TYPE-MAPPING-REFS>
+                      <EVENTS>
+                        <TIMING-EVENT UUID="123456{#{get_uuid_str()}#}">
+                          <SHORT-NAME>Timer_Dcm_MainFunction</SHORT-NAME>
+                          <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/DcmInternalBehavior/Dcm_MainFunction</START-ON-EVENT-REF>
+                          <PERIOD>{{main_function_runnable["period"]}}</PERIOD>
+                        </TIMING-EVENT>
+                        {%- set operation_events_list = componenttypes_pkg["operation_events"] %}
+                        {%- if operation_events_list|length > 0 %}
+                        {%- for operation_event in operation_events_list %}
+                        <OPERATION-INVOKED-EVENT UUID="123456{#{get_uuid_str()}#}">
+                          <SHORT-NAME>{{operation_event["short_name"]}}</SHORT-NAME>
+                          <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/DcmInternalBehavior/{{operation_event["start_on_event_ref"]}}</START-ON-EVENT-REF>
+                          <OPERATION-IREF>
+                            <CONTEXT-P-PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/{{operation_event["pport_ref"]}}</CONTEXT-P-PORT-REF>
+                            <TARGET-PROVIDED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/AUTOSAR/Dcm_swc/Interfaces/{{operation_event["interface_ref"]}}/{{operation_event["operation_ref"]}}</TARGET-PROVIDED-OPERATION-REF>
+                          </OPERATION-IREF>
+                        </OPERATION-INVOKED-EVENT>
+                        {%- endfor %}
+                        {%- endif %}
+                      </EVENTS>
+                      <PORT-API-OPTIONS>
+                        {%- if pports_list|length > 0 %}
+                        {%- for pport in pports_list %}
+                        <PORT-API-OPTION>
+                          <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                          <INDIRECT-API>false</INDIRECT-API>
+                          <PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/{{pport["short_name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor %}
+                        {%- endif %}
+                        {%- if rports_list|length > 0 %}
+                        {%- for rport in rports_list %}
+                        <PORT-API-OPTION>
+                          <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                          <INDIRECT-API>false</INDIRECT-API>
+                          <PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/{{rport["short_name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor %}
+                        {%- endif %}
+                      </PORT-API-OPTIONS>
+                      <RUNNABLES>
+                        <RUNNABLE-ENTITY UUID="123456{#{get_uuid_str()}#}">
+                          <SHORT-NAME>Dcm_MainFunction</SHORT-NAME>
+                          <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                          <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                          {%- set mode_switch_points = main_function_runnable["mode_switch_points"] %}
+                          {%- if mode_switch_points|length > 0 %}
+                          <MODE-SWITCH-POINTS>
+                            {%- for mode_switch_point in mode_switch_points %}
+                            <MODE-SWITCH-POINT UUID="123456{#{get_uuid_str()}#}">
+                              <SHORT-NAME>{{mode_switch_point["short_name"]}}</SHORT-NAME>
+                              <MODE-GROUP-IREF>
+                                <CONTEXT-P-PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/{{mode_switch_point["port_ref"]}}</CONTEXT-P-PORT-REF>
+                                <TARGET-MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/AUTOSAR/Dcm_swc/Interfaces/{{mode_switch_point["interface_ref"]}}/{{mode_switch_point["mode_group_ref"]}}</TARGET-MODE-GROUP-REF>
+                              </MODE-GROUP-IREF>
+                            </MODE-SWITCH-POINT>
+                            {%- endfor %}
+                          </MODE-SWITCH-POINTS>
+                          {%- endif %}
+                          {%- set server_call_points = main_function_runnable["server_call_points"] %}
+                          {%- if server_call_points|length > 0 %}
+                          <SERVER-CALL-POINTS>
+                            {%- for server_call_point in server_call_points %}
+                            <SYNCHRONOUS-SERVER-CALL-POINT UUID="123456{#{get_uuid_str()}#}">
+                              <SHORT-NAME>{{server_call_point["short_name"]}}</SHORT-NAME>
+                              <OPERATION-IREF>
+                                <CONTEXT-R-PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/Dcm_swc/ComponentTypes/Dcm/{{server_call_point["port_ref"]}}</CONTEXT-R-PORT-REF>
+                                <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/AUTOSAR/Dcm_swc/Interfaces/{{server_call_point["interface_ref"]}}/{{server_call_point["operation_ref"]}}</TARGET-REQUIRED-OPERATION-REF>
+                              </OPERATION-IREF>
+                              <TIMEOUT>0</TIMEOUT>
+                            </SYNCHRONOUS-SERVER-CALL-POINT>
+                            {%- endfor %}
+                          </SERVER-CALL-POINTS>
+                          {%- endif %}
+                          <SYMBOL>Dcm_MainFunction</SYMBOL>
+                        </RUNNABLE-ENTITY>
+                        {%- set server_runnables_list = componenttypes_pkg["server_runnables"] %}
+                        {%- for server_runnable in server_runnables_list %}
+                        <RUNNABLE-ENTITY UUID="123456{#{get_uuid_str()}#}">
+                          <SHORT-NAME>{{server_runnable["short_name"]}}</SHORT-NAME>
+                          <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                          <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
+                          <SYMBOL>{{server_runnable["symbol"]}}</SYMBOL>
+                        </RUNNABLE-ENTITY>
+                        {%- endfor %}
+                      </RUNNABLES>
+                    </SWC-INTERNAL-BEHAVIOR>
+                  </INTERNAL-BEHAVIORS>
+                </SERVICE-SW-COMPONENT-TYPE>
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

@@ -1,0 +1,178 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  NvM 配置源文件.
+*/
+
+#include "nvm_cfg.h"
+#include "nvm_internal.h"
+#include "memif_types.h"
+
+#include <stddef.h>
+{% if NvM_General["NvMCommon"]["NvMBswMMultiBlockJobStatusInformation"]["Value"] == true %}
+#include "BswM_NvM.h"
+{% endif %}
+
+{%- for FileName in get_nvm_includefiles() %}
+#include "{{FileName.lower()}}"
+{%- endfor %}
+
+#define NVM_START_SEC_PRIVATE_DATA
+#include "nvm_memmap.h"
+VAR(uint16, NVM_PRIVATE_DATA) nvm_compiled_config_id = (uint16)NVM_COMPILED_CONFIG_ID;
+#define NVM_STOP_SEC_PRIVATE_DATA
+#include "nvm_memmap.h"
+
+#define NVM_START_SEC_PRIVATE_BSS
+#include "nvm_memmap.h"
+VAR(uint8, NVM_PRIVATE_BSS)   nvm_config_block_ram_block[2];
+VAR(uint8, NVM_PRIVATE_BSS)  nvm_work_buffer[NVM_MAX_BLOCK_LENGTH];
+VAR(nvm_admin_block_type, NVM_PRIVATE_BSS)  nvm_admin_block_table[NVM_NUM_OF_NVRAM_BLOCKS];
+#define NVM_STOP_SEC_PRIVATE_BSS
+#include "nvm_memmap.h"
+
+#define  NVM_START_SEC_CONST
+#include "nvm_memmap.h"
+CONST(nvm_block_descriptor_type, NVM_CONST) nvm_block_descriptor_list[NVM_NUM_OF_NVRAM_BLOCKS] = {
+    {
+
+        /* MultiBlock request */
+        .block_job_priority = 0,
+        .nv_block_num = 0,
+        .rom_block_num = 0,
+        .nvram_device_id = 0,
+
+        .block_management_type = NVM_BLOCK_NATIVE,
+        .block_crc_type = NVM_CRC_OFF,
+        .calc_ram_block_crc = FALSE,
+        .resistant_to_changes_sw = FALSE,
+        .notify_bsw = FALSE,
+
+        .nv_block_length = 0,
+        .nvram_block_identifier = 0,
+        .nv_block_base_number = 1,
+        .flags = 0u,
+        .ram_block_data_address = NULL,
+        .rom_block_data_adress = NULL,
+        .init_block_callback = NULL,
+        .cbk_get_mirror_func_pt = NULL,
+        .cbk_set_mirror_func_pt = NULL,
+        .single_block_callback = NULL,
+    },
+{%- for BlockName, BlockDescriptor in NvM_Blocks.items() %}
+    {
+
+    /* NvMConf_{{ BlockName }} */
+    .block_job_priority = {{ BlockDescriptor["NvMBlockJobPriority"]["Value"] }},
+    .nv_block_num = {{ BlockDescriptor["NvMNvBlockNum"]["Value"] }},
+    .rom_block_num = {{ BlockDescriptor["NvMRomBlockNum"]["Value"] }},
+    .nvram_device_id = 0,
+    .max_num_of_read_retries  = {{ BlockDescriptor["NvMMaxNumOfReadRetries"]["Value"] }},
+    .max_num_of_write_retries  = {{ BlockDescriptor["NvMMaxNumOfWriteRetries"]["Value"] }},
+
+
+    .block_management_type = {{ BlockDescriptor["NvMBlockManagementType"]["Value"] }},
+{%- if BlockDescriptor["NvMBlockUseCrc"]["Value"] == true %}
+    .block_crc_type = {{ BlockDescriptor["NvMBlockCrcType"]["Value"] }}_ON,
+{%- else %}
+    .block_crc_type = NVM_CRC_OFF,
+{%- endif %}
+    .calc_ram_block_crc = {{ gen_switch_bool(BlockDescriptor["NvMCalcRamBlockCrc"]["Value"]) }},
+    .resistant_to_changes_sw = {{ gen_switch_bool(BlockDescriptor["NvMResistantToChangedSw"]["Value"]) }},
+    .notify_bsw = {{ gen_switch_bool(BlockDescriptor["NvMBswMBlockStatusInformation"]["Value"]) }},
+
+{%- if BlockDescriptor["NvMAutoBlockLength"]["Value"] == true %}
+    .nv_block_length = (uint16)sizeof({{ get_array_addr(BlockDescriptor,"NvMRamBlockDataAddress") }}),
+{%- else %}
+    .nv_block_length = {{ BlockDescriptor["NvMNvBlockLength"]["Value"] }},
+{%- endif %}
+    .nvram_block_identifier = {{ loop.index }},
+    .nv_block_base_number = {{ BlockDescriptor["NvMNvBlockBaseNumber"]["Value"] }},
+
+    .flags = (NVM_CALC_RAM_BLOCK_CRC_OFF |
+{%- if BlockDescriptor["NvMBlockWriteProt"]["Value"] == true %}
+               NVM_BLOCK_WRITE_PROT_ON |
+{%- else %}
+               NVM_BLOCK_WRITE_PROT_OFF |
+{%- endif %}
+{%- if BlockDescriptor["NvMWriteBlockOnce"]["Value"] == true %}
+               NVM_BLOCK_WRITE_BLOCK_ONCE_ON |
+{%- else %}
+               NVM_BLOCK_WRITE_BLOCK_ONCE_OFF |
+{%- endif %}
+{%- if BlockDescriptor["NvMSelectBlockForReadAll"]["Value"] == true %}
+               NVM_SELECT_BLOCK_FOR_READALL_ON |
+{%- else %}
+               NVM_SELECT_BLOCK_FOR_READALL_OFF |
+{%- endif %}
+{%- if BlockDescriptor["NvMSelectBlockForWriteAll"]["Value"] == true %}
+               NVM_SELECT_BLOCK_FOR_WRITEALL_ON |
+{%- else %}
+               NVM_SELECT_BLOCK_FOR_WRITEALL_OFF |
+{%- endif %}
+               NVM_CBK_DURING_READALL_ON |
+{%- if BlockDescriptor["NvMBlockUseCRCCompMechanism"]["Value"] == true %}
+               NVM_CRC_COMP_MECHANISM_ON |
+{%- else %}
+               NVM_CRC_COMP_MECHANISM_OFF |
+{%- endif %}
+{%- if BlockDescriptor["NvMBlockUseSetRamBlockStatus"]["Value"] == true %}
+               NVM_BLOCK_USE_SET_RAM_BLOCK_STATUS_ON),
+{%- else %}
+               NVM_BLOCK_USE_SET_RAM_BLOCK_STATUS_OFF),
+{%- endif %}
+
+    .ram_block_data_address = {{ get_nvm_address(BlockDescriptor,"NvMRamBlockDataAddress") }},
+    .rom_block_data_adress = {{ get_nvm_address(BlockDescriptor,"NvMRomBlockDataAddress") }},
+    .init_block_callback = {{ get_prt_value(BlockDescriptor, "NvMInitBlockCallback") }},
+    .cbk_get_mirror_func_pt = {{ get_prt_value(BlockDescriptor, "NvMWriteRamBlockToNvCallback") }},
+    .cbk_set_mirror_func_pt = {{ get_prt_value(BlockDescriptor, "NvMReadRamBlockFromNvCallback") }},
+    .single_block_callback = {{ get_prt_value(BlockDescriptor,"NvMSingleBlockCallback") }},
+    },
+{%- endfor %}
+};
+
+#define  NVM_STOP_SEC_CONST
+#include "nvm_memmap.h"
+
+#if (NVM_BSWM_MULTIBLOCK_STATUSINFO == STD_ON )
+#define NVM_INVOKE_MULTI_BLOCK_MODE(serv, res) bswm_nvm_current_job_mode((serv),(res))
+#else
+#define NVM_INVOKE_MULTI_BLOCK_MODE(serv, res)
+#endif
+{% if NvM_General["NvMCommon"]["NvMMultiBlockCallback"]["Value"] == "" %}
+#define NVM_INVOKE_MULTI_CBK(serv, res)
+{%- else %}
+#define NVM_INVOKE_MULTI_CBK(serv, res)  {{ NvM_General["NvMCommon"]["NvMMultiBlockCallback"]["Value"] }}((serv),(res))
+{%- endif %}
+
+#define NVM_START_SEC_CODE
+#include "nvm_memmap.h"
+FUNC(void, NVM_CODE) nvm_multi_block_callback(nvm_multi_block_request_t service_id, nvm_request_result_type job_result)
+{
+  NVM_INVOKE_MULTI_BLOCK_MODE(service_id, job_result);
+
+  if(job_result != NVM_REQ_PENDING)
+  {
+    NVM_INVOKE_MULTI_CBK(service_id, job_result);
+  }
+}
+#define NVM_STOP_SEC_CODE
+#include "nvm_memmap.h"
+

@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  CanTp的动态代码文件
+ */
+
+#ifndef CANTP_PBCFG_H
+#define CANTP_PBCFG_H
+
+#include "cantp_types.h"
+#include "Compiler.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define CANTP_START_SEC_CONST
+#include "cantp_memmap.h"
+extern CONST(cantp_config_type, CANTP_CONST) cantp_config;
+#define CANTP_STOP_SEC_CONST
+#include "cantp_memmap.h"
+
+#define CANTP_START_SEC_CODE
+#include "cantp_memmap.h"
+/*!*********************************************************************************************************************
+ * @brief          CanTp模块获取CanTp配置的接口
+ * @details        CanTp模块获取CanTp配置的接口
+ * @retval         cantp_config_type 公共配置类型指针
+ * @reentrant      可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC_P2CONST(cantp_config_type, AUTOMATIC, CANTP_CODE ) cantp_get_config_ptr(void);
+/*!*********************************************************************************************************************
+ * @brief          CanTp模块设置CanTp配置的接口
+ * @details        CanTp模块设置CanTp配置的接口
+ * @param[in]      input            配置项变量指针
+ * @reentrant      可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, CANTP_CODE) cantp_set_config_ptr(const cantp_config_type* input);
+/*!*********************************************************************************************************************
+ * @brief          CanTp模块获取Pdu索引配置的接口
+ * @details        CanTp模块获取Pdu索引配置的接口
+ * @param[in]      coreid                  核ID
+ * @param[in]      cantp_rx_pdu_id           PduId
+ * @reentrant      可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(PduIdType, CANTP_CODE) cantp_get_pdu_index(uint32 coreid, PduIdType cantp_pdu_id);
+/*!*********************************************************************************************************************
+ * @brief          CanTp的主函数内核
+ * @details        所有核上面的主函数实际调用该主函数
+ * @param[in]      void
+ * @reentrant      可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, CANTP_CODE) cantp_internal_main_function(void);
+#define CANTP_STOP_SEC_CODE
+#include "cantp_memmap.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /*CANTP_PBCFG_H*/

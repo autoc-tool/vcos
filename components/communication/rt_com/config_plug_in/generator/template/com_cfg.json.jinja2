@@ -1,0 +1,641 @@
+{
+    "Module": "Com",
+    "Description": "Configuration of the Com module.",
+    "Containers": {
+        "ComGeneralCfg": {
+            "Description": "General configuration of Com module",
+            "Parameters": {
+                "System": {
+                    "Description": "system node",
+                    "Value": ["NOA", "BCM", "BCM_Master", "FBCM"]
+                },
+                "COM_MAX_N_IPDUS":{
+                    "Description": "max number of I-PDUs",
+                    "Value": 120
+                },
+                "COM_MAX_N_SIGNALS":{
+                    "Description": "max number of signals",
+                    "Value": 1200
+                },
+                "COM_MAX_N_GROUP_SIGNALS":{
+                    "Description": "max number of group signals",
+                    "Value": 400
+                },
+                "COM_N_SUPPORTED_IPDU_GROUPS":{
+                    "Description": "max number of I-PDU groups",
+                    "Value": 20
+                },
+                "COM_MAX_N_SUPPORTED_IPDU_COUNTERS":{
+                    "Description": "max number of I-PDU counters",
+                    "Value": 0
+                },
+                "COM_MAX_N_SUPPORTED_GWSOURCE_DESCRIPTIONS":{
+                    "Description": "max number of Gateway Source descriptions",
+                    "Value": 0
+                },
+                "COM_OSEKNM_SUPPORT":{
+                    "Description": "shall com support Net Management Message",
+                    "Range": [
+                        "STD_OFF",
+                        "STD_ON"
+                    ],
+                    "Value": "STD_OFF"
+                },
+                "ComConfigurationId":{
+                    "Description": "configuration id",
+                    "Value": 1
+                },
+                "COM_MAX_BUFFER_SIZE":{
+                    "Description": "max size of buffer",
+                    "Value": 1500
+                }
+            }
+        },
+        "ComConfig": {
+            "Description": "Data configuration of Com module",
+            "Messages": {
+                "Description": "All I-PDU",
+{%- set comm_diag_list = get_com_json_config()%}
+{%- for comm_diag_name, value in comm_diag_list.items() %}
+{%- for message in value %}
+                "{{message["message_name"]}}": {
+                    "Description": "message object",
+                    "MessageName": {
+                        "Description": "Message_Name",
+                        "Value": "{{message["message_name"]}}"
+                    },
+                    "ComRxIPduCallout": {
+                        "Description": "Function called while RxIndication",
+                        "Value": "COM_NO_FUNCTION_CALLOUT"
+                    },
+                    "ComTxIPduCallout": {
+                        "Description": "Function called while Transmit",
+                        "Value": "COM_NO_FUNCTION_CALLOUT"
+                    },
+                    "ComTriggerTransmitIPduCallout": {
+                        "Description": "Function called while Trigger Transmit",
+                        "Value": "COM_NO_FUNCTION_CALLOUT"
+                    },
+                    "PduRouterPduId": {
+                        "Description": "PDU ID with respect of Pdu Router",
+                        "Value": "COM_NO_FUNCTION_CALLOUT"
+                    },
+                    "ComIPduSignalProcessing": {
+                        "Description": "Ways of dealing with signal",
+                        "Range": [
+                            "COM_DEFERRED",
+                            "COM_IMMEDIATE"
+                        ],
+                        "Value": "COM_DEFERRED"
+                    },
+                    "ComIPduSize": {
+                        "Description": "Message DLC",
+                        "Value": {{message["message_size"]}}
+                    },
+                    "ComIpduSender":{
+                        "Description": "Ipdu Sender",
+                        "Value": "{{message["senders"]}}"
+                    },
+                    "ComIPduGroupRefs": {
+                        "Description": "IPDU Groups which this message belongs to. Value is the IPDU Groups' name.",
+                        "Value": ["{{message["bus_name"]}}"]
+                    },
+                    "ComIPduGwRoutingReq": {
+                        "Description": "Signals of the IPDU will be routed.",
+                        "Range": [
+                                "FALSE",
+                                "TRUE"
+                        ],
+                        "Value": "FALSE"
+                    },
+                    "TxCfg": {
+                        "Description": "I-PDU Tx Config",
+                        "EnableRetryFailedTransmitRequests": {
+                            "Description": "Retry failed Transmit",
+                            "Range": [
+                                "FALSE",
+                                "TRUE"
+                            ],
+                            "Value": "FALSE"
+                        },
+                        "ComTxIPduMinimumDelayFactor": {
+                            "Description": "Minimum Tx Delay Time",
+                            "Value": 0
+                        },
+                        "ComTxIPduClearUpdateBit": {
+                            "Description": "When will COM clear Update Bit",
+                            "Range": [
+                                "COMTRANSMIT",
+                                "CONFIRMATION",
+                                "TRIGGERTRANSMIT"
+                            ],
+                            "Value": "COMTRANSMIT"
+                        },
+                        "ComTxIPduUnusedAreasDefault": {
+                            "Description": "Unused Areas Default Value",
+                            "Value": 0
+                        },
+                        "ModeTrue": {
+                            "ComTxMode": {
+                                "Description": "Message Transmit Mode",
+                                "Range": [
+                                    "COM_NONE",
+                                    "COM_DIRECT",
+                                    "COM_MIXED",
+                                    "COM_PERIODIC"
+                                ],
+                                "Value": "{{message["gen_msg_send_type"]}}"
+                            },
+                            "NumberOfRepetitions": {
+                                "Description": "Transmit Times",
+                                "Value": 0
+                            },
+                            "RepetitionPeriodFactor": {
+                                "Description": "Repetition Transmit Delay Time",
+                                "Value": {{message["gen_msg_cycle_time_fast"]}}
+                            },
+                            "TimeOffsetFactor": {
+                                "Description": "Time before first transmission of this IPDU",
+                                "Value": 0
+                            },
+                            "ComTxModeTimePeriodFactor": {
+                                "Description": "Period of cyclic transmission",
+                                "Value": {{message["gen_msg_cycle_time"]}}
+                            }
+                        },
+                        "ModeFalse": {
+                            "ComTxMode": {
+                                "Description": "Message Transmit Mode",
+                                "Range": [
+                                    "COM_NONE",
+                                    "COM_DIRECT",
+                                    "COM_MIXED",
+                                    "COM_PERIODIC"
+                                ],
+                                "Value": "COM_NONE"
+                            },
+                            "NumberOfRepetitions": {
+                                "Description": "Transmit Times",
+                                "Value": 0
+                            },
+                            "RepetitionPeriodFactor": {
+                                "Description": "Repetition Transmit Delay Time",
+                                "Value": 0
+                            },
+                            "TimeOffsetFactor": {
+                                "Description": "Time before first transmission of this IPDU",
+                                "Value": 0
+                            },
+                            "ComTxModeTimePeriodFactor": {
+                                "Description": "Period of cyclic transmission",
+                                "Value": 0
+                            }
+                        }
+                    },
+                    "signals": {
+                        "Description": "All signals belongs to this message",
+{%- if 1 == message["has_signal_groups"] %}
+{%- for signal_group in message["signal_groups"] %}
+                        "{{signal_group["group_name"]}}": {
+                            "Description": "signal object",
+                            "SignalName": {
+                                "Description": "Signal Name",
+                                "Value": "{{signal_group["group_name"]}}"
+                            },
+                            "BitPosition": {
+                                "Description": "Start Bit Position",
+                                "Value": 0
+                            },
+                            "BitSize": {
+                                "Description": "Signal Length",
+                                "Value": 0
+                            },
+                            "ErrorNotification": {
+                                "Description": "Function called while error occurs",
+                                "Value": "COM_NO_FUNCTION_CALLOUT"
+                            },
+                            "Notification": {
+                                "Description": "Function called while RxIndication or TxConfirmation",
+                                "Value": "COM_NO_FUNCTION_CALLOUT"
+                            },
+                            "TimeoutNotification": {
+                                "Description": "Function called while Rx or Tx time out",
+                                "Value": "COM_NO_FUNCTION_CALLOUT"
+                            },
+                            "ComFirstTimeoutFactor": {
+                                "Description": "First timeout period for deadline monitoring",
+                                "Value": 0
+                            },
+                            "RxDataTimeoutAction": {
+                                "Description": "Timeout Action",
+                                "Range": [
+                                    "COM_TIMEOUT_DATA_ACTION_NONE",
+                                    "COM_TIMEOUT_DATA_ACTION_REPLACE"
+                                ],
+                                "Value": "COM_TIMEOUT_DATA_ACTION_NONE"
+                            },
+                            "SignalEndianess": {
+                                "Description": "Byte Order",
+                                "Range": [
+                                    "COM_BIG_ENDIAN",
+                                    "COM_LITTLE_ENDIAN",
+                                    "COM_OPAQUE"
+                                ],
+                                "Value": "COM_BIG_ENDIAN"
+                            },
+                            "InitValue": {
+                                "Description": "Init Value",
+                                "Value": 0
+                            },
+                            "SignalType": {
+                                "Description": "Signal Type",
+                                "Range": [
+                                    "COM_BOOLEAN",
+                                    "COM_UINT8",
+                                    "COM_UINT16",
+                                    "COM_UINT32",
+                                    "COM_UINT64",
+                                    "COM_UINT8_N",
+                                    "COM_UINT8_DYN",
+                                    "COM_SINT8",
+                                    "COM_SINT16",
+                                    "COM_SINT32",
+                                    "COM_SINT64",
+                                    "COM_FLOAT32",
+                                    "COM_FLOAT64"
+                                ],
+                                "Value": "COM_UINT8"
+                            },
+                            "TimeoutFactor": {
+                                "Description": "Timeout period for deadline monitoring",
+                                "Value": 0
+                            },
+                            "TransferProperty": {
+                                "Description": "Signal Transfer Property",
+                                "Range": [
+                                    "COM_PENDING",
+                                    "COM_TRIGGERED",
+                                    "COM_TRIGGERED_WITHOUT_REPETITION",
+                                    "COM_TRIGGERED_ON_CHANGE_WITHOUT_REPETITION",
+                                    "COM_TRIGGERED_ON_CHANGE"
+                                ],
+                                "Value": "COM_PENDING"
+                            },
+                            "UpdateBitPosition": {
+                                "Description": "Update Bit Position",
+                                "Value": 0
+                            },
+                            "UseUpdateBit": {
+                                "Description": "use Update Bit",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                "Value": "FALSE"
+                            },
+                            "IsSignalGroup": {
+                                "Description": "Is Signal Group",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                "Value": "TRUE"
+                            },
+                            "IsGroupSignal": {
+                                "Description": "Is Group Signal",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                "Value": "FALSE"
+                            },
+                            "GroupSignal": {
+                                "Description": "list of Group Signals' name",
+                                "Value": [
+                                {%- for group_signal_name in signal_group["group_signals_name"] %}
+                                {%- if loop.last %}
+                                    "{{group_signal_name}}"
+                                {%- else %}
+                                    "{{group_signal_name}}",
+                                {%- endif %}
+                                {%- endfor%}
+                                ]
+                            },
+                            "ShadowBuffer_Mask": {
+                                "Description": "shadow buffer mask",
+                                "Value": "0x00"
+                            },
+                            "MessageName": {
+                                "Description": "name of message which this signal belongs to",
+                                "Value": "Message_Name"
+                            }
+                        },
+{%- endfor%}
+{%- endif %}
+{%- for signal in message["signals"] %}
+                        "{{signal["signal_name"]}}": {
+                            "Description": "signal object",
+                            "SignalName": {
+                                "Description": "Signal Name",
+                                "Value": "{{signal["signal_name"]}}"
+                            },
+                            "BitPosition": {
+                                "Description": "Start Bit Position",
+                                "Value": {{signal["bit_position"]}}
+                            },
+                            "BitSize": {
+                                "Description": "Signal Length",
+                                "Value": {{signal["signal_size"]}}
+                            },
+                            "ErrorNotification": {
+                                "Description": "Function called while error occurs",
+                                "Value": "COM_NO_FUNCTION_CALLOUT"
+                            },
+                            "Notification": {
+                                "Description": "Function called while RxIndication or TxConfirmation",
+                                "Value": "COM_NO_FUNCTION_CALLOUT"
+                            },
+                            "TimeoutNotification": {
+                                "Description": "Function called while Rx or Tx time out",
+                                "Value": "COM_NO_FUNCTION_CALLOUT"
+                            },
+                            "ComFirstTimeoutFactor": {
+                                "Description": "First timeout period for deadline monitoring",
+                                "Value": 0
+                            },
+                            "RxDataTimeoutAction": {
+                                "Description": "Timeout Action",
+                                "Range": [
+                                    "COM_TIMEOUT_DATA_ACTION_NONE",
+                                    "COM_TIMEOUT_DATA_ACTION_REPLACE"
+                                ],
+                                "Value": "COM_TIMEOUT_DATA_ACTION_NONE"
+                            },
+                            "SignalEndianess": {
+                                "Description": "Byte Order",
+                                "Range": [
+                                    "COM_BIG_ENDIAN",
+                                    "COM_LITTLE_ENDIAN",
+                                    "COM_OPAQUE"
+                                ],
+                                "Value": "{{signal["byte_order"]}}"
+                            },
+                            "InitValue": {
+                                "Description": "Init Value",
+                                "Value": {{signal["init_value"]}}
+                            },
+                            "SignalType": {
+                                "Description": "Signal Type",
+                                "Range": [
+                                    "COM_BOOLEAN",
+                                    "COM_UINT8",
+                                    "COM_UINT16",
+                                    "COM_UINT32",
+                                    "COM_UINT64",
+                                    "COM_UINT8_N",
+                                    "COM_UINT8_DYN",
+                                    "COM_SINT8",
+                                    "COM_SINT16",
+                                    "COM_SINT32",
+                                    "COM_SINT64",
+                                    "COM_FLOAT32",
+                                    "COM_FLOAT64"
+                                ],
+                                "Value": "{{signal["signal_type"]}}"
+                            },
+                            "TimeoutFactor": {
+                                "Description": "Timeout period for deadline monitoring",
+                                "Value": 0
+                            },
+                            "TransferProperty": {
+                                "Description": "Signal Transfer Property",
+                                "Range": [
+                                    "COM_PENDING",
+                                    "COM_TRIGGERED",
+                                    "COM_TRIGGERED_WITHOUT_REPETITION",
+                                    "COM_TRIGGERED_ON_CHANGE_WITHOUT_REPETITION",
+                                    "COM_TRIGGERED_ON_CHANGE"
+                                ],
+                                "Value": "{{signal["gen_sig_send_type"]}}"
+                            },
+                            "UpdateBitPosition": {
+                                "Description": "Update Bit Position",
+                                "Value": 0
+                            },
+                            "UseUpdateBit": {
+                                "Description": "use Update Bit",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                "Value": "FALSE"
+                            },
+                            "IsSignalGroup": {
+                                "Description": "Is Signal Group",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                "Value": "FALSE"
+                            },
+                            "IsGroupSignal": {
+                                "Description": "Is Group Signal",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                {%- for signal_group in message["signal_groups"] %}
+                                {%- if signal["signal_name"] in signal_group["group_signals_name"] %}
+                                "Value": "TRUE"
+                                {%- else %}
+                                "Value": "FALSE"
+                                {%- endif %}
+                                {%- endfor %}
+                                {%- if 0 == message["has_signal_groups"] %}
+                                "Value": "FALSE"
+                                {%- endif %}
+                            },
+                            "GroupSignal": {
+                                "Description": "list of Group Signals' name",
+                                "Value": []
+                            },
+                            "ShadowBuffer_Mask": {
+                                "Description": "shadow buffer mask",
+                                "Value": "0x00"
+                            },
+                            "MessageName": {
+                                "Description": "name of message which this signal belongs to",
+                                "Value": "Message_Name"
+                            }
+                        },
+{%- endfor%}
+                        "End" : ""
+                    }
+                },
+{%- endfor%}                
+{%- endfor%}
+            "End" : ""
+            },
+            "IpduGroups": {
+                "Description": "list of Ipdu Groups' name",
+                "Value": [{%- set com_controller = get_com_controller()%}
+                {%- set com_controller_num = get_com_controller_num()%}
+                {%- for i in range(com_controller_num) %}
+                {%- set is_last = loop.last %} "{{com_controller[i]}}"
+                {%- if is_last == True %} ]
+                {%- else %},
+                {%- endif %}
+                {%- endfor%}
+            },
+            "Gateway": {
+                "Description": "Signal Gateway",
+                "RoutePathCount": {
+                    "Description": "Number of Route Path.",
+                    "Value": 1
+                },
+                "RoutePath0": {
+                    "SourceSignal": {
+                        "SourceType": {
+                            "Description": "Source Signal Type.",
+                            "Range": [
+                                "COM_SIGNAL_REFERENCE",
+                                "COM_SIGNAL_GROUP_REFERENCE",
+                                "COM_GROUP_SIGNAL_REFERENCE",
+                                "GATEWAY_SIGNAL_DESCRIPTION"
+                            ],
+                            "Value": "COM_SIGNAL_REFERENCE"
+                        },
+                        "SignalName": {
+                            "Description": "Source Signal Ref.",
+                            "Value": "SignalName"
+                        },
+                        "BitPosition": {
+                            "Description": "Start Bit Position",
+                            "Value": 0
+                        },
+                        "BitSize": {
+                            "Description": "Signal Length",
+                            "Value": 0
+                        },
+                        "InitValue": {
+                            "Description": "Init Value",
+                            "Value": 0
+                        },
+                        "SignalType": {
+                            "Description": "Signal Type",
+                            "Range": [
+                                "COM_BOOLEAN",
+                                "COM_UINT8",
+                                "COM_UINT16",
+                                "COM_UINT32",
+                                "COM_UINT64",
+                                "COM_UINT8_N",
+                                "COM_UINT8_DYN",
+                                "COM_SINT8",
+                                "COM_SINT16",
+                                "COM_SINT32",
+                                "COM_SINT64",
+                                "COM_FLOAT32",
+                                "COM_FLOAT64"
+                            ],
+                            "Value": "COM_UINT8"
+                        },
+                        "UpdateBitPosition": {
+                            "Description": "Update Bit Position",
+                            "Value": 0
+                        },
+                        "UseUpdateBit": {
+                            "Description": "use Update Bit",
+                            "Range": [
+                                "FALSE",
+                                "TRUE"
+                            ],
+                            "Value": "FALSE"
+                        },
+                        "IPduRef": {
+                            "Description": "The IPdu contains this Source Signal.",
+                            "Value": "IPduName"
+                        }
+                    },
+                    "DestSignals": {
+                        "DestSignal0": {
+                            "DestType": {
+                                "Description": "Dest Signal Type.",
+                                "Range": [
+                                    "COM_SIGNAL_REFERENCE",
+                                    "COM_SIGNAL_GROUP_REFERENCE",
+                                    "COM_GROUP_SIGNAL_REFERENCE",
+                                    "GATEWAY_SIGNAL_DESCRIPTION"
+                                ],
+                                "Value": "COM_SIGNAL_REFERENCE"
+                            },
+                            "SignalName": {
+                                "Description": "Source Signal Ref.",
+                                "Value": "SignalName"
+                            },
+                            "BitPosition": {
+                                "Description": "Start Bit Position",
+                                "Value": 0
+                            },
+                            "BitSize": {
+                                "Description": "Signal Length",
+                                "Value": 0
+                            },
+                            "InitValue": {
+                                "Description": "Init Value",
+                                "Value": 0
+                            },
+                            "SignalType": {
+                                "Description": "Signal Type",
+                                "Range": [
+                                    "COM_BOOLEAN",
+                                    "COM_UINT8",
+                                    "COM_UINT16",
+                                    "COM_UINT32",
+                                    "COM_UINT64",
+                                    "COM_UINT8_N",
+                                    "COM_UINT8_DYN",
+                                    "COM_SINT8",
+                                    "COM_SINT16",
+                                    "COM_SINT32",
+                                    "COM_SINT64",
+                                    "COM_FLOAT32",
+                                    "COM_FLOAT64"
+                                ],
+                                "Value": "COM_UINT8"
+                            },
+                            "UpdateBitPosition": {
+                                "Description": "Update Bit Position",
+                                "Value": 0
+                            },
+                            "UseUpdateBit": {
+                                "Description": "use Update Bit",
+                                "Range": [
+                                    "FALSE",
+                                    "TRUE"
+                                ],
+                                "Value": "FALSE"
+                            },
+                            "TransferProperty": {
+                                "Description": "Signal Transfer Property",
+                                "Range": [
+                                    "COM_PENDING",
+                                    "COM_TRIGGERED",
+                                    "COM_TRIGGERED_WITHOUT_REPETITION",
+                                    "COM_TRIGGERED_ON_CHANGE_WITHOUT_REPETITION",
+                                    "COM_TRIGGERED_ON_CHANGE"
+                                ],
+                                "Value": "COM_PENDING"
+                            },
+                            "IPduRef": {
+                                "Description": "The IPdu contains this Source Signal.",
+                                "Value": "IPduName"
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
+}

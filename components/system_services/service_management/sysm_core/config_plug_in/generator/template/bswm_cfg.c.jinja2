@@ -1,0 +1,820 @@
+{{get_copyright()}}
+/*!*********************************************************************************************************************
+ * @file		bswm_cfg.c
+ * @brief	   	BswM 配置源文件.
+ * @details	 	BswM模块的配置相关相关信息
+ * @date		{{get_generation_time()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+/* Including File */
+#include "bswm.h"
+#include "bswm_internal.h"
+#include "bswm_bsw.h"
+#include "vcos_log.h"
+#include "bswm_vcos_log.h"
+extern void bswm_process_immediate_request(const uint32 index_start, const uint32 index_end);
+
+{%- set swcrequests = get_swcrequest_port(dict_base["ActiveEcuC"]["BswM"]) %}
+{%- set msports = get_modeswitch_request_port(dict_base["ActiveEcuC"]["BswM"]) %}
+{%- set notifyports = get_notification_request_port(dict_base["ActiveEcuC"]["BswM"]) %}
+{%- if  swcrequests or msports or notifyports%}
+#include "Rte_BswM.h"
+{%- endif%}
+
+
+{%- set bswmcores = dict_bsw["dict_ecuc"]["ActiveEcuC"]["EcuC"]["EcucHardware"].items() %}
+{%- set bswmcore_num = bswm_get_coreNums(bswmcores) %}
+
+/* Include UserCallout File */
+{%- set user_callout = judge_usercallout(dict_config["ActiveEcuC"]["BswM"]) %}
+{%- if user_callout %}
+#include "bswm_user_callout.h"
+{%- endif %}
+
+/* Local Variable Definition */
+{%- if msports %}
+#define #define BSWM_START_SEC_MULTI_APP_DATA
+#include "bswm_memmap.h"
+{%- for msport in msports %}
+VAR(uint8_t,BSWM_MULTI_APP_DATA)	bswm_{{msport["name"]}}_{{msport["modegroup_name"]}} = 0xff;
+{%- endfor %}
+#define BSWM_STOP_SEC_MULTI_APP_DATA
+#include "bswm_memmap.h"
+{%- endif%}
+
+{%- set requests = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMModeRequestPorts") %}
+{%- if requests %}
+#define BSWM_START_SEC_MULTI_APP_BSS
+#include "bswm_memmap.h"
+VAR(uint32, BSWM_MULTI_APP_BSS) bswm_mode_req_mirrors[BSWM_NUMBER_OF_REQUESTS];
+#if (BSWM_TIMERS_NUM > 0)
+VAR(bswm_timer_t, BSWM_MULTI_APP_BSS) timers[BSWM_TIMERS_NUM];
+#endif
+#define BSWM_STOP_SEC_MULTI_APP_BSS
+#include "bswm_memmap.h"
+{%- endif %}
+/* Local Function Declaration */
+/* UserCondition 声明 */
+
+/* Action 声明 */
+#define BSWM_START_SEC_CODE
+#include "bswm_memmap.h"
+{%- set actions = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMActions") %}
+{%- if actions %}
+{%- for action_name, action_value in actions.items() %}
+{%- if action_name != "Tag" %}
+FUNC(Std_ReturnType, BSWM_CODE) {{ action_name }}(const bswm_action_list_item_t *item);
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+/* Expression 声明 */
+{%- set expressions = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMLogicalExpressions") %}
+{%- if expressions %}
+{%- for expression_name, expression_value in expressions.items() %}
+{%- if expression_name != "Tag" %}
+FUNC(boolean, BSWM_CODE) {{ expression_name }}(void);
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+/* Local Fuction Implementation */
+
+/* Action 定义 */
+{%- if actions %}
+{%- for action_name, action_value in actions.items() %}
+{%- if action_name != "Tag" %}
+FUNC(Std_ReturnType, BSWM_CODE) {{ action_name }}(const bswm_action_list_item_t *item)
+{
+	(void)*item;
+	{{ gen_atomic_actions(action_value["BswMAvailableActions"], dict_bsw) }};
+
+	return E_OK;
+}
+{% endif %}
+{%- endfor %}
+{%- endif %}
+/* Expression 定义 */
+{%- if expressions %}
+{%- for expression_name, expression_value in expressions.items() %}
+{%- if expression_name != "Tag" %}
+FUNC(boolean, BSWM_CODE) {{ expression_name }}(void)
+{
+{%- set conditions_str = str_to_list(expression_value["BswMArgumentRef"]["ValueRef"]) %}
+{%- set conditions = gen_conditions(dict_config["ActiveEcuC"]["BswM"], conditions_str) %}
+{%- set res = gen_expression(conditions, expression_value["BswMLogicalOperator"]["Value"]) %}
+	// coverity[cert_exp46_c_violation:SUPPRESS]
+	return ( {{res}} );
+}
+{% endif %}
+{%- endfor %}
+{%- endif %}
+#define BSWM_STOP_SEC_CODE
+#include "bswm_memmap.h"
+
+/* Expressions/Actions Mapping */
+{%- if actions %}
+#define BSWM_START_SEC_CONST
+#include "bswm_memmap.h"
+static CONST(atomic_action_func_t, BSWM_CONST) bswm_atomic_actions[BSWM_NUMBER_OF_ATOMIC_ACTIONS] = {
+{%- for action_name, action_value in actions.items() %}
+{%- if action_name != "Tag" %}
+	[BSWM_{{ action_name|upper }}_ACTION_IDX] = &{{ action_name }},
+{%- endif %}
+{%- endfor %}
+};
+
+#define BSWM_STOP_SEC_CONST
+#include "bswm_memmap.h"
+{%- endif %}
+
+
+{%- if expressions %}
+#define BSWM_START_SEC_CONST
+#include "bswm_memmap.h"
+static CONST(logical_expression_func_t, BSWM_CONST) bswm_logical_expressions[BSWM_NUMBER_OF_LOGICAL_EXPRESSIONS] = {
+{%- for expression_name, expression_value in expressions.items() %}
+{%- if expression_name != "Tag" %}
+	[BSWM_{{ expression_name|upper }}_EXP_IDX] = &{{ expression_name }},
+{%- endif %}
+{%- endfor %}
+};
+
+#define BSWM_STOP_SEC_CONST
+#include "bswm_memmap.h"
+{%- endif %}
+
+/* Global Variable Definition */
+#define BSWM_START_SEC_SEMISHARED_BSS
+#include "bswm_memmap.h"
+static VAR(bswm_rule_state_t, BSWM_SEMISHARED_BSS) bswm_rule_states[BSWM_NUMBER_OF_RULES_MAX];
+static VAR(boolean, BSWM_SEMISHARED_BSS) bswm_delayed_request[BSWM_NUMBER_OF_IMMEDIATE_REQUESTS];
+#define BSWM_STOP_SEC_SEMISHARED_BSS
+#include "bswm_memmap.h"
+
+#define BSWM_START_SEC_SEMISHARED_DATA
+#include "bswm_memmap.h"
+VAR(bswm_internal_t, BSWM_SEMISHARED_DATA) bswm_internal = {
+	.bswm_rule_states = bswm_rule_states,
+	.bswm_delayed_request = bswm_delayed_request,
+	.init_status = BSWM_UNINIT,
+	.timers = timers,
+	.timer_index = {
+		.begin = 0,
+		.end = BSWM_TIMERS_NUM,
+	},
+	.bswm_mode_req_mirrors = bswm_mode_req_mirrors,
+	.bswm_atomic_actions = bswm_atomic_actions,
+	.bswm_logical_expressions = bswm_logical_expressions,
+};
+
+#define BSWM_STOP_SEC_SEMISHARED_DATA
+#include "bswm_memmap.h"
+
+#define BSWM_START_SEC_MULTI_APP_DATA
+#include "bswm_memmap.h"
+VAR(bswm_internal_t *, BSWM_MULTI_APP_DATA)
+bswm_multicore[BSWM_MAX_SUPPORT_CORENUM] = {
+	&bswm_internal,
+{%- for i in range(bswmcore_num-1) %}
+	NULL_PTR,
+{%- endfor %}
+};
+
+#define BSWM_STOP_SEC_MULTI_APP_DATA
+#include "bswm_memmap.h"
+
+/* ModeIndication validation */
+/*  ComM */
+#if (BSWM_COMM_ENABLED == STD_ON)
+#define is_valid_comm_mode(_x)																						 \
+	((COMM_FULL_COMMUNICATION == (_x)) || (COMM_SILENT_COMMUNICATION == (_x)) ||								   \
+	 (COMM_NO_COMMUNICATION == (_x))) ///< COMM模式是否可用
+
+#define is_valid_comm_pncmode(_x)																					  \
+	((COMM_PNC_REQUESTED == (_x)) || (COMM_PNC_READY_SLEEP == (_x)) || (COMM_PNC_PREPARE_SLEEP == (_x)) ||		 \
+	 (COMM_PNC_NO_COMMUNICATION == (_x)))
+#endif ///< COMM PNC模式是否可用
+
+/*  Nm */
+#if (BSWM_NM_ENABLED == STD_ON)
+#define is_valid_nm_mode(_x)																						   \
+	((NM_STATE_BUS_SLEEP == (_x)) || (NM_STATE_PREPARE_BUS_SLEEP == (_x)) ||		  \
+	 (NM_STATE_READY_SLEEP == (_x)) || (NM_STATE_NORMAL_OPERATION == (_x)) || (NM_STATE_REPEAT_MESSAGE == (_x)) || \
+	 (NM_STATE_SYNCHRONIZE == (_x))) ///< NM 模式是否可用
+#endif
+
+/* EcuM */
+#if (BSWM_ECUM_ENABLED == STD_ON)
+#define is_valid_ecum_mode(_x)																						 \
+	((ECUM_STATE_STARTUP_ONE == (_x)) || (ECUM_STATE_STARTUP_TWO == (_x)) || (ECUM_STATE_WAKEUP_ONE == (_x)) ||	\
+	 (ECUM_STATE_WAKEUP_VALIDATION == (_x)) || (ECUM_STATE_WAKEUP_REACTION == (_x)) ||							 \
+	 (ECUM_STATE_WAKEUP_TWO == (_x)) || (ECUM_STATE_APP_RUN == (_x)) || (ECUM_STATE_APP_POST_RUN == (_x)) ||	   \
+	 (ECUM_STATE_PREP_SHUTDOWN == (_x)) || (ECUM_STATE_GO_SLEEP == (_x)) || (ECUM_STATE_GO_OFF_ONE == (_x)) ||	 \
+	 (ECUM_STATE_GO_OFF_TWO == (_x)) || (ECUM_STATE_SLEEP == (_x))) ///< ECUM 模式是否可用
+
+#define is_valid_ecum_wkstatus(_x)																					 \
+	((ECUM_WKSTATUS_NONE == (_x)) || (ECUM_WKSTATUS_PENDING == (_x)) || (ECUM_WKSTATUS_VALIDATED == (_x)) ||	   \
+	 (ECUM_WKSTATUS_EXPIRED == (_x)) || (ECUM_WKSTATUS_DISABLED == (_x))) ///< ECUM 唤醒状态是否可用
+
+#define is_valid_ecum_reqstate(_x)																					 \
+	((ECUM_RUNSTATUS_UNKNOWN == (_x)) || (ECUM_RUNSTATUS_REQUESTED == (_x)) ||									 \
+	 (ECUM_RUNSTATUS_RELEASED == (_x))) ///< ECUM 请求状态是否可用
+#endif
+
+/*  CanSM */
+#if (BSWM_CANSM_ENABLED == STD_ON)
+#define is_valid_cansm_mode(_x)																						\
+	((CANSM_BSWM_NO_COMMUNICATION == (_x)) || (CANSM_BSWM_SILENT_COMMUNICATION == (_x)) ||						 \
+	 (CANSM_BSWM_FULL_COMMUNICATION == (_x)) || (CANSM_BSWM_BUS_OFF == (_x)) ||									\
+	 (CANSM_BSWM_CHANGE_BAUDRATE == (_x))) ///< CANSM 模式是否可用
+#endif
+
+/*  LinSM */
+#if (BSWM_LINSM_ENABLED == STD_ON)
+#define is_valid_linsm_mode(_x) ((LINSM_NO_COM == (_x)) || (LINSM_FULL_COM == (_x))) ///< LIN 模式是否可用
+#endif
+
+/*  EthSM */
+#if (BSWM_ETHSM_ENABLED == STD_ON)
+#define is_valid_ethsm_mode(_x)																						\
+	((ETHSM_STATE_OFFLINE == (_x)) || (ETHSM_STATE_WAIT_TRCVLINK == (_x)) || (ETHSM_STATE_WAIT_ONLINE == (_x)) ||  \
+	 (ETHSM_STATE_ONLINE == (_x)) || (ETHSM_STATE_ONHOLD == (_x)) || (ETHSM_STATE_WAIT_OFFLINE == (_x)))
+#endif ///< EthSM 模式是否可用
+
+#define BSWM_START_SEC_CODE
+#include "bswm_memmap.h"
+FUNC(void, BSWM_CODE) bswm_internal_update_notification_mirrors(void)
+{
+	/* modeswitch 执行的时机是在mainfunction中,未考虑立即执行 */
+{%- for msport in msports %}
+	if(bswm_{{msport.name}}_{{msport.modegroup_name}} != 0xFFu)
+	{
+		(void)vcos_log(BSWM_MODULE_ID, VCOS_LOG_INFO,"bswm try update ms[{{loop.index0}}].\n");
+		if(Rte_Switch_{{msport.name}}_BswM_MDGP_{{msport.modegroup_name}}(bswm_{{msport.name}}_{{msport.modegroup_name}})==E_OK)
+		{
+			(void)vcos_log(BSWM_MODULE_ID, VCOS_LOG_INFO,"bswm update ms[{{loop.index0}}] done.\n");
+			bswm_{{msport.name}}_{{msport.modegroup_name}} = 0xFFu;
+		}
+	}
+
+{%- endfor %}
+	/* notify更新通知镜像 */
+{%- for notifyport in notifyports %}
+	bswm_mode_req_mirrors[BSWM_{{notifyport["moderequest_name"]|upper}}_REQ_IDX] = (uint32)Rte_Mode_{{notifyport["name"]}}_BswM_MDGP_{{notifyport["modegroup_name"]}}();
+{%- endfor %}
+	/* moderequest更新通知镜像 */
+{%- for requestport in swcrequests %}
+	(void)Rte_Read_{{requestport["name"]}}_{{requestport["data_type"]}}(&(bswm_mode_req_mirrors[BSWM_{{requestport["moderequest_name"]|upper}}_REQ_IDX]));
+{%- endfor %}
+}
+
+{% set requests = check_none(dict_config["ActiveEcuC"]["BswM"],"BswMModeRequestPorts") %}
+{%- set immreq_index = get_immreq_index(dict_config) %}
+/* 模式请求汇报状态 */
+/* ComM */
+#if (BSWM_USE_COMM == STD_ON)
+FUNC(void, BSWM_CODE) bswm_comm_current_mode(network_handle_type network, comm_mode_type requested_mode)
+{
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						BSWM_BSWM_SERVICEID_COMMCURRENTMODE_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_COMMCURRENTMODE_BSWM_E_NO_INIT,
+				bswm_internal_ptr); /* @req BswM0078 */
+
+	(void)network;
+	(void)requested_mode;
+#if (BSWM_COMM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_comm_mode(requested_mode),
+					   BSWM_BSWM_SERVICEID_COMMCURRENTMODE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMComMIndication" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMComMIndication"]["BswMComMChannelRef"]["ValueRef"])%}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)requested_mode;
+{%- if channel in immreq_index["ComM"] %}
+			bswm_process_immediate_request({{immreq_index["ComM"][channel][0]}}, {{immreq_index["ComM"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+}
+#endif
+
+FUNC(void, BSWM_CODE) bswm_comm_current_pnc_mode(PNCHandleType pnc, comm_pnc_mode_type current_pnc_mode)
+{
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_COMMCURRENTPNCMODE_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_COMMCURRENTPNCMODE_BSWM_E_NO_INIT,
+				bswm_internal_ptr); /* @req BswM0149 */
+
+	(void)pnc;
+	(void)current_pnc_mode;
+
+#if (BSWM_COMM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_comm_pncmode(current_pnc_mode),
+					   BSWM_BSWM_SERVICEID_COMMCURRENTPNCMODE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (pnc) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMComMPncRequest" in req_value["BswMModeRequestSource"] %}
+{%- set pnc = get_key_name(req_value["BswMModeRequestSource"]["BswMComMPncRequest"]["BswMComMPncRef"]["ValueRef"])%}
+	case ComMConf_ComMPnc_{{pnc}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_pnc_mode;
+{%- if pnc in immreq_index["ComM_Pnc"] %}
+			bswm_process_immediate_request({{immreq_index["ComM_Pnc"][pnc][0]}}, {{immreq_index["ComM_Pnc"][pnc][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+
+/* Nm */
+#if (CONFIG_MODULE_NM == 1)
+FUNC(void, BSWM_CODE) bswm_nm_state_change_notification(network_handle_type network, nm_state_type current_state)
+{
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_NMCURRENTMODE_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_NMCURRENTMODE_BSWM_E_NO_INIT, bswm_internal_ptr);
+
+	(void)network;
+	(void)current_state;
+
+#if (BSWM_NM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_nm_mode(current_state),
+					   BSWM_BSWM_SERVICEID_NMCURRENTMODE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMNmStateChangeNotification" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMNmStateChangeNotification"]["BswMNmChannelRef"]["ValueRef"])%}
+		case ComMConf_ComMChannel_{{channel}}:
+			bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_state;
+{%- if channel in immreq_index["Nm"] %}
+			bswm_process_immediate_request({{immreq_index["Nm"][channel][0]}}, {{immreq_index["Nm"][channel][1]}});
+{%- endif %}
+			break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+		default:
+			break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+
+/* EcuM */
+#if (CONFIG_SERVM_ECUM == 1)
+
+FUNC(void, BSWM_CODE) bswm_ecum_current_state(ecum_state_t current_state)
+{
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_ECUMCURRENTSTATE_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_ECUMCURRENTSTATE_BSWM_E_NO_INIT,
+				bswm_internal_ptr); /* @req BswM0084 */
+	/* !req BswM0103 */
+
+	(void)current_state;
+
+#if (BSWM_ECUM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_ecum_mode(current_state),
+					   BSWM_BSWM_SERVICEID_ECUMCURRENTSTATE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMEcuMIndication" in req_value["BswMModeRequestSource"] %}
+	bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_state;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- if immreq_index["EcuM_State"]|length > 0 %}
+	bswm_process_immediate_request({{immreq_index["EcuM_State"]["ecum"][0]}}, {{immreq_index["EcuM_State"]["ecum"][1]}});
+{%- endif %}
+{%- endif %}
+#endif
+}
+
+FUNC(void, BSWM_CODE) bswm_ecum_current_wakeup(ecum_wakeup_source_t source, ecum_wakeup_status_t state)
+{
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_ECUMCURRENTWAKEUP_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_ECUMCURRENTWAKEUP_BSWM_E_NO_INIT,
+				bswm_internal_ptr); /* @req BswM0132 */
+	/* !req BswM0133 */
+
+	(void)source;
+	(void)state;
+
+#if (BSWM_ECUM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_ecum_wkstatus(state),
+					   BSWM_BSWM_SERVICEID_ECUMCURRENTWAKEUP_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (source) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMEcuMWakeupSource" in req_value["BswMModeRequestSource"] %}
+{%- set source = get_key_name(req_value["BswMModeRequestSource"]["BswMEcuMWakeupSource"]["BswMEcuMWakeupSrcRef"]["ValueRef"])%}
+	case {{source}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)state;
+{%- if source in immreq_index["EcuM_Wakeup"] %}
+		bswm_process_immediate_request({{immreq_index["EcuM_Wakeup"][source][0]}}, {{immreq_index["EcuM_Wakeup"][source][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+
+FUNC(void, BSWM_CODE) bswm_ecum_requested_state(ecum_state_t state, ecum_run_status_t current_status)
+{
+	(void)state;
+	(void)current_status;
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_ECUMREQUEST_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_ECUMREQUEST_BSWM_E_NO_INIT, bswm_internal_ptr);
+
+#if (BSWM_ECUM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_ecum_reqstate(current_status),
+					   BSWM_BSWM_SERVICEID_ECUMREQUEST_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (state) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMEcuMRUNRequestIndication" in req_value["BswMModeRequestSource"] %}
+{%- set req = req_value["BswMModeRequestSource"]["BswMEcuMRUNRequestIndication"]["BswMEcuMRUNRequestProtocolPort"]["Value"][5:]%}
+	case {{req}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_status;
+{%- if req in immreq_index["EcuM_Request"] %}
+		bswm_process_immediate_request({{immreq_index["EcuM_Request"][req][0]}}, {{immreq_index["EcuM_Request"][req][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+
+#endif /* if defined(CONFIG_SERVM_ECUM) */
+
+/* CanSM */
+#if (CONFIG_MODULE_CANSM == 1)
+FUNC(void, BSWM_CODE) bswm_cansm_current_state(network_handle_type network, cansm_bswm_current_state_type current_state)
+{
+	(void)network;
+	(void)current_state;
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	if (bswm_internal_ptr != NULL_PTR) {
+		bswm_validate_init_norv(BSWM_BSWM_SERVICEID_CANSMCURRENTSTATE_BSWM_E_NO_INIT, bswm_internal_ptr);
+	}
+
+#if (BSWM_CANSM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_cansm_mode(current_state),
+					   BSWM_BSWM_SERVICEID_CANSMCURRENTSTATE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMCanSMIndication" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMCanSMIndication"]["BswMCanSMChannelRef"]["ValueRef"])%}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_state;
+{%- if channel in immreq_index["CanSM"] %}
+		bswm_process_immediate_request({{immreq_index["CanSM"][channel][0]}}, {{immreq_index["CanSM"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+
+/* EthSM */
+#if (BSWM_USE_ETHSM == STD_ON)
+FUNC(void, BSWM_CODE) bswm_ethsm_current_state(network_handle_type network, ethsm_network_mode_state_type current_state)
+{
+	(void)network;
+	(void)current_state;
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	if (bswm_internal_ptr != NULL_PTR) {
+		bswm_validate_init_norv(BSWM_BSWM_SERVICEID_ETHSMCURRENTSTATE_BSWM_E_NO_INIT, bswm_internal_ptr);
+	}
+
+#if (BSWM_ETHSM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_ethsm_mode(current_state),
+					   BSWM_BSWM_SERVICEID_ETHSMCURRENTSTATE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMEthSMIndication" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMEthSMIndication"]["BswMEthSMChannelRef"]["ValueRef"])%}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_state;
+{%- if channel in immreq_index["EthSM"] %}
+		bswm_process_immediate_request({{immreq_index["EthSM"][channel][0]}}, {{immreq_index["EthSM"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+
+
+
+/* LinSM */
+#if (BSWM_USE_LINSM == STD_ON)
+FUNC(void, BSWM_CODE) bswm_linsm_current_schedule(network_handle_type network, linif_sch_handle_type current_schedule)
+{
+	(void)network;
+	(void)current_schedule;
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_LINSMCURRENTSCHEDULE_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_LINSMCURRENTSCHEDULE_BSWM_E_NO_INIT, bswm_internal_ptr);
+
+	(void)vcos_log(BSWM_MODULE_ID, VCOS_LOG_INFO, BSWM_DLT_LIN_SCHEDULE, network, current_schedule);
+
+#if (BSWM_LINSM_ENABLED == STD_ON)
+
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMLinScheduleIndication" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMLinScheduleIndication"]["BswMLinSMChannelRef"]["ValueRef"]) %}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_schedule;
+{%- if channel in immreq_index["Linsch"] %}
+		bswm_process_immediate_request({{immreq_index["Linsch"][channel][0]}}, {{immreq_index["Linsch"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+
+FUNC(void, BSWM_CODE) bswm_linsm_current_state(network_handle_type network, linsm_mode_type current_state)
+{
+	(void)network;
+	(void)current_state;
+	uint8 core_id = bswm_get_core_id();
+	const bswm_internal_t *bswm_internal_ptr = bswm_multicore[core_id];
+
+	bswm_validate_pointer_withcoreid_norv(bswm_internal_ptr, core_id,
+						  BSWM_BSWM_SERVICEID_LINSMCURRENTSTATE_BSWM_E_NULL_CONTROL_POINTER);
+	bswm_validate_init_norv(BSWM_BSWM_SERVICEID_LINSMCURRENTSTATE_BSWM_E_NO_INIT, bswm_internal_ptr);
+
+#if (BSWM_LINSM_ENABLED == STD_ON)
+	bswm_validate_requestmode_norv(is_valid_linsm_mode(current_state),
+					   BSWM_BSWM_SERVICEID_LINSMCURRENTSTATE_BSWM_E_REQ_MODE_OUT_OF_RANGE);
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMLinSMIndication" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMLinSMIndication"]["BswMLinSMChannelRef"]["ValueRef"]) %}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_state;
+{%- if channel in immreq_index["LinSM"] %}
+		bswm_process_immediate_request({{immreq_index["LinSM"][channel][0]}}, {{immreq_index["LinSM"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		reak;
+	}
+{%- endif %}
+#endif
+}
+
+FUNC(void, BSWM_CODE) bswm_lintp_request_mode(network_handle_type network, lintp_mode lintp_requested_mode)
+{
+	(void)network;
+	(void)lintp_requested_mode;
+
+#if (BSWM_LINTP_ENABLED == STD_ON)
+
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMLinTpModeRequest" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMLinTpModeRequest"]["BswMLinTpChannelRef"]["ValueRef"]) %}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)lintp_requested_mode;
+{%- if channel in immreq_index["LinTp"] %}
+		bswm_process_immediate_request({{immreq_index["LinTp"][channel][0]}}, {{immreq_index["LinTp"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+
+/* Dcm */
+#if (BSWM_USE_DCM == STD_ON)
+FUNC(void, BSWM_CODE) bswm_dcm_application_updated(void)
+{
+}
+
+FUNC(void, BSWM_CODE)
+bswm_dcm_communication_mode_current_state(network_handle_type network, dcm_comm_mode_type requested_mode)
+{
+	(void)network;
+	(void)requested_mode;
+
+#if (BSWM_DCM_ENABLED == STD_ON)
+
+{%- if requests %}
+	switch (network) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMDcmComModeRequest" in req_value["BswMModeRequestSource"] %}
+{%- set channel = get_key_name(req_value["BswMModeRequestSource"]["BswMDcmComModeRequest"]["BswMDcmComMChannelRef"]["ValueRef"]) %}
+	case ComMConf_ComMChannel_{{channel}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)requested_mode;
+{%- if channel in immreq_index["Dcm"] %}
+		bswm_process_immediate_request({{immreq_index["Dcm"][channel][0]}}, {{immreq_index["Dcm"][channel][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		/* do nothing */
+		break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+
+
+FUNC(void, BSWM_CODE) bswm_request_mode(bswm_user_t requesting_user, bswm_mode_t requested_mode)
+{
+	(void)requesting_user;
+	(void)requested_mode;
+
+#if (BSWM_GENERICREQUEST_ENABLED == STD_ON)
+
+{%- if requests %}
+	switch (requesting_user) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMGenericRequest" in req_value["BswMModeRequestSource"] %}
+{%- set user_id = req_value["BswMModeRequestSource"]["BswMGenericRequest"]["BswMModeRequesterId"]["Value"] %}
+	case {{user_id}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)requested_mode;
+{%- set user_id_str = int_to_str(user_id) %}
+{%- if user_id_str in immreq_index["Generic"] %}
+		bswm_process_immediate_request({{immreq_index["Generic"][user_id_str][0]}}, {{immreq_index["Generic"][user_id_str][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+
+/* NvM */
+#if (BSWM_USE_NVM == STD_ON)
+FUNC(void, BSWM_CODE)
+bswm_nvm_current_job_mode(nvm_multi_block_request_t multi_block_request, nvm_request_result_type current_job_mode)
+{
+	(void)multi_block_request;
+	(void)current_job_mode;
+
+#if (BSWM_NVM_ENABLED == STD_ON)
+
+{%- if requests %}
+	switch (multi_block_request) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMNvMJobModeIndication" in req_value["BswMModeRequestSource"] %}
+{%- set service = req_value["BswMModeRequestSource"]["BswMNvMJobModeIndication"]["BswMNvmService"]["Value"] %}
+	case {{service|upper}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_job_mode;
+{%- if service in immreq_index["NvM_Job"] %}
+		bswm_process_immediate_request({{immreq_index["NvM_Job"][service][0]}}, {{immreq_index["NvM_Job"][service][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+
+FUNC(void, BSWM_CODE) bswm_nvm_current_block_mode(nvm_block_id_t block, nvm_request_result_type current_block_mode)
+{
+	(void)block;
+	(void)current_block_mode;
+
+#if (BSWM_NVM_ENABLED == STD_ON)
+
+{%- if requests %}
+	switch (block) {
+{%- for req_name, req_value in requests.items() %}
+{%- if req_name != "Tag" %}
+{%- if "BswMNvMRequest" in req_value["BswMModeRequestSource"] %}
+{%- set block_id = get_key_name(req_value["BswMModeRequestSource"]["BswMNvMRequest"]["BswMNvMBlockRef"]["ValueRef"]) %}
+	case NvMConf_{{block_id}}:
+		bswm_mode_req_mirrors[BSWM_{{ req_name|upper }}_REQ_IDX] = (uint32)current_block_mode;
+{%- if block_id in immreq_index["NvM_Req"] %}
+		bswm_process_immediate_request({{immreq_index["NvM_Req"][block_id][0]}}, {{immreq_index["NvM_Req"][block_id][1]}});
+{%- endif %}
+		break;
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+	default:
+		break;
+	}
+{%- endif %}
+#endif
+}
+#endif
+#define BSWM_STOP_SEC_CODE
+#include "bswm_memmap.h"

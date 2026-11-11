@@ -1,0 +1,132 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  EthIf对Eth部分接口适配文件.
+ */
+
+#include "ethif_types.h"
+#include "ethif_cfg.h"
+#include "ethif_eth_callout.h"
+
+#include "{{  EthIfGeneral["EthIfMapMcalApiPrefix"] }}.h"
+{% if EthIfGeneral.get("EthIfPublicCddHeaderFile") %}
+{% for headerfile in EthIfGeneral["EthIfPublicCddHeaderFile"] %}
+#include "{{ headerfile }}"
+{% endfor %}
+{% endif %}
+
+{%- set user_codes = get_bsw_callout_user_code_list() %}
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if "head_usercode" in user_codes.keys() and user_codes["head_usercode"] != {} and user_codes["head_usercode"] != [] %}
+{%- for value in user_codes["head_usercode"] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+
+#if (STD_ON == ETHIF_GLOBAL_TIME_SUPPORT)
+{%- if EthIfGeneral["EthIfEthSetCorrectionTimeApi"] != None%}
+{%- set func = EthIfGeneral["EthIfEthSetCorrectionTimeApi"] %}
+
+#define ETHIF_START_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+FUNC(void, ETHIF_CALLOUT_CODE) {{EthIfGeneral["EthIfEthSetCorrectionTimeApi"]}}(const uint8 ctrl_idx, const eth_time_int_diff_type* const timeoffset_ptr, const eth_rateratio_type* const rateratio_ptr)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if func in user_codes.keys() and user_codes[func] != {} and user_codes[func] != [] %}
+{%- for value in user_codes[func] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+#define ETHIF_STOP_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+{%- endif %}
+
+{%- if EthIfGeneral["EthIfEthSetGlobalTimeApi"] != None%}
+{%- set func = EthIfGeneral["EthIfEthSetGlobalTimeApi"] %}
+
+#define ETHIF_START_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+FUNC(Std_ReturnType, ETHIF_CALLOUT_CODE) {{EthIfGeneral["EthIfEthSetGlobalTimeApi"]}}(const uint8 ctrl_idx, const eth_timestamp_type* const timestamp_ptr)
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if func in user_codes.keys() and user_codes[func] != {} and user_codes[func] != [] %}
+{%- for value in user_codes[func] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+#define ETHIF_STOP_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+{%- endif %}
+#endif
+
+
+{%- if EthIfSwitchPortGroups|length > 0 %}
+{%- set func = EthIfGeneral["EthIfSwtGetLinkStateApi"] %}
+
+#define ETHIF_START_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+FUNC(Std_ReturnType, ETHIF_CALLOUT_CODE) {{EthIfGeneral["EthIfSwtGetLinkStateApi"]}}(uint8 switch_idx, uint8 swt_port_id, eth_trcv_linkstate_type* swt_port_linkstate )
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if func in user_codes.keys() and user_codes[func] != {} and user_codes[func] != [] %}
+{%- for value in user_codes[func] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+#define ETHIF_STOP_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+{%- endif %}
+
+
+{%- if EthIfTransceivers|length > 0 %}
+{%- set func = EthIfGeneral["EthIfTrcvGetLinkStateApi"] %}
+
+#define ETHIF_START_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+FUNC(Std_ReturnType, ETHIF_CALLOUT_CODE) {{EthIfGeneral["EthIfTrcvGetLinkStateApi"]}}( uint8 trcv_idx, eth_trcv_linkstate_type* trcv_linkstate )
+{
+/******************USER CODE STARTS!************THIS COMMENT WILL BE SAVED!***************/
+{%- if func in user_codes.keys() and user_codes[func] != {} and user_codes[func] != [] %}
+{%- for value in user_codes[func] %}
+{{value.strip('\n')}}
+{%- endfor %}
+{%- endif %}
+/******************USER CODE ENDS!**************THIS COMMENT WILL BE SAVED!***************/
+}
+
+#define ETHIF_STOP_SEC_CALLOUT_CODE
+#include "ethif_memmap.h"
+
+{%- endif %}

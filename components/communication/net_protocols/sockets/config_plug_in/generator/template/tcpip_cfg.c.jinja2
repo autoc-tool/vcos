@@ -1,0 +1,214 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+{%- set TcpIpConfig = get_TcpIpConfig() %}
+
+#include <nuttx/config.h>
+#include "tcpip.h"
+#include "tcpip_priv_types.h"
+#include "tcpip_lcfg.h"
+#include "tcpip_wrapper.h"
+
+{% for socket_owner in TcpIpConfig.TcpIpSocketOwnerConfig.TcpIpSocketOwner -%}
+{%- if socket_owner["TcpIpSocketOwnerHeaderFileName"].Value != "NULL_PTR" %}
+#include "{{ socket_owner["TcpIpSocketOwnerHeaderFileName"].Value }}"
+{%- endif %}
+{%- endfor %}
+
+#if (CONFIG_MODULE_ETHIF == 1)
+#include "ethif.h"
+#include "ethif_cfg.h"
+#else
+#include "ethernetif.h"
+#endif
+
+#if (CONFIG_MODULE_SOAD == 1)
+#include "soad.h"
+#endif
+
+#define TCPIP_START_SEC_CODE
+#include "tcpip_memmap.h"
+#ifdef CONFIG_MVBS
+extern FUNC(void, TCPIP_CODE) NETIO_Autosar_TcpIp_udp_rx_indication(
+    tcpip_socket_id_type socket_id,
+    P2CONST(tcpip_sock_addr_type, AUTOMATIC, CANIF_APPL_VAR) remote_addr_ptr,
+    P2VAR(uint8, AUTOMATIC, CANIF_APPL_VAR) buf_ptr,
+    uint16 buf_length
+);
+#else
+weak_function FUNC(void, TCPIP_CODE) NETIO_Autosar_TcpIp_udp_rx_indication(
+    tcpip_socket_id_type socket_id,
+    P2CONST(tcpip_sock_addr_type, AUTOMATIC, CANIF_APPL_VAR) remote_addr_ptr,
+    P2VAR(uint8, AUTOMATIC, CANIF_APPL_VAR) buf_ptr,
+    uint16 buf_length) {
+
+}
+weak_function FUNC(void, TCPIP_CODE) Core0_Dds_Runnable_5ms(void) { }
+weak_function FUNC(void, TCPIP_CODE) Core0_Dds_Runnable_Recv(void) { }
+weak_function FUNC(void, TCPIP_CODE) DdsDemo_Stub(void) { }
+#endif
+#define TCPIP_STOP_SEC_CODE
+#include "tcpip_memmap.h"
+
+#define ETH_START_SEC_PRIVATE_BSS
+#include "eth_memmap.h"
+VAR(tcpip_ctrl_admin_type, ETH_PRIVATE_BSS) tcpip_ctrl_admin[TCPIP_NOF_CONTROLLERS];
+VAR(tcpip_socket_admin_type, ETH_PRIVATE_BSS) tcpip_socket_admin[TCPIP_MAX_NOF_SOCKETS];
+VAR(tcpip_ip_addr_state_type, ETH_PRIVATE_BSS) tcpip_ip_addr_state[TCPIP_NOF_LOCALADDR];
+#if (CONFIG_MODULE_ETHIF == 1)
+VAR(tcpip_socket_id_type, ETH_PRIVATE_BSS) tcpip_buf_idx_to_socket_id[ETHIf_MAX_TXBUFSTOTAL];
+#endif
+VAR(struct tcpip_wrapper_udp_ctx, ETH_PRIVATE_BSS) udp_ctx_array[AUTOSAR_UDP_CONN_MAX];
+VAR(struct udp_pcb, ETH_PRIVATE_BSS) udp_pcb_array[AUTOSAR_UDP_CONN_MAX];
+VAR(tcpip_wrapper_tcp_ctx_t, ETH_PRIVATE_BSS) tcp_ctx_array[AUTOSAR_TCP_CONN_MAX];
+#define ETH_STOP_SEC_PRIVATE_BSS
+#include "eth_memmap.h"
+
+#define  TCPIP_START_SEC_CONST
+#include "tcpip_memmap.h"
+{%- for value in TcpIpConfig.TcpIpLocalAddr %}
+static CONST(tcpip_address_assignment_type, TCPIP_CONST) tcpip_addr_assign_list_tcpip_local_addr{{ loop.index0 }}[] = {
+{%- if 'TcpIpAddrAssignment' in value %}
+{%- for address in value.TcpIpAddrAssignment %}
+    {
+        {{".assignment_lifetime         = %s" | format(address.TcpIpAssignmentLifetime.Value) }},
+        {{".assignment_method           = %s" | format(address.TcpIpAssignmentMethod.Value) }},
+        {{".assignment_priority         = %s" | format(address.TcpIpAssignmentPriority.Value) }},
+        {{".assignment_trigger          = %s" | format(address.TcpIpAssignmentTrigger.Value) }}
+    },
+{%- endfor %}
+{%- endif %}
+};
+{% endfor %}
+#define  TCPIP_STOP_SEC_CONST
+#include "tcpip_memmap.h"
+
+#define ETH_START_SEC_PRIVATE_DATA
+#include "eth_memmap.h"
+{%- for value in TcpIpConfig.TcpIpLocalAddr %}
+{%- if 'TcpIpStaticIpAddressConfig' in value %}
+static VAR(tcpip_static_ip_address_config_type, ETH_PRIVATE_DATA) tcpip_static_ip_address_config{{ loop.index0 }} = {
+    {{".static_ip_address = IP4_ADDR_CHR_TO_UINT32(%s)" | format(value.TcpIpStaticIpAddressConfig.TcpIpStaticIpAddress.Value.replace('.',',')) }},
+    {{".default_router   = IP4_ADDR_CHR_TO_UINT32(%s)" | format(value.TcpIpStaticIpAddressConfig.TcpIpDefaultRouter.Value.replace('.',',')) }},
+    {{".netmask         = %s" | format(value.TcpIpStaticIpAddressConfig.TcpIpNetmask.Value) }}
+};
+{%- endif %}
+{%- endfor %}
+
+#define ETH_STOP_SEC_PRIVATE_DATA
+#include "eth_memmap.h"
+
+#define  TCPIP_START_SEC_CONST
+#include "tcpip_memmap.h"
+
+static CONST(tcpip_local_addr_type, TCPIP_CONST) tcpip_local_addr_list[TCPIP_NOF_LOCALADDR] = {
+{%- for local_addr in TcpIpConfig.TcpIpLocalAddr %}
+    {
+        {{".address_id           = %s" | format(local_addr.TcpIpAddrId.Value) }},
+        {{".address_type         = %s" | format(local_addr.TcpIpAddressType.Value) }},
+        .domain                 = TCPIP_AF_INET,
+        {{".tcpip_ctrl_ref        = %s" | format(local_addr.TcpIpCtrlRef.ValueRef) }},
+        .address_assignment      = tcpip_addr_assign_list_tcpip_local_addr{{ loop.index0 }},
+        .static_ip_addr_config     = {{"%s" | format(dict_or_null(local_addr, 'TcpIpStaticIpAddressConfig', add_index('&tcpip_static_ip_address_config', loop.index0)))}},
+    },
+{%- endfor %}
+};
+
+static CONST(tcpip_tcpip_ctrl_type, TCPIP_CONST) tcpip_ctrl_list[] = {
+{%- for value in TcpIpConfig.TcpIpCtrl %}
+    {
+        {{".frame_prio_default           = %s" | format(value.TcpIpIpFramePrioDefault.Value) }},
+        {{".ethif_ctrl_ref               = %s" | format(value.TcpIpEthIfCtrlRef.ValueRef) }},
+    },
+{%- endfor %}
+};
+
+static CONST(tcpip_socket_owner_type, TCPIP_CONST) tcpip_socket_owner_list[] = {
+{%- for value in TcpIpConfig.TcpIpSocketOwnerConfig.TcpIpSocketOwner %}
+    {
+        {{".socket_owner_copy_tx_data_fnc_ptr                   = %s" | format(value.TcpIpSocketOwnerCopyTxDataName.Value) }},
+        {{".socket_owner_local_ip_addr_assignment_chg_fnc_ptr     = %s" | format(value.TcpIpSocketOwnerLocalIpAddrAssignmentChgName.Value) }},
+        {{".socket_owner_rx_indication_fnc_ptr                 = %s" | format(value.TcpIpSocketOwnerRxIndicationName.Value) }},
+        {{".socket_owner_tcp_accepted_fnc_ptr                  = %s" | format(value.TcpIpSocketOwnerTcpAcceptedName.Value) }},
+        {{".socket_owner_tcp_connected_fnc_ptr                 = %s" | format(value.TcpIpSocketOwnerTcpConnectedName.Value) }},
+        {{".socket_owner_tcpip_event_fnc_ptr                   = %s" | format(value.TcpIpSocketOwnerTcpIpEventName.Value) }},
+        {{".socket_owner_tx_confirmation_fnc_ptr               = %s" | format(value.TcpIpSocketOwnerTxConfirmationName.Value) }},
+        {{".socket_owner_upper_layer_type                     = %s" | format(value.ShortName) }},
+    },
+{% endfor %}
+};
+
+
+{%- for value in TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpArpConfig %}
+{%- if value.TcpIpStaticArpEntry | length != 0 %}
+static CONST(tcpip_arp_table_entry_type, TCPIP_CONST) tcpip_ip_arp_table_entry{{ loop.index0 }}[] = {
+{%- for static_arp in value.TcpIpStaticArpEntry %}
+    {
+        .ipaddr = {
+            {{".addr = IP4_ADDR_CHR_TO_UINT32(%s)" | format(static_arp.TcpIpStaticArpEntryIpAddr.Value) }},
+        },
+        .ethaddr = {
+            {{".addr[0] = 0x%s" | format(static_arp.TcpIpStaticArpEntryPhysAddr.Value[0]) }},
+            {{".addr[1] = 0x%s" | format(static_arp.TcpIpStaticArpEntryPhysAddr.Value[1]) }},
+            {{".addr[2] = 0x%s" | format(static_arp.TcpIpStaticArpEntryPhysAddr.Value[2]) }},
+            {{".addr[3] = 0x%s" | format(static_arp.TcpIpStaticArpEntryPhysAddr.Value[3]) }},
+            {{".addr[4] = 0x%s" | format(static_arp.TcpIpStaticArpEntryPhysAddr.Value[4]) }},
+            {{".addr[5] = 0x%s" | format(static_arp.TcpIpStaticArpEntryPhysAddr.Value[5]) }},
+        },
+    },
+{%- endfor %}
+};
+{%- endif %}
+{% endfor -%}
+
+{%- if TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpArpConfig | length != 0 %}
+static CONST(tcpip_arp_config_type, TCPIP_CONST) tcpip_arp_config_list[] = {
+{%- for value in TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpArpConfig %}
+    {
+        .static_arp_table = {{"%s" | format(list_or_null(value.TcpIpStaticArpEntry, add_index('tcpip_ip_arp_table_entry', loop.index0)))}},
+        {{".static_arp_table_len = %s" | format(value.TcpIpStaticArpEntry | length) }}
+        /* other param not used in tcpip, only used in lwip, generate in Lwip_Cfg.h */
+    },
+{% endfor -%}
+};
+{%- endif %}
+
+static CONST(tcpip_icmp_config_type, TCPIP_CONST) tcpip_icmp_config = {
+    {%- if 'TcpIpIcmpConfig' in TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config %}
+    {{".icmp_ttl                   = %s" | format(TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpIcmpConfig.TcpIpIcmpTtl.Value) }},
+    {%- endif %}
+};
+
+static CONST(tcpip_ipv4_config_type, TCPIP_CONST) tcpip_ipv4_config = {
+    .arp_config_list = {{"%s" | format(list_or_null(TcpIpConfig.TcpIpIpConfig.TcpIpIpV4Config.TcpIpArpConfig, 'tcpip_arp_config_list'))}},
+    .icmp_config = &tcpip_icmp_config,
+};
+
+static CONST(tcpip_ip_config_type, TCPIP_CONST) tcpip_config = {
+    .ipv4_config = &tcpip_ipv4_config
+};
+
+CONST(tcpip_config_type, TCPIP_CONST) TcpIp_Config = {
+    .config = {
+        .ctrl_list = tcpip_ctrl_list,
+        .local_addr_list = tcpip_local_addr_list,
+        .socket_owner_config = {
+            .socket_owner_list = tcpip_socket_owner_list
+        },
+        .ip_config = &tcpip_config,
+    }
+};
+#define  TCPIP_STOP_SEC_CONST
+#include "tcpip_memmap.h"

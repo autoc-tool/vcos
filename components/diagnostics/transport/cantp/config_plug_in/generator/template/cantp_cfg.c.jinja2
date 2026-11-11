@@ -1,0 +1,71 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        cantp_cfg.c
+ * @brief       cantp配置文件
+ * @details     主要包含cantp模块的配置相关相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#include "cantp.h"
+#include "cantp_cfg.h"
+#include "Compiler.h"
+#include "cantp_internal.h"
+#include "cantp_types.h"
+
+{%- for _, coreinfo in CanTpChannelByCoreId.items()%}
+{% set core_id = coreinfo["CanCoreId"] %}
+{% set app = get_mainfunc_core_app_memmap_tag(CanTpCoreAppMap, core_id) %}
+/* Core{{core_id}} CANTP状态机分核独享区部分 */
+#define CANTP_START_SEC_{{ app }}PRIVATE_BSS
+#include "cantp_memmap.h"
+VAR(cantp_channel_table_type, CANTP_{{ app }}PRIVATE_BSS) cantp_internal_channel_core{{core_id}}[CANTP_CHANNEL_CORE_TABLE_LEN_CORE{{core_id}}];
+VAR(cantp_state_type, CANTP_{{ app }}PRIVATE_BSS) cantp_state_core{{core_id}};
+#define CANTP_STOP_SEC_{{ app }}PRIVATE_BSS
+#include "cantp_memmap.h"
+{%- endfor %}
+
+#define CANTP_START_SEC_CONST  // const类型，映射到flash区
+#include "cantp_memmap.h"
+CONST(cantp_runtime_data_type, CANTP_CONST) cantp_channel_and_core_table[CANTP_MULTICORE_CORE_NUMBER] = {
+{%- for i in range(CanTpMaxCore + 1) %}
+{%- if i in CanTpChannelByCoreId %}
+    { /* Core{{i}} */
+        .state = &cantp_state_core{{i}},
+        .channel_table_addr = &cantp_internal_channel_core{{i}}[0u],
+        .channel_table_len = CANTP_CHANNEL_CORE_TABLE_LEN_CORE{{i}},
+    },
+{%- else %}
+    { /* Core{{i}}无通道配置 */
+        .state = CANTP_OFF,
+        .channel_table_addr = NULL,
+        .channel_table_len = 0,
+    },
+{%- endif %}
+{%- endfor %}
+};
+#define CANTP_STOP_SEC_CONST
+#include "cantp_memmap.h"
+
+#define CANTP_START_SEC_CODE
+#include "cantp_memmap.h"
+FUNC_P2CONST(cantp_runtime_data_type, AUTOMATIC, CANTP_CODE ) cantp_get_channel_core_table(void)
+{
+    return &cantp_channel_and_core_table[0u];
+}
+#define CANTP_STOP_SEC_CODE
+#include "cantp_memmap.h"

@@ -1,0 +1,242 @@
+{
+    "COM013005": {
+        "rule_name": "COM013005",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of Uint8_NFifoSize and Uint8_NFifoDepth.",
+        "rule_message": "Uint8_NFifoSize and Uint8_NFifoDepth must both > 0 or == 0.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoSize",
+                        "value_operator": ">",
+                        "value": "0",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoDepth",
+                        "value_operator": ">",
+                        "value": "0",
+                        "logical_operator": "and"
+                    }
+                ]
+            },
+            "ruleset_02": {
+                "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoDepth",
+                        "value_operator": ">",
+                        "value": "0",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoSize",
+                        "value_operator": ">",
+                        "value": "0",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "COM013006": {
+        "rule_name": "COM013006",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of ComSupportedTxSignalProx and FifoDepth configurations.",
+        "rule_message": "ComSupportedTxSignalProx is true,so at least one of the FifoDepth configurations must > 0.Uint8_NFifoSize must > 4",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/ComSupportedTxSignalProx",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8FifoDepth",
+                        "value_operator": "!=",
+                        "value": "0",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint16FifoDepth",
+                        "value_operator": "!=",
+                        "value": "0",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint32FifoDepth",
+                        "value_operator": "!=",
+                        "value": "0",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoSize",
+                        "value_operator": "!=",
+                        "value": "0",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoDepth",
+                        "value_operator": "!=",
+                        "value": "0",
+                        "logical_operator": "or"
+                    }
+                ]
+            }
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "COM013007": {
+        "rule_name": "COM013007",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of Uint8_NFifoSize configurations",
+        "rule_message": "If use Uint8_N Fifo, this fifo size > uint32 Fifo, so Uint8_NFifoSize must > 4",
+        "rule_ruleset": {
+            "ruleset_01":
+            {
+                "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/ComSupportedTxSignalProx",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoDepth",
+                        "value_operator": ">",
+                        "value": "0",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComTxSignalFifo/Uint8_NFifoSize",
+                        "value_operator": ">",
+                        "value": "4",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "COM011001": {
+        "rule_name": "COM011001",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComIPduHandleId.",
+        "rule_message": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduHandleId should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduHandleId",
+            "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduHandleId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/Com/ComConfig",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "COM011002": {
+        "rule_name": "COM011002",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComIPduSignalRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduSignalRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduSignalRef",
+            "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "COM011003": {
+        "rule_name": "COM011003",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComIPduSignalGroupRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduSignalGroupRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduSignalGroupRef",
+            "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "COM011008": {
+        "rule_name": "COM011008",
+        "rule_type": "repeatability_check",
+        "rule_summary": "Repeatablity check of ComGwSignalRef.",
+        "rule_message": "/AUTOSAR/EcucDefs/Com/ComConfig/ComGwMapping/ComGwSource/ComGwSignal/ComGwSignalRef should be unique.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComGwMapping/ComGwSource/ComGwSignal/ComGwSignalRef",
+            "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig"
+        },
+        "auto_solve_list": [],
+        "manual_solve_list": []
+    },
+    "COM013004": {
+        "rule_name": "COM013004",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of ComSignalType and ComSignalEndianness",
+        "rule_message": "ComSignalType should be 'UINT8_N' if ComSignalEndianness is set to 'OPAQUE'.",
+        "rule_ruleset": {
+            "ruleset_01":
+            {
+                "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComSignal",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComSignal/ComSignalEndianness",
+                        "value_operator": "==",
+                        "value": "OPAQUE",
+                        "logical_operator": "and"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComSignal/ComSignalType",
+                        "value_operator": "==",
+                        "value": "UINT8_N",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "COM013003": {
+        "rule_name": "COM013003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The check of ComIPduType",
+        "rule_message": "IPDU ComIPduType is 'Tp' Currently not supported.",
+        "rule_ruleset": {
+            "ruleset_01":
+            {
+                "base_path": "/AUTOSAR/EcucDefs/Com/ComConfig",
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/Com/ComConfig/ComIPdu/ComIPduType",
+                        "value_operator": "!=",
+                        "value": "TP",
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    }
+}

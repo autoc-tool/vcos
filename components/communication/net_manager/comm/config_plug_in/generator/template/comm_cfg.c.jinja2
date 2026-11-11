@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ * Description:  ComM 配置源文件.
+ */
+
+/* Including File */
+#include "comm.h"
+#include "comm_internal.h"
+#include "SchM_ComM.h"
+
+{%- set headers = get_headers(sys_cfg["modules_info"]["kfg_module_enabled_list"]) %}
+{%- for header in headers %}
+#include "{{header}}"
+{%- endfor %}
+
+/* Global Variable Definition */
+
+#define   COMM_START_SEC_CODE
+#include "comm_memmap.h"
+{% set channels = dict_config["ActiveEcuC"]["ComM"]["ComMConfigSet"]["ComMChannels"].items() %}
+/* 所有通信通道整体主函数 */
+FUNC(void, COMM_CODE) ComM_MainFunction_All_Channels(void)
+{
+{%- for channel_name, channel_value in channels %}
+{%- if channel_name != "Tag" %}
+    comm_main_function(ComMConf_ComMChannel_{{ channel_name}});
+{%- endif %}
+{%- endfor %}
+}
+
+/* 不同通信通道的主函数 */
+{%- for channel_name, channel_value in channels %}
+{%- if channel_name != "Tag" %}
+FUNC(void, COMM_CODE) ComM_MainFunction_{{ channel_name }}(void)
+{
+    comm_main_function(ComMConf_ComMChannel_{{ channel_name }});
+}
+{%- endif %}
+{%- endfor %}
+#define   COMM_STOP_SEC_CODE
+#include "comm_memmap.h"

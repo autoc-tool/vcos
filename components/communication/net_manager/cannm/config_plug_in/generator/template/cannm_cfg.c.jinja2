@@ -1,0 +1,271 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+#include "cannm_lcfg.h"
+#include "cannm_types.h"
+#include "cannm_internal.h"
+#if (CONFIG_MODULE_CANIF == 1)
+#include "canif.h"
+#include "canif_pbcfg.h"
+#endif
+#if (CONFIG_MODULE_PDUR == 1)
+#include "pdur_cfg.h"
+#endif
+#if (CONFIG_MODULE_NM == 1)
+#include "nm.h"
+#endif
+#if (CONFIG_MODULE_COMM == 1)
+#include "comm.h"
+#endif
+#include "Compiler.h"
+
+{%- set cannm_multicore = get_cannm_multicore_or_not() %}
+{%- set cannm_channel_list = get_cannm_channel_config() %}
+{%- set cannm_pn_filter_mask_byte_config = get_cannm_pn_filter_mask_byte_config() %}
+{%- set CanNmChannelId = namespace(value = 0) %}
+
+{%- if cannm_multicore == "STD_ON" %}
+#define CANNM_START_SEC_MULTI_APP_BSS
+#include "cannm_memmap.h"
+P2CONST(cannm_cate_cfg, CANNM_MULTI_APP_BSS, BSW_CONST) cannm_config_ptr;
+#define CANNM_STOP_SEC_MULTI_APP_BSS
+#include "cannm_memmap.h"
+
+#define CANNM_START_SEC_MULTI_APP_BSS
+#include "cannm_memmap.h"
+#if (CANNM_FIRST_PDU_FAILED_RETRY == STD_ON)
+VAR(uint8, CANNM_MULTI_APP_BSS) canif_transmit_flag;
+VAR(boolean, CANNM_MULTI_APP_BSS) cannm_first_pdu_failed_retry_flg[CANNM_CHANNEL_COUNT];
+#endif
+VAR(uint32, CANNM_MULTI_APP_BSS) canif_transmit_time_value;
+VAR(uint16, CANNM_MULTI_APP_BSS) canif_first_nm_msg_id;
+VAR(cannm_msg_cnt_cate, CANNM_MULTI_APP_BSS) cannm_msg_cnt;
+VAR(cannm_internal_type, CANNM_MULTI_APP_BSS) cannm_internal;
+#define CANNM_STOP_SEC_MULTI_APP_BSS
+#include "cannm_memmap.h"
+{%- else %}
+#define CANNM_START_SEC_PRIVATE_BSS
+#include "cannm_memmap.h"
+P2CONST(cannm_cate_cfg, CANNM_PRIVATE_BSS, CANNM_CONST) cannm_config_ptr;
+#define CANNM_STOP_SEC_PRIVATE_BSS
+#include "cannm_memmap.h"
+
+#define CANNM_START_SEC_PRIVATE_BSS
+#include "cannm_memmap.h"
+#if (CANNM_FIRST_PDU_FAILED_RETRY == STD_ON)
+VAR(uint8, CANNM_PRIVATE_BSS) canif_transmit_flag;
+VAR(boolean, CANNM_PRIVATE_BSS) cannm_first_pdu_failed_retry_flg[CANNM_CHANNEL_COUNT];
+#endif
+VAR(uint32, CANNM_PRIVATE_BSS) canif_transmit_time_value;
+VAR(uint16, CANNM_PRIVATE_BSS) canif_first_nm_msg_id;
+VAR(cannm_msg_cnt_cate, CANNM_PRIVATE_BSS) cannm_msg_cnt;
+VAR(cannm_internal_type, CANNM_PRIVATE_BSS) cannm_internal;
+#define CANNM_STOP_SEC_PRIVATE_BSS
+#include "cannm_memmap.h"
+{%- endif %}
+
+#define CANNM_START_SEC_CODE
+#include "cannm_memmap.h"
+{%- if (CanNmConfig.CanNmMainFunction.CanNmMainFunction | length) == 0 %}
+FUNC(void, CANNM_CODE) CanNm_MainFunction(void)
+{
+    cannm_mtpl_m_func_proc();
+}
+{%- else %}
+{%- for MainFunctionIndex in range(CanNmConfig.CanNmMainFunction.CanNmMainFunction | length) %}
+{%- if CanNmConfig.CanNmMainFunction.CanNmMainFunction[MainFunctionIndex] != "cannm_mtpl_m_func_proc" %}
+FUNC(void, CANNM_CODE) {{ CanNmConfig.CanNmMainFunction.CanNmMainFunction[MainFunctionIndex] }}(void)
+{
+    cannm_mtpl_m_func_proc();
+}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+FUNC_P2CONST(cannm_core_channel_id_mapping_type, AUTOMATIC, CANNM_CODE) cannm_channel_id_mapping_by_core_id(cannm_core_id_type core_id)
+{
+    if (core_id >= CANNM_CORE_MAX_COUNT)
+    {
+        return NULL;
+    }
+        return &cannm_core_channel_id_mapping[core_id];
+}
+
+FUNC(boolean, CANNM_CODE) cannm_get_first_pdu_failed_retry_flg(network_handle_type cannm_network_id)
+{
+    return cannm_first_pdu_failed_retry_flag_list[cannm_network_id];
+}
+
+#define   CANNM_STOP_SEC_CODE
+#include "cannm_memmap.h"
+
+{%- set cannm_channel_id_dict = get_cannm_channel_id_dict() %}
+{%- set cannm_core_dict = get_cannm_core_dict() %}
+
+#define CANNM_START_SEC_CONST
+#include "cannm_memmap.h"
+
+CONST(boolean, CANNM_CONST) cannm_first_pdu_failed_retry_flag_list[CANNM_CHANNEL_COUNT] = {
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmFirstPduFailedRetry == True %}
+    (boolean)TRUE,
+{%- else %}
+    (boolean)FALSE,
+{%- endif %}
+{%- endfor %}
+};
+
+{%- for core_index in range(cannm_core_dict | length) %}
+{%- set cannm_core_include_channel_num = get_cannm_core_include_channel_num(core_index) %}
+CONST(uint8, CANNM_CONST) cannm_core{{ core_index }}_channel_id_mapping[{{ cannm_core_include_channel_num }}] = {
+{%- for channel_index in range(cannm_channel_list | length) %}
+{%- if CanNmConfig.CanNmChannelConfig[channel_index].CanNmCoreId == core_index %}
+    {{ cannm_channel_id_dict[channel_index] }},
+{%- endif %}
+{%- endfor %}
+};
+{%- endfor %}
+
+CONST(cannm_core_channel_id_mapping_type, CANNM_CONST) cannm_core_channel_id_mapping[CANNM_CORE_MAX_COUNT] = {
+{%- for core_index in range(cannm_core_dict | length) %}
+    { /* Core{{core_index}} */
+    {%- set cannm_core_include_channel_num = get_cannm_core_include_channel_num(core_index) %}
+        .net_tbl_addr = &cannm_core{{ core_index }}_channel_id_mapping[0],
+        .network_table_len = {{ cannm_core_include_channel_num }},
+    },
+{%- endfor %}
+};
+
+CONST(network_handle_type, CANNM_CONST) cannm_map_channel_id[NM_CHANNEL_COUNT] = {
+{%- for channel_index in range(cannm_channel_list | length) %}
+    [{{  CanNmConfig.CanNmChannelConfig[channel_index].CanNmComMNetworkHandleRef }}] = {{ CanNmChannelId.value }}U,
+{%- set CanNmChannelId.value = CanNmChannelId.value + 1 %}
+{%- endfor %}
+{%- if (CanNmChannelId.value == 0) and ((cannm_channel_list | length) > 0)%}
+{%- for channel_index in range(cannm_channel_list | length) %}
+    {{channel_index}},
+{%- endfor %}
+{%- endif %}
+};
+{%- set CanNmChannelId = namespace(value = 0) %}
+{%- if (cannm_channel_list | length) > 0 %}
+{%- set cannm_nm_chnl_transping_mainfunction_period_dict = get_cannm_channel_mapping_mainfunction_period_dict() %}
+{%- endif %}
+
+CONST(cannm_chnl_cate, CANNM_CONST) cannm_channels[CANNM_CHANNEL_COUNT] = {
+{%- for channel_index in range(cannm_channel_list | length) %}
+    {
+        .channel_en                   = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmNodeIdEnabled }},
+        .id_net          = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmComMNetworkHandleRef }},
+        .nd_id                   = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmNodeId }},
+        .m_func_pid       = {{ cannm_channel_id_dict[channel_index] }}_MAINFUNCTION_PERIOD_{{ cannm_nm_chnl_transping_mainfunction_period_dict[channel_index] }}MS,
+        .tm_out              = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmTimeoutTime }},
+        .rpt_msg_tm        = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmRepeatMessageTime }},
+        .wait_bs_tm         = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmWaitBusSleepTime }},
+        .msg_cyc_tm         = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmMsgCycleTime }},
+    #if (CANNM_BUS_LOAD_REDUCTION_ENABLED == STD_ON) && (CANNM_BUS_LOAD_REDUCTION_ACTIVE == STD_ON) && (CANNM_PASSIVE_MODE_ENABLED == STD_OFF)
+        .msg_rdc_tm           = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmMsgReducedTime }},
+    #endif
+        .msg_cys_ofst_tm   = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmMsgCycleOffset }},
+        .msg_tmot_tm       = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmMsgTimeoutTime }},
+        .canif_pid               = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmTxPduRef }},
+        .msg_size                = 8,
+        .pos_nid              = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmPduNidPosition }},
+        .pos_cbv              = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmPduCbvPosition }},
+        .imdt_nm_cyc_tm     = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmImmediateNmCycleTime }},
+        .imdt_tx = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmImmediateNmTransmissions }},
+        .pn_support            = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmPnEnabled }},
+        .all_msg_wk   = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmAllNmMessagesKeepAwake }},
+    #if (CANNM_COM_USER_DATA_SUPPORT == STD_ON)
+        .ur_data_tx_pid     = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmTxUserDataPduRef }},
+    #endif
+    #if ((CANNM_PNC_COUNT > 0) && (CANNM_PNC_ERA_CALC_ENABLED == STD_ON))
+        .cannm_era_rx_pdu_id         = {{ CanNmConfig.CanNmChannelConfig[channel_index].CanNmPnEraRxNSduRef }},
+    #endif
+    },
+{%- set CanNmChannelId.value = CanNmChannelId.value + 1 %}
+{%- endfor %}
+{%- if (CanNmChannelId.value == 0) and ((cannm_channel_list | length) > 0)%}
+{%- for channel_index in range(cannm_channel_list | length) %}
+    {0},
+{%- endfor %}
+{%- endif %}
+};
+
+{%- if (cannm_pn_filter_mask_byte_config | length) > 0 %}
+CONST(uint8, CANNM_CONST) cannm_pn_info_mask_value[{{cannm_pn_filter_mask_byte_config | length}}] = {
+{%- for PnInfoMaskIdx in range(cannm_pn_filter_mask_byte_config | length) %}
+{{ CanNmConfig.CanNmPnInfo.CanNmPnFilterMaskByte[PnInfoMaskIdx].CanNmPnFilterMaskByteValue }},
+{%- endfor %}
+};
+
+CONST(uint8, CANNM_CONST) cannm_pn_index_to_timer_map_value[{{cannm_pn_filter_mask_byte_config | length}}] = {
+{%- for PnInfoMaskIdx in range(cannm_pn_filter_mask_byte_config | length) %}
+{{ CanNmConfig.CanNmPnInfo.CanNmPnFilterMaskByte[PnInfoMaskIdx].CanNmPnFilterMaskByteIndex }},
+{%- endfor %}
+};
+
+CONST(uint8, CANNM_CONST) cannm_timer_index_to_pn_map_value[{{cannm_pn_filter_mask_byte_config | length}}] = {
+{%- for PnInfoMaskIdx in range(cannm_pn_filter_mask_byte_config | length) %}
+{{ CanNmConfig.CanNmPnInfo.CanNmPnFilterMaskByte[PnInfoMaskIdx].CanNmPnFilterMaskByteIndex }},
+{%- endfor %}
+};
+
+CONST(cannm_pn_if_cate, CANNM_CONST) cannm_pn_info_idx = {
+    .pn_if_ofst        = {{ CanNmConfig.CanNmPnInfo.CanNmPnInfoPara.CanNmPnInfoOffset }},
+    .pn_if_size           = {{ CanNmConfig.CanNmPnInfo.CanNmPnInfoPara.CanNmPnInfoLength }},
+    .pn_if_msk          = &cannm_pn_info_mask_value[0],
+    .pn_idx_to_tm_mp   = &cannm_pn_index_to_timer_map_value[0],
+    .tm_idx_to_pn_mp   = &cannm_timer_index_to_pn_map_value[0],
+    .eira_rx_pid        = {{ CanNmConfig.CanNmGlobalConfig.CanNmPnEiraRxNSduRef }},
+};
+{%- endif %}
+
+{%- set CanNmChannelId = namespace(value = 0) %}
+CONST(network_handle_type, CANNM_CONST) cannm_channel_look_ups[CANNM_CHANNEL_COUNT] = {
+{%- for channel_index in range(cannm_channel_list | length) %}
+{{ CanNmChannelId.value }},
+{%- set CanNmChannelId.value = CanNmChannelId.value + 1 %}
+{%- endfor %}
+{%- if (CanNmChannelId.value == 0) and ((cannm_channel_list | length) > 0)%}
+{%- for channel_index in range(cannm_channel_list | length) %}
+    {{channel_index}},
+{%- endfor %}
+{%- endif %}
+};
+
+CONST(cannm_cate_cfg, CANNM_CONST) cannm_config = {
+    .nm_tunnel                    = cannm_channels,
+    .chnl_num              = cannm_channel_look_ups,
+    .tunnel_trans                  = cannm_map_channel_id,
+    .chnl_num_len          = NM_CHANNEL_COUNT,
+#if (CANNM_PNC_COUNT > 0) && (CANNM_PN_FEATURE_ENABLED == STD_ON)
+    .pn_if                 = &cannm_pn_info_idx,
+#endif
+};
+#define CANNM_STOP_SEC_CONST
+#include "cannm_memmap.h"
+
+#if (CANNM_CALLOUT_CONFIG == TRUE)
+extern Std_ReturnType {{CanNmConfig.CanNmGlobalConfig.CanNmCallbackFunction}}(void);
+Std_ReturnType (*CANNM_CALLBACK_FUNCTION)(void) = {{CanNmConfig.CanNmGlobalConfig.CanNmCallbackFunction}};
+#endif
+
+

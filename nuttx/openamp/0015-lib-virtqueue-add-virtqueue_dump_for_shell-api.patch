@@ -1,0 +1,67 @@
+From c31ff4c81a7597372e4a1f8be0f227a5dbb4f15a Mon Sep 17 00:00:00 2001
+From: yaojiaqi <yaojiaqi@lixiang.com>
+Date: Thu, 3 Jul 2025 19:01:01 +0800
+Subject: [PATCH] lib/virtqueue: add virtqueue_dump_for_shell api
+
+add virtqueue_dump_for_shell api which can be used in shell
+
+Signed-off-by: yaojiaqi <yaojiaqi@lixiang.com>
+---
+ lib/include/openamp/virtqueue.h | 10 ++++++++++
+ lib/virtio/virtqueue.c          | 19 +++++++++++++++++++
+ 2 files changed, 29 insertions(+)
+
+diff --git a/lib/include/openamp/virtqueue.h open-amp/lib/include/openamp/virtqueue.h
+index dd42c3a..dcf8fae 100644
+--- a/lib/include/openamp/virtqueue.h
++++ open-amp/lib/include/openamp/virtqueue.h
+@@ -361,6 +361,16 @@ static inline struct virtqueue *virtqueue_allocate(unsigned int num_desc_extra)
+  */
+ void virtqueue_free(struct virtqueue *vq);
+ 
++/**
++ * @internal
++ *
++ * @brief Dumps important virtqueue fields , use for debugging purposes,
++ *        only for shell use
++ *
++ * @param vq	Pointer to VirtIO queue control block
++ */
++void virtqueue_dump_for_shell(struct virtqueue *vq);
++
+ /**
+  * @internal
+  *
+diff --git a/lib/virtio/virtqueue.c open-amp/lib/virtio/virtqueue.c
+index 7ffe569..e8ffa25 100644
+--- a/lib/virtio/virtqueue.c
++++ open-amp/lib/virtio/virtqueue.c
+@@ -321,6 +321,25 @@ void virtqueue_kick(struct virtqueue *vq)
+ 	VQUEUE_IDLE(vq);
+ }
+ 
++void virtqueue_dump_for_shell(struct virtqueue *vq)
++{
++	if (!vq)
++		return;
++
++	VRING_INVALIDATE(&vq->vq_ring.avail, sizeof(vq->vq_ring.avail));
++	VRING_INVALIDATE(&vq->vq_ring.used, sizeof(vq->vq_ring.used));
++
++	metal_log(METAL_LOG_EMERGENCY,
++		  "VQ: %s - size=%d; free=%d; queued=%d; desc_head_idx=%d; "
++		  "available_idx=%d; avail.idx=%d; used_cons_idx=%d; "
++		  "used.idx=%d; avail.flags=0x%x; used.flags=0x%x\r\n",
++		  vq->vq_name, vq->vq_nentries, vq->vq_free_cnt,
++		  vq->vq_queued_cnt, vq->vq_desc_head_idx, vq->vq_available_idx,
++		  vq->vq_ring.avail->idx, vq->vq_used_cons_idx,
++		  vq->vq_ring.used->idx, vq->vq_ring.avail->flags,
++		  vq->vq_ring.used->flags);
++}
++
+ void virtqueue_dump(struct virtqueue *vq)
+ {
+ 	if (!vq)
+-- 
+2.25.1
+

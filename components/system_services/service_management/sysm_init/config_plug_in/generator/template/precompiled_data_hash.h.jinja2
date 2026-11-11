@@ -1,0 +1,27 @@
+ {{get_copyright()}}
+ /*!*********************************************************************************************************************
+ * @file		PreCompiledDataHash.h
+ * @brief	    EcuM 部分模块的 PreCompiled 宏定义
+ * @date		{{get_generation_time()}}
+ * @project	    {{get_project_name()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+#ifndef PRECOMPILEDDATAHASH_H
+#define PRECOMPILEDDATAHASH_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
+
+#define PRE_COMPILED_DATA_HASH_LOW  ({{dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMConfigConsistencyHash"]["Value"]}}u)
+#define PRE_COMPILED_DATA_HASH_HIGH ({{dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMConfigConsistencyHash"]["Value"]}}u)
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PRECOMPILEDDATAHASH_H */

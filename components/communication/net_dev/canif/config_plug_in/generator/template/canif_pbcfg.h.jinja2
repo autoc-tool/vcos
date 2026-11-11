@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        canif_pbcfg.h
+ * @brief       CanIf 公共配置头文件
+ * @details     主要包含CanIf模块的公共配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef CANIF_PBCFG_H
+#define CANIF_PBCFG_H
+
+#include "canif_types.h"
+#include "canif_internal.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+{%- for tx_pdu in all_core_tx_pducfgs_list %}
+{{  "#define %s  (%su)" | format(tx_pdu["subname"], loop.index-1) }}
+{%- endfor %}
+
+
+{% for rx_pdu in rx_pdus %}
+{{  "#define %s  (%su)" | format(rx_pdu["subname"], loop.index-1) }}
+{%- endfor %}
+
+
+extern canif_runtime_state_type canif_runtime_state;
+extern const canif_config_type* canif_config_ptr;
+
+extern canif_init_status_type canif_init_status[CANIF_MAX_ACTIVATED_CORE_CNT];
+
+#if (CANIF_PUBLIC_DEBUG_SUPPORT == STD_ON)
+extern uint32 tx_messagestatistic[CANIF_MAX_NOF_TX_PDU];
+extern uint32 rx_messagestatistic[CANIF_MAX_NOF_RX_PDU];
+extern uint32 tx_message_busy_count[CANIF_MAX_NOF_TX_PDU];
+extern uint32 tx_message_drop_count[CANIF_MAX_NOF_TX_PDU];
+extern uint32 tx_message_ok_count[CANIF_MAX_NOF_TX_PDU];
+#endif
+
+#if (CANIF_PUBLIC_TXCONFIRM_POLLING_SUPPORT == STD_ON)
+extern canif_notif_status_type canif_tx_conf_state[CANIF_CONTROLLER_CHANNEL_CNT];
+#endif
+
+#if (CANIF_PUBLIC_TX_BUFFERING == STD_ON)
+extern canif_buffer_entry_type* tx_pdu_buffer[CANIF_MAX_ACTIVATED_CORE_CNT];
+extern uint16* buffer_start_index[CANIF_MAX_ACTIVATED_CORE_CNT];
+#if (CANIF_TX_BUF_FIFO_ENABLE == STD_ON)
+extern canif_fifo_buffer_info_type* fifo_buffer_info[CANIF_MAX_ACTIVATED_CORE_CNT];
+#endif
+#endif
+
+#if (CANIF_PUBLIC_TXBUFFER_MAX_DEPTH_FETCH_SUPPORT == STD_ON)
+extern uint16* canif_tx_buffer_max_depth[CANIF_MAX_ACTIVATED_CORE_CNT];
+#endif
+
+#if (CANIF_PUBLIC_TX_BUFFERING == STD_ON)
+#define CANIF_START_SEC_CONST
+#include "canif_memmap.h"
+extern CONST(canif_tx_buffer_index_range_type, CANIF_CONST) canif_tx_buffer_index_range[CANIF_MAX_ACTIVATED_CORE_CNT];
+extern CONST(canif_tx_buffer_index_range_type, CANIF_CONST) canif_tx_buffer_lpdu_index_range[CANIF_MAX_ACTIVATED_CORE_CNT];
+#define CANIF_STOP_SEC_CONST
+#include "canif_memmap.h"
+#endif
+
+#define CANIF_START_SEC_CONST
+#include "canif_memmap.h"
+
+extern CONST(canif_user_rx_indication_fct_list_type, CANIF_CONST) canif_user_rx_indications[CANIF_ULMOUDLE_COUNT];
+extern CONST(canif_user_tx_confirmation_type, CANIF_CONST) canif_user_tx_confirmations[CANIF_ULMOUDLE_COUNT];
+extern CONST(canif_dispatch_config_type, CANIF_CONST) canif_dispatch_config;
+
+#define CANIF_STOP_SEC_CONST
+#include "canif_memmap.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CANIF_PBCFG_H */
+{{ "" }}

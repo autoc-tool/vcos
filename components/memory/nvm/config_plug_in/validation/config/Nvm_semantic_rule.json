@@ -1,0 +1,140 @@
+{
+    "NVM012001": {
+        "rule_name": "NVM012001",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of NvMCalcRamBlockCrc and NvMBlockUseCrc.",
+        "rule_message": "NvMBlockUseCrc should be 'true' if NvMCalcRamBlockCrc is 'true'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMCalcRamBlockCrc",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMBlockUseCrc",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "NVM012002": {
+        "rule_name": "NVM012002",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of NvMRomBlockNum and NvMRomBlockDataAddress.",
+        "rule_message": "NvMRomBlockNum should be '0' if NvMRomBlockDataAddress is 'NULL', 'NULL_PTR', '' or None.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRomBlockDataAddress",
+                        "value_operator": "==",
+                        "value": "NULL",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRomBlockDataAddress",
+                        "value_operator": "==",
+                        "value": "NULL_PTR",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRomBlockDataAddress",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRomBlockDataAddress",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRomBlockNum",
+                        "value_operator": "==",
+                        "value": 0,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "NVM012003": {
+        "rule_name": "NVM012003",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of NvMBlockUseCrc and NvMBlockUseCRCCompMechanism.",
+        "rule_message": "NvMBlockUseCrc should be 'true' if NvMBlockUseCRCCompMechanism is 'true'.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMBlockUseCRCCompMechanism",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMBlockUseCrc",
+                        "value_operator": "==",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    },
+    "NVM012004": {
+        "rule_name": "NVM012004",
+        "rule_type": "same_container_linkage_check",
+        "rule_summary": "The linkage check of NvMRamBlockDataAddress and NvMAutoBlockLength.",
+        "rule_message": "NvMAutoBlockLength should not be 'true' if NvMBlockUseCRCCompMechanism is 'NULL', '' or None.",
+        "rule_ruleset": {
+            "ruleset_01": {
+                "base_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor",
+                "condition": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRamBlockDataAddress",
+                        "value_operator": "==",
+                        "value": "NULL",
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRamBlockDataAddress",
+                        "value_operator": "==",
+                        "value": null,
+                        "logical_operator": "or"
+                    },
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMRamBlockDataAddress",
+                        "value_operator": "==",
+                        "value": "",
+                        "logical_operator": "or"
+                    }
+                ],
+                "judgement": [
+                    {
+                        "mod_path": "/AUTOSAR/EcucDefs/NvM/NvMBlockDescriptor/NvMAutoBlockLength",
+                        "value_operator": "!=",
+                        "value": true,
+                        "logical_operator": "and"
+                    }
+                ]
+            }
+        }
+    }
+}

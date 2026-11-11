@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00046.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE UUID="123456">
+      <SHORT-NAME>AUTOSAR</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE UUID="123456">
+          <SHORT-NAME>ComM_swc</SHORT-NAME>
+          <ELEMENTS>
+            <MODE-DECLARATION-GROUP UUID="123456">
+              <SHORT-NAME>ComMMode</SHORT-NAME>
+              <INITIAL-MODE-REF DEST="MODE-DECLARATION">/AUTOSAR/ComM_swc/ComMMode/COMM_NO_COMMUNICATION</INITIAL-MODE-REF>
+              <MODE-DECLARATIONS>
+                <MODE-DECLARATION UUID="123456">
+                  <SHORT-NAME>COMM_NO_COMMUNICATION</SHORT-NAME>
+                </MODE-DECLARATION>
+                <MODE-DECLARATION UUID="123456">
+                  <SHORT-NAME>COMM_SILENT_COMMUNICATION</SHORT-NAME>
+                </MODE-DECLARATION>
+                <MODE-DECLARATION UUID="123456">
+                  <SHORT-NAME>COMM_FULL_COMMUNICATION</SHORT-NAME>
+                </MODE-DECLARATION>
+              </MODE-DECLARATIONS>
+            </MODE-DECLARATION-GROUP>
+            <DATA-TYPE-MAPPING-SET UUID="123456">
+              <SHORT-NAME>ComMMode_DataTypeMappingSet</SHORT-NAME>
+              <DESC>
+                <L-2 L="FOR-ALL">Data Mapping for the Mode Declaration Group ComMMode.</L-2>
+              </DESC>
+              <MODE-REQUEST-TYPE-MAPS>
+                <MODE-REQUEST-TYPE-MAP>
+                  <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/ComM_ModeType</IMPLEMENTATION-DATA-TYPE-REF>
+                  <MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP">/AUTOSAR/ComM_swc/ComMMode</MODE-GROUP-REF>
+                </MODE-REQUEST-TYPE-MAP>
+              </MODE-REQUEST-TYPE-MAPS>
+            </DATA-TYPE-MAPPING-SET>
+          </ELEMENTS>
+          <AR-PACKAGES>
+            <AR-PACKAGE UUID="123456">
+              <SHORT-NAME>DataTypes</SHORT-NAME>
+              <ELEMENTS>
+                {%- set data_types_elements_list =  comm_package["datatypes_pkg"]["elements"]%}
+                {%- for data_types_element in data_types_elements_list %}
+                <IMPLEMENTATION-DATA-TYPE UUID="123456">
+                  <SHORT-NAME>{{data_types_element["short_name"]}}</SHORT-NAME>
+                  {%- if data_types_element["category"] == "Type" %}
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  {%- elif data_types_element["category"] == "Array" %}
+                  <CATEGORY>ARRAY</CATEGORY>
+                  {%- elif data_types_element["category"] == "Structure" %}
+                  <CATEGORY>STRUCTURE</CATEGORY>
+                  {%- endif %}
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        {%- if "compu_method_ref" in data_types_element["sw_data_def"].keys()%}
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/AUTOSAR/ComM_swc/DataTypes/CompuMethods/{{data_types_element["sw_data_def"]["compu_method_ref"]}}</COMPU-METHOD-REF>
+                        {%- endif %}
+                        {%- if "data_constr_ref" in data_types_element["sw_data_def"].keys()%}
+                        <DATA-CONSTR-REF DEST="DATA-CONSTR">/AUTOSAR/ComM_swc/DataTypes/DataConstrs/{{data_types_element["sw_data_def"]["data_constr_ref"]}}</DATA-CONSTR-REF>
+                        {%- endif %}
+                        {%- if "implementation_data_type" in data_types_element["sw_data_def"].keys()%}
+                        {%- if data_types_element["sw_data_def"]["IsType"]|lower == "false" %}
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/{{data_types_element["sw_data_def"]["implementation_data_type"]}}</IMPLEMENTATION-DATA-TYPE-REF>
+                        {%- else %}
+                        <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/{{data_types_element["sw_data_def"]["implementation_data_type"]}}</IMPLEMENTATION-DATA-TYPE-REF>
+                        {%- endif %}
+                        {%- endif %}
+                        {%- if "calibration_access" in data_types_element["sw_data_def"].keys()%}
+                        <SW-CALIBRATION-ACCESS>{{data_types_element["sw_data_def"]["calibration_access"]}}</SW-CALIBRATION-ACCESS>
+                        {%- endif %}
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                  {%- if data_types_element["type_emitter"] %}
+                  <TYPE-EMITTER>{{data_types_element["type_emitter"]}}</TYPE-EMITTER>
+                  {%- endif %}
+                  {%- if "sub_element" in data_types_element.keys()%}
+                  <SUB-ELEMENTS>
+                    {%- if data_types_element["category"] == "Array" %}
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT UUID="123456">
+                      <SHORT-NAME>{{data_types_element["short_name"]}}Element</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <ARRAY-SIZE>{{data_types_element["sub_element"]["array_size"]}}</ARRAY-SIZE>
+                      <ARRAY-SIZE-SEMANTICS>FIXED-SIZE</ARRAY-SIZE-SEMANTICS>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/{{data_types_element["sub_element"]["element_type"]}}</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    {%- else %}
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT UUID="123456">
+                      <SHORT-NAME>numberOfRequesters</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/uint8</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT UUID="123456">
+                      <SHORT-NAME>handleArray</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/ComM_UserHandleSubArrayType_{{get_channel_name(data_types_element["short_name"])}}</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    {%- endif %}
+                  </SUB-ELEMENTS>
+                  {%- endif %}
+                </IMPLEMENTATION-DATA-TYPE>
+                {%- endfor %}
+              </ELEMENTS>
+              <AR-PACKAGES>
+                <AR-PACKAGE UUID="123456">
+                  <SHORT-NAME>DataConstrs</SHORT-NAME>
+                  <ELEMENTS>
+                    <DATA-CONSTR UUID="123456">
+                      <SHORT-NAME>ComM_ModeType_Constr</SHORT-NAME>
+                      <DATA-CONSTR-RULES>
+                        <DATA-CONSTR-RULE>
+                          <INTERNAL-CONSTRS>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">3</UPPER-LIMIT>
+                          </INTERNAL-CONSTRS>
+                        </DATA-CONSTR-RULE>
+                      </DATA-CONSTR-RULES>
+                    </DATA-CONSTR>
+                    <DATA-CONSTR UUID="123456">
+                      <SHORT-NAME>ComM_InhibitionStatusType_Constr</SHORT-NAME>
+                      <DATA-CONSTR-RULES>
+                        <DATA-CONSTR-RULE>
+                          <INTERNAL-CONSTRS>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
+                          </INTERNAL-CONSTRS>
+                        </DATA-CONSTR-RULE>
+                      </DATA-CONSTR-RULES>
+                    </DATA-CONSTR>
+                    <DATA-CONSTR UUID="123456">
+                      <SHORT-NAME>ComM_UserHandleType_Constr</SHORT-NAME>
+                      <DATA-CONSTR-RULES>
+                        <DATA-CONSTR-RULE>
+                          <INTERNAL-CONSTRS>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">65535</UPPER-LIMIT>
+                          </INTERNAL-CONSTRS>
+                        </DATA-CONSTR-RULE>
+                      </DATA-CONSTR-RULES>
+                    </DATA-CONSTR>
+                    <DATA-CONSTR UUID="123456">
+                      <SHORT-NAME>NetworkHandleType_Constr</SHORT-NAME>
+                      <DATA-CONSTR-RULES>
+                        <DATA-CONSTR-RULE>
+                          <INTERNAL-CONSTRS>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
+                          </INTERNAL-CONSTRS>
+                        </DATA-CONSTR-RULE>
+                      </DATA-CONSTR-RULES>
+                    </DATA-CONSTR>
+                  </ELEMENTS>
+                </AR-PACKAGE>
+                <AR-PACKAGE UUID="123456">
+                  <SHORT-NAME>CompuMethods</SHORT-NAME>
+                  <ELEMENTS>
+                    <COMPU-METHOD UUID="123456">
+                      <SHORT-NAME>ComM_ModeType</SHORT-NAME>
+                      <CATEGORY>TEXTTABLE</CATEGORY>
+                      <COMPU-INTERNAL-TO-PHYS>
+                        <COMPU-SCALES>
+                          <COMPU-SCALE>
+                            <SHORT-LABEL>COMM_NO_COMMUNICATION</SHORT-LABEL>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">0</UPPER-LIMIT>
+                            <COMPU-CONST>
+                              <VT>COMM_NO_COMMUNICATION</VT>
+                            </COMPU-CONST>
+                          </COMPU-SCALE>
+                          <COMPU-SCALE>
+                            <SHORT-LABEL>COMM_SILENT_COMMUNICATION</SHORT-LABEL>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">1</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">1</UPPER-LIMIT>
+                            <COMPU-CONST>
+                              <VT>COMM_SILENT_COMMUNICATION</VT>
+                            </COMPU-CONST>
+                          </COMPU-SCALE>
+                          <COMPU-SCALE>
+                            <SHORT-LABEL>COMM_FULL_COMMUNICATION</SHORT-LABEL>
+                            <LOWER-LIMIT INTERVAL-TYPE="CLOSED">2</LOWER-LIMIT>
+                            <UPPER-LIMIT INTERVAL-TYPE="CLOSED">2</UPPER-LIMIT>
+                            <COMPU-CONST>
+                              <VT>COMM_FULL_COMMUNICATION</VT>
+                            </COMPU-CONST>
+                          </COMPU-SCALE>
+                        </COMPU-SCALES>
+                      </COMPU-INTERNAL-TO-PHYS>
+                    </COMPU-METHOD>
+                  </ELEMENTS>
+                </AR-PACKAGE>
+              </AR-PACKAGES>
+            </AR-PACKAGE>
+            {%- set interfaces_pkg = comm_package["interfaces_pkg"] %}
+            <AR-PACKAGE UUID="123456">
+              <SHORT-NAME>Interfaces</SHORT-NAME>
+              <ELEMENTS>
+                {%- set mode_switch_interfaces_list = interfaces_pkg["mode_switch"]%}
+                {%- set sender_receiver_interfaces_list = interfaces_pkg["sender_receiver"]%}
+                {%- set client_server_interfaces_list = interfaces_pkg["client_server"]%}
+                {%- if mode_switch_interfaces_list|length > 0 %}
+                {%- for mode_switch_interface in mode_switch_interfaces_list %}
+                <MODE-SWITCH-INTERFACE UUID="123456">
+                  <SHORT-NAME>{{mode_switch_interface["short_name"]}}</SHORT-NAME>
+                  <IS-SERVICE>{{mode_switch_interface["is_server"]|lower}}</IS-SERVICE>
+                  <SERVICE-KIND>COM-MANAGER</SERVICE-KIND>
+                  <MODE-GROUP UUID="123456">
+                    <SHORT-NAME>{{mode_switch_interface["prototype"]}}</SHORT-NAME>
+                    <TYPE-TREF DEST="MODE-DECLARATION-GROUP">/AUTOSAR/ComM_swc/{{mode_switch_interface["mode_group"]}}</TYPE-TREF>
+                  </MODE-GROUP>
+                </MODE-SWITCH-INTERFACE>
+                {%- endfor %}
+                {%- endif %}
+
+                {%- if sender_receiver_interfaces_list|length > 0 %}
+                {%- for sender_receiver_interface in sender_receiver_interfaces_list %}
+                <SENDER-RECEIVER-INTERFACE UUID="123456">
+                  <SHORT-NAME>{{sender_receiver_interface["short_name"]}}</SHORT-NAME>
+                  <IS-SERVICE>{{sender_receiver_interface["is_server"]|lower}}</IS-SERVICE>
+                  <DATA-ELEMENTS>
+                    {%- for element in sender_receiver_interface["data_elements"] %}
+                    <VARIABLE-DATA-PROTOTYPE UUID="123456">
+                      <SHORT-NAME>{{element["short_name"]}}</SHORT-NAME>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <SW-CALIBRATION-ACCESS>{{element["calibration_access"]}}</SW-CALIBRATION-ACCESS>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                      <TYPE-TREF DEST="APPLICATION-PRIMITIVE-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/{{element["type"]}}</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+                    {%- endfor %}
+                  </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+                {%- endfor %}
+                {%- endif %}
+
+                {%- if client_server_interfaces_list|length > 0 %}
+                {%- for client_server_interface in client_server_interfaces_list %}
+                <CLIENT-SERVER-INTERFACE UUID="123456">
+                  <SHORT-NAME>{{client_server_interface["short_name"]}}</SHORT-NAME>
+                  <IS-SERVICE>{{client_server_interface["is_server"]|lower}}</IS-SERVICE>
+                  <SERVICE-KIND>COM-MANAGER</SERVICE-KIND>
+                  <OPERATIONS>
+                    {%- set interface_operations_list =  client_server_interface["operations"] %}
+                    {%- for interface_operation in interface_operations_list %}
+                    <CLIENT-SERVER-OPERATION UUID="123456">
+                      <SHORT-NAME>{{interface_operation["short_name"]}}</SHORT-NAME>
+                      <DESC>
+                        <L-2 L="FOR-ALL"/>
+                      </DESC>
+                      <ARGUMENTS>
+                        {%- if "arguments" in interface_operation.keys() %}
+                        {%- set operation_arguments_list = interface_operation["arguments"]%}
+                        {%- for operation_argument in operation_arguments_list %}
+                        <ARGUMENT-DATA-PROTOTYPE UUID="123456">
+                          <SHORT-NAME>{{operation_argument["short_name"]}}</SHORT-NAME>
+                          <DESC>
+                            <L-2 L="FOR-ALL"/>
+                          </DESC>
+                          {%- if operation_argument["IsType"]|lower == "true" %}
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/{{operation_argument["TypeTref"]}}</TYPE-TREF>
+                          {%- else %}
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/{{operation_argument["TypeTref"]}}</TYPE-TREF>
+                          {%- endif %}
+                          <DIRECTION>{{operation_argument["Direction"]}}</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                        {%- endfor %}
+                        {%- endif %}
+                      </ARGUMENTS>
+                      <POSSIBLE-ERROR-REFS>
+                        {%- set error_refs_list = interface_operation["possible_errors"]%}
+                        {%- for error_ref in error_refs_list %}
+                        <POSSIBLE-ERROR-REF DEST="APPLICATION-ERROR">/AUTOSAR/ComM_swc/Interfaces/{{client_server_interface["short_name"]}}/{{error_ref}}</POSSIBLE-ERROR-REF>
+                        {%- endfor %}
+                      </POSSIBLE-ERROR-REFS>
+                    </CLIENT-SERVER-OPERATION>
+                    {%- endfor %}
+                  </OPERATIONS>
+                  <POSSIBLE-ERRORS>
+                    {%- set possible_errors_list =  client_server_interface["possible_errors"] %}
+                    {%- for possible_error in possible_errors_list %}
+                    <APPLICATION-ERROR UUID="123456">
+                      <SHORT-NAME>{{possible_error["short_name"]}}</SHORT-NAME>
+                      <ERROR-CODE>{{possible_error["error_code"]}}</ERROR-CODE>
+                    </APPLICATION-ERROR>
+                    {%- endfor %}
+                  </POSSIBLE-ERRORS>
+                </CLIENT-SERVER-INTERFACE>
+                {%- endfor %}
+                {%- endif %}
+              </ELEMENTS>
+            </AR-PACKAGE>
+
+            {%- set componenttypes_pkg = comm_package["componenttypes_pkg"] %}
+            {%- set main_functions = componenttypes_pkg["main_function"] %}
+            <AR-PACKAGE UUID="123456">
+              <SHORT-NAME>ComponentTypes</SHORT-NAME>
+              <ELEMENTS>
+                <SERVICE-SW-COMPONENT-TYPE UUID="123456">
+                  <SHORT-NAME>ComM</SHORT-NAME>
+                  <CATEGORY>SERVICE_COMPONENT</CATEGORY>
+                  <PORTS>
+                    {%- set pports_list = componenttypes_pkg["pports"] %}
+                    {%- if pports_list|length > 0 %}
+                    {%- for pport in pports_list %}
+                    <P-PORT-PROTOTYPE UUID="123456">
+                    <SHORT-NAME>{{pport["short_name"]}}</SHORT-NAME>
+                    {%- if pport["interface_type"] == "client_server" %}
+                    <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/AUTOSAR/ComM_swc/Interfaces/{{pport["interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                    {%- elif pport["interface_type"] == "sender_receiver" %}
+                    <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/AUTOSAR/ComM_swc/Interfaces/{{pport["interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                    {%- elif pport["interface_type"] == "mode_switch" %}
+                    <PROVIDED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">/AUTOSAR/ComM_swc/Interfaces/{{pport["interface_ref"]}}</PROVIDED-INTERFACE-TREF>
+                    {%- endif %}
+                    </P-PORT-PROTOTYPE>
+                    {%- endfor %}
+                    {%- endif %}
+
+                    {%- set rports_list = componenttypes_pkg["rports"] %}
+                    {%- if rports_list|length > 0 %}
+                    {%- for rport in rports_list %}
+                    <R-PORT-PROTOTYPE UUID="123456">
+                    <SHORT-NAME>{{rport["short_name"]}}</SHORT-NAME>
+                    {%- if rport["interface_type"] == "client_server" %}
+                    <REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/AUTOSAR/ComM_swc/Interfaces/{{rport["interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                    {%- elif rport["interface_type"] == "sender_receiver" %}
+                    <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/AUTOSAR/ComM_swc/Interfaces/{{rport["interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                    {%- elif rport["interface_type"] == "mode_switch" %}
+                    <REQUIRED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">/AUTOSAR/ComM_swc/Interfaces/{{rport["interface_ref"]}}</REQUIRED-INTERFACE-TREF>
+                    {%- endif %}
+                    </R-PORT-PROTOTYPE>
+                    {%- endfor %}
+                    {%- endif %}
+                  </PORTS>
+                  <INTERNAL-BEHAVIORS>
+                    <SWC-INTERNAL-BEHAVIOR UUID="123456">
+                      <SHORT-NAME>ComMInternalBehavior</SHORT-NAME>
+                      <DATA-TYPE-MAPPING-REFS>
+                        <DATA-TYPE-MAPPING-REF DEST="DATA-TYPE-MAPPING-SET">/AUTOSAR/ComM_swc/ComMMode_DataTypeMappingSet</DATA-TYPE-MAPPING-REF>
+                      </DATA-TYPE-MAPPING-REFS>
+                      <EVENTS>
+
+                        {%- if main_functions|length > 0 %}
+                        {%- for main_function in main_functions %}
+                        <TIMING-EVENT UUID="123456">
+                          <SHORT-NAME>Timer_{{main_function["short_name"]}}</SHORT-NAME>
+                          <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/AUTOSAR/ComM_swc/ComponentTypes/ComM/ComMInternalBehavior/{{main_function["short_name"]}}</START-ON-EVENT-REF>
+                          <PERIOD>{{main_function["period"]}}</PERIOD>
+                        </TIMING-EVENT>
+                        {%- endfor %}
+                        {%- endif %}
+
+                        {%- set operation_events_list = componenttypes_pkg["operation_events"] %}
+                        {%- if operation_events_list|length > 0 %}
+                        {%- for operation_event in operation_events_list %}
+                        <OPERATION-INVOKED-EVENT UUID="123456">
+                          <SHORT-NAME>{{operation_event["short_name"]}}</SHORT-NAME>
+                          <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/AUTOSAR/ComM_swc/ComponentTypes/ComM/ComMInternalBehavior/{{operation_event["start_on_event_ref"]}}</START-ON-EVENT-REF>
+                          <OPERATION-IREF>
+                            <CONTEXT-P-PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/ComM_swc/ComponentTypes/ComM/{{operation_event["pport_ref"]}}</CONTEXT-P-PORT-REF>
+                            <TARGET-PROVIDED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/AUTOSAR/ComM_swc/Interfaces/{{operation_event["interface_ref"]}}/{{operation_event["operation_ref"]}}</TARGET-PROVIDED-OPERATION-REF>
+                        </OPERATION-IREF>
+                        </OPERATION-INVOKED-EVENT>
+                        {%- endfor %}
+                        {%- endif %}
+                      </EVENTS>
+                      <HANDLE-TERMINATION-AND-RESTART>NO-SUPPORT</HANDLE-TERMINATION-AND-RESTART>
+                      <INCLUDED-DATA-TYPE-SETS>
+                        <INCLUDED-DATA-TYPE-SET>
+                          <DATA-TYPE-REFS>
+                            <DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/ComM_ModeType</DATA-TYPE-REF>
+                            <DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/ComM_InhibitionStatusType</DATA-TYPE-REF>
+                            <DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/ComM_UserHandleType</DATA-TYPE-REF>
+                            <DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/NetworkHandleType</DATA-TYPE-REF>
+                          </DATA-TYPE-REFS>
+                        </INCLUDED-DATA-TYPE-SET>
+                      </INCLUDED-DATA-TYPE-SETS>
+
+                      <PORT-API-OPTIONS>
+                        {%- if pports_list|length > 0 %}
+                        {%- for pport in pports_list %}
+                        <PORT-API-OPTION>
+                          <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                          <INDIRECT-API>false</INDIRECT-API>
+                          {%- if pport["argument"] %}
+                          <PORT-ARG-VALUES>
+                            <PORT-DEFINED-ARGUMENT-VALUE>
+                              <VALUE>
+                                <NUMERICAL-VALUE-SPECIFICATION>
+                                  <VALUE>{{pport["argument"]["value"]}}</VALUE>
+                                </NUMERICAL-VALUE-SPECIFICATION>
+                              </VALUE>
+                              <VALUE-TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR/ComM_swc/DataTypes/{{pport["argument"]["type"]}}</VALUE-TYPE-TREF>
+                            </PORT-DEFINED-ARGUMENT-VALUE>
+                          </PORT-ARG-VALUES>
+                          {%- endif %}
+                          <PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/ComM_swc/ComponentTypes/ComM/{{pport["short_name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor %}
+                        {%- endif %}
+                        {%- if rports_list|length > 0 %}
+                        {%- for rport in rports_list %}
+                        <PORT-API-OPTION>
+                          <ENABLE-TAKE-ADDRESS>true</ENABLE-TAKE-ADDRESS>
+                          <INDIRECT-API>false</INDIRECT-API>
+                          <PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/ComM_swc/ComponentTypes/ComM/{{rport["short_name"]}}</PORT-REF>
+                        </PORT-API-OPTION>
+                        {%- endfor %}
+                        {%- endif %}
+                      </PORT-API-OPTIONS>
+
+                      <RUNNABLES>
+                        {%- if main_functions|length > 0 %}
+                        {%- for main_function in main_functions %}
+                        <RUNNABLE-ENTITY UUID="123456">
+                          <SHORT-NAME>{{main_function["short_name"]}}</SHORT-NAME>
+                          <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                          <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
+
+                          {%- set data_send_points = main_function["data_send_points"] %}
+                          {%- if data_send_points|length > 0 %}
+                          <DATA-SEND-POINTS>
+                            {%- for data_send_point in data_send_points %}
+                            <VARIABLE-ACCESS UUID="123456">
+                              <SHORT-NAME>{{data_send_point["short_name"]}}</SHORT-NAME>
+                              <ACCESSED-VARIABLE>
+                                <AUTOSAR-VARIABLE-IREF>
+                                  <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/ComM_swc/ComponentTypes/ComM/{{data_send_point["port_ref"]}}</PORT-PROTOTYPE-REF>
+                                  <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/AUTOSAR/ComM_swc/Interfaces/{{data_send_point["interface_ref"]}}/{{data_send_point["data"]["short_name"]}}</TARGET-DATA-PROTOTYPE-REF>
+                                </AUTOSAR-VARIABLE-IREF>
+                              </ACCESSED-VARIABLE>
+                            </VARIABLE-ACCESS>
+                            {%- endfor %}
+                          </DATA-SEND-POINTS>
+                          {%- endif %}
+
+                          {%- set mode_switch_points = main_function["mode_switch_points"] %}
+                          {%- if mode_switch_points|length > 0 %}
+                          <MODE-SWITCH-POINTS>
+                              {%- for mode_switch_point in mode_switch_points %}
+                              <MODE-SWITCH-POINT UUID="123456">
+                                <SHORT-NAME>{{mode_switch_point["short_name"]}}</SHORT-NAME>
+                                <MODE-GROUP-IREF>
+                                    <CONTEXT-P-PORT-REF DEST="P-PORT-PROTOTYPE">/AUTOSAR/ComM_swc/ComponentTypes/ComM/{{mode_switch_point["port_ref"]}}</CONTEXT-P-PORT-REF>
+                                    <TARGET-MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/AUTOSAR/ComM_swc/Interfaces/{{mode_switch_point["interface_ref"]}}/{{mode_switch_point["prototype_ref"]}}</TARGET-MODE-GROUP-REF>
+                                </MODE-GROUP-IREF>
+                              </MODE-SWITCH-POINT>
+                              {%- endfor %}
+                          </MODE-SWITCH-POINTS>
+                          {%- endif %}
+
+                          {%- set server_call_points = main_function["server_call_points"] %}
+                          {%- if server_call_points|length > 0 %}
+                          <SERVER-CALL-POINTS>
+                              {%- for server_call_point in server_call_points %}
+                              <SYNCHRONOUS-SERVER-CALL-POINT UUID="123456">
+                              <SHORT-NAME>{{server_call_point["short_name"]}}</SHORT-NAME>
+                              <OPERATION-IREF>
+                                  <CONTEXT-R-PORT-REF DEST="R-PORT-PROTOTYPE">/AUTOSAR/ComM_swc/ComponentTypes/ComM/{{server_call_point["port_ref"]}}</CONTEXT-R-PORT-REF>
+                                  <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/AUTOSAR/ComM_swc/Interfaces/{{server_call_point["interface_ref"]}}/{{server_call_point["operation_ref"]}}</TARGET-REQUIRED-OPERATION-REF>
+                              </OPERATION-IREF>
+                              <TIMEOUT>0</TIMEOUT>
+                              </SYNCHRONOUS-SERVER-CALL-POINT>
+                              {%- endfor %}
+                          </SERVER-CALL-POINTS>
+                          {%- endif %}
+                          <SYMBOL>{{main_function["short_name"]}}</SYMBOL>
+                        </RUNNABLE-ENTITY>
+                        {%- endfor %}
+                        {%- endif %}
+
+                        {%- set server_runnables_list = componenttypes_pkg["server_runnables"] %}
+                        {%- for server_runnable in server_runnables_list %}
+                        <RUNNABLE-ENTITY UUID="123456">
+                        <SHORT-NAME>{{server_runnable["short_name"]}}</SHORT-NAME>
+                        <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                        <CAN-BE-INVOKED-CONCURRENTLY>true</CAN-BE-INVOKED-CONCURRENTLY>
+                        <SYMBOL>{{server_runnable["symbol"]}}</SYMBOL>
+                        </RUNNABLE-ENTITY>
+                        {%- endfor %}
+                      </RUNNABLES>
+                      <SUPPORTS-MULTIPLE-INSTANTIATION>false</SUPPORTS-MULTIPLE-INSTANTIATION>
+                    </SWC-INTERNAL-BEHAVIOR>
+                  </INTERNAL-BEHAVIORS>
+                </SERVICE-SW-COMPONENT-TYPE>
+                <SWC-IMPLEMENTATION UUID="123456">
+                  <SHORT-NAME>ComMImplementation</SHORT-NAME>
+                  <PROGRAMMING-LANGUAGE>C</PROGRAMMING-LANGUAGE>
+                  <BEHAVIOR-REF DEST="SWC-INTERNAL-BEHAVIOR">/AUTOSAR/ComM_swc/ComponentTypes/ComM/ComMInternalBehavior</BEHAVIOR-REF>
+                </SWC-IMPLEMENTATION>
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

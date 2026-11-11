@@ -1,0 +1,103 @@
+#include "Det.h"
+#include "Det_Internal.h"
+#include "Compiler.h" // #include "MemMap_Compiler.h"
+#define  DET_START_SEC_CONST
+#include "det_memmap.h"
+#if (DET_ENABLE_RUNTIME_ERROR_CALLOUT == STD_ON)
+
+{%- for runtime in  get_runtime_func_config()%}
+{%- if runtime != "NULL_PTR" %}
+extern Std_ReturnType  {{runtime}}( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
+{%-endif %}
+{%-endfor%}
+
+CONST(Det_CalloutTableType, DET_CONST) Det_RuntimeErrorCalloutTable[DET_RUNTIMEERR_CALLOUT_TABLE_NUMBER] =
+{
+{%- for runtime in  get_runtime_func_config()%}
+       &{{runtime}},
+{%-endfor%}
+};
+#endif
+
+#if (DET_ENABLE_TRANSIENT_FAULT_CALLOUT == STD_ON)
+{%- for runtime in  get_transient_func_config() %}
+{%- if runtime != "NULL_PTR" %}
+extern Std_ReturnType  {{runtime}}( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
+{%-endif %}
+{%-endfor%}
+
+CONST(Det_CalloutTableType, DET_CONST) Det_TransientFaultCalloutTable[DET_TRANSIENT_FAULT_CALLOUT_NUMBER] =
+{
+{%- for runtime in  get_transient_func_config() %}
+       &{{runtime}},
+{%-endfor%}
+};
+#endif
+
+#if (DET_ENABLE_ERROR_HOOK == STD_ON)
+{%- for runtime in  get_errorhook_func_config()%}
+{%- if runtime != "NULL_PTR" and runtime != "errorhook_test"%}
+extern Std_ReturnType  {{runtime}}( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
+{%-elif runtime == "errorhook_test"%}
+#if(VCOS_MODULE_CONFIG_AUTOTEST == 1)
+extern Std_ReturnType  {{runtime}}( uint16 ModuleId, uint8 InstanceId , uint8 ApiId, uint8 ErrorId);
+#endif
+{%-endif %}
+{%-endfor%}
+
+CONST(Det_CalloutTableType, DET_CONST) Det_ErrorHookTable[DET_ERROR_HOOK_TABLE_NUMBER] =
+{
+{%- for runtime in  get_errorhook_func_config()%}
+{%- if runtime == "errorhook_test" %}
+#if(VCOS_MODULE_CONFIG_AUTOTEST == 1)
+       &{{runtime}},
+#endif
+{%- else %}
+       &{{runtime}},
+{%- endif%}
+{%-endfor%}
+};
+
+#endif /*(DET_ENABLE_ERROR_HOOK==STD_ON) */
+
+
+CONST(Det_ModuleInfo, DET_CONST) Module_Flow_Info[BSW_MODULE_NUM] = {
+    {{get_module_flow_control_info()}}
+};
+#define  DET_STOP_SEC_CONST
+#include "det_memmap.h"
+
+
+{%- set detflowcontrolinfo = get_det_flow_control_config()%}
+
+{%- set detmoduleinfo = get_det_module_flow_config()%}
+#define DET_START_SEC_MULTI_APP_DATA
+#include "det_memmap.h"
+
+
+VAR(Det_TokenBucket, DET_MULTI_APP_DATA) Det_Bucket= {
+       .capacity = DET_BUCKET_CPPACITY,
+       {% if(detflowcontrolinfo["FlowControlNum"] == 0) -%}
+       .tokens = {0},
+       .last_time = 0,
+       .detModuleLockFlag = {0},
+       .globallockflag = 0,
+       .globaltokennum = DET_BUCKET_CPPACITY,
+       {%- else %}
+       .tokens = {
+              {%- for index in range(detmoduleinfo  | length)  -%}
+                     {{detmoduleinfo[index]["ModuleFlowNum"]}},
+              {%-endfor -%}
+       },
+       .last_time = 0,
+       .detModuleLockFlag = {
+              {%- for index in range(detmoduleinfo  | length)  -%}
+                     {{0}},
+              {%-endfor -%}
+       },
+       .globallockflag = 0,
+       .globaltokennum = DET_BUCKET_CPPACITY,
+       {%- endif %}
+};
+#define DET_STOP_SEC_MULTI_APP_DATA
+#include "det_memmap.h"

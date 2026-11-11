@@ -1,0 +1,512 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+{%- set cdd_prefix_name = get_cdd_module_info() %}
+/*!*********************************************************************************************************************
+ * @file        {{cdd_prefix_name['cdd_prefix_name'] | upper}}.h
+ * @brief       {{cdd_prefix_name['cdd_prefix_name'] | upper}}头文件
+ * @details     主要包含Cdd回调的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_H
+#define {{cdd_prefix_name['cdd_prefix_name'] | upper}}_H
+
+#include "Std_Types.h"
+#include "comstack_types.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/* Global Macro Definition */
+{%- set cdd_pdu = get_cdd_pdu() %}
+{%- for ContributionTypeName, ContributionTypeValue in cdd_pdu.items() %}
+{# 生成根据PduRef关联的Pdu拼接成对应的PDU宏以及宏值 #}
+
+{%- if ContributionTypeName == 'PduRUpperLayer' %}
+{%- if ContributionTypeValue['stackIsExist'] == 'True' %}
+{%- set tx_pdu = ContributionTypeValue['PduInfo']['TxPdu'] %}
+{%- set tx_pdu_existed = ContributionTypeValue['PduInfo']['TxPduExisted'] %}
+/* CddPduRUpperLayerContribution communication Tx PDUs */
+{%- for tx_pdusFromStackValue in tx_pdu %}
+{%- if tx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_PDU_ID_{{tx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] | upper ~ "_PDU_ID_" ~ tx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(tx_pdusFromStackValue['PduHandleId'])) }}u)  ///< CDD对应的发送PduId
+#endif
+{%- endif %}
+{%- endfor %}
+
+{%- set rx_pdu = ContributionTypeValue['PduInfo']['RxPdu'] %}
+{%- set rx_pdu_existed = ContributionTypeValue['PduInfo']['RxPduExisted'] %}
+/* CddPduRUpperLayerContribution communication Rx PDUs */
+{%- for rx_pdusFromStackValue in rx_pdu %}
+{%- if rx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_PDU_ID_{{rx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] | upper ~ "_PDU_ID_" ~ rx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(rx_pdusFromStackValue['PduHandleId'])) }}u)  ///< CDD对应的接收PduId
+#endif
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if ContributionTypeName == 'PduRLowerLayer' %}
+{%- if ContributionTypeValue['stackIsExist'] == 'True' %}
+{%- set tx_pdu = ContributionTypeValue['PduInfo']['TxPdu'] %}
+{%- set tx_pdu_existed = ContributionTypeValue['PduInfo']['TxPduExisted'] %}
+/* CddPduRLowerLayerContribution communication Tx PDUs */
+{%- for tx_pdusFromStackValue in tx_pdu %}
+{%- if tx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_PDU_ID_{{tx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] | upper ~ "_PDU_ID_" ~ tx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(tx_pdusFromStackValue['PduHandleId'])) }}u)   ///< CDD对应的发送PduId
+#endif
+{%- endif %}
+{%- endfor %}
+
+{%- set rx_pdu = ContributionTypeValue['PduInfo']['RxPdu'] %}
+{%- set rx_pdu_existed = ContributionTypeValue['PduInfo']['RxPduExisted'] %}
+/* CddPduRLowerLayerContribution communication Rx PDUs */
+{%- for rx_pdusFromStackValue in rx_pdu %}
+{%- if rx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_PDU_ID_{{rx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] | upper ~ "_PDU_ID_" ~ rx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(rx_pdusFromStackValue['PduHandleId'])) }}u)   ///< CDD对应的接收PduId
+#endif
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if ContributionTypeName == 'SoAdUpperLayer' %}
+{%- if ContributionTypeValue['stackIsExist'] == 'True' %}
+{%- set tx_pdu = ContributionTypeValue['PduInfo']['TxPdu'] %}
+{%- set tx_pdu_existed = ContributionTypeValue['PduInfo']['TxPduExisted'] %}
+/* CddSoAdUpperLayerContribution communication Tx PDUs */
+{%- for tx_pdusFromStackValue in tx_pdu %}
+{%- if tx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name']}}Conf_Pdu_{{tx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] ~ "Conf_PDU_" ~ tx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(tx_pdusFromStackValue['PduHandleId'])) }}u)  ///< CDD对应的发送PduId
+#endif
+{%- endif %}
+{%- endfor %}
+
+{%- set rx_pdu = ContributionTypeValue['PduInfo']['RxPdu'] %}
+{%- set rx_pdu_existed = ContributionTypeValue['PduInfo']['RxPduExisted'] %}
+/* CddSoAdUpperLayerContribution communication Rx PDUs */
+{%- for rx_pdusFromStackValue in rx_pdu %}
+{%- if rx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name']}}Conf_Pdu_{{rx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] ~ "Conf_PDU_" ~ rx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(rx_pdusFromStackValue['PduHandleId'])) }}u)   ///< CDD对应的接收PduId
+#endif
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if ContributionTypeName == 'ComIfUpperLayer' %}
+{%- if ContributionTypeValue['stackIsExist'] == 'True' %}
+{%- set tx_pdu = ContributionTypeValue['PduInfo']['TxPdu'] %}
+{%- set tx_pdu_existed = ContributionTypeValue['PduInfo']['TxPduExisted'] %}
+/* CddPduRUpperLayerContribution communication Tx PDUs */
+{%- for tx_pdusFromStackValue in tx_pdu %}
+{%- if tx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_PDU_ID_{{tx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] | upper ~ "_PDU_ID_" ~ tx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(tx_pdusFromStackValue['PduHandleId'])) }}u)  ///< CDD对应的发送PduId
+#endif
+{%- endif %}
+{%- endfor %}
+
+{%- set rx_pdu = ContributionTypeValue['PduInfo']['RxPdu'] %}
+{%- set rx_pdu_existed = ContributionTypeValue['PduInfo']['RxPduExisted'] %}
+/* CddPduRUpperLayerContribution communication Rx PDUs */
+{%- for rx_pdusFromStackValue in rx_pdu %}
+{%- if rx_pdu_existed == 'True' %}
+#ifndef {{cdd_prefix_name['cdd_prefix_name'] | upper}}_PDU_ID_{{rx_pdusFromStackValue['PduName']}}
+{%- set macro_name = cdd_prefix_name['cdd_prefix_name'] | upper ~ "_PDU_ID_" ~ rx_pdusFromStackValue['PduName'] %}
+{%- set macro_definition = "%-80s"|format(macro_name) %}
+#define {{  macro_definition }} ({{ ("0x%02X" | format(rx_pdusFromStackValue['PduHandleId'])) }}u)  ///< CDD对应的接收PduId
+#endif
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+/* Global Enumeration Definition */
+
+/* Global Type & Structure Definition */
+
+/* Global Variable Declaration */
+
+/* Global Function Declaration */
+
+/* Global Function Implementation */
+
+/*============================[CddComStackContribution]==================================*/
+{# 根据选择不同的CddComStackContribution生成对应模块的函数声明 #}
+{%- set cdd_stack_info = get_cdd_com_stack() %}
+{%- if cdd_stack_info['PduRIfUpper']['stackIsExist'] == 'True' %}
+
+/* API Description CddPduRUpperLayerContribution as IF */
+{%- if (cdd_stack_info['ComIfUpper']['stackIsExist'] == 'True') %}
+/* API Description CddComIfUpperLayerContribution */
+{%- endif %}
+
+{%- if cdd_stack_info['PduRIfUpper']['RxPduExisted'] == 'True' %}
+/*!*********************************************************************************************************************
+ * @brief          接收到新的数据帧处理
+ * @details        接收到新的数据帧时，会调用Cdd_RxIndication函数，并传递相关的参数
+ * @param[in]      RxPduId CddPduRUpperLayerRxPdu的Id
+ * @param[out]     PduInfoPtr 接收到的I-PDU的有效载荷信息（指向数据和数据长度的指针）
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_rx_indication(PduIdType RxPduId, const PduInfoType* PduInfoPtr);
+{%- endif %}
+
+{%- if cdd_stack_info['PduRIfUpper']['TxPduExisted'] == 'True'  %}
+/*!*********************************************************************************************************************
+ * @brief          发送确认函数
+ * @details        用于PduR模块调用通知CDD模块发送数据的结果。
+ * @param[in]      TxPduId 发送确认的PduId
+ * @param[in]      Result 发送确认的结果
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_tx_confirmation(PduIdType TxPduId, Std_ReturnType Result);
+/*!*********************************************************************************************************************
+ * @brief          触发发送
+ * @details        上层应用程序需要发送数据时，它可以调用Cdd_TriggerTransmit函数，并传递相关的参数
+ * @param[in]      TxPduId 触发发送的PduId
+ * @param[in]      PduInfoPtr 触发发送的Pdu信息指针
+ * @retval         E_OK 触发发送成功
+ * @retval         E_NOT_OK 触发发送失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_trigger_transmit(PduIdType TxPduId, PduInfoType* PduInfoPtr);
+{%- endif %}
+
+{%- endif -%}
+{%- if cdd_stack_info['PduRTpUpper']['stackIsExist'] == 'True' %}
+
+/* API Description CddPduRUpperLayerContribution as TP */
+{%- if cdd_stack_info['PduRTpUpper']['RxPduExisted'] == 'True' %}
+/*!*********************************************************************************************************************
+ * @brief          开始接收函数
+ * @details        向CDD模块告知开始接收PDU片段
+ * @param[in]      id                  开始接收的ID
+ * @param[in]      TpSduLength         开始接收的TP SDU长度
+ * @param[in]      info                PDU信息结构体指针
+ * @param[out]     info                开始接收的信息
+ * @param[out]     bufferSizePtr       开始接收的缓存大小指针
+ * @retval         BUFREQ_OK           开始接收成功
+ * @retval         BUFREQ_E_NOT_OK     开始接收失败
+ * @retval         BUFREQ_E_BUSY       开始接收忙碌
+ * @retval         BUFREQ_E_OVFL       开始接收溢出
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+BufReq_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_start_of_reception(PduIdType id, const PduInfoType *info, PduLengthType TpSduLength, PduLengthType *bufferSizePtr);
+/*!*********************************************************************************************************************
+ * @brief          拷贝接收数据
+ * @details        在接收中断中触发，并且完成CDD模块向底层模块复制PDU片段的流程
+ * @param[in]      id 拷贝接收数据的ID
+ * @param[out]     info 拷贝接收数据的信息
+ * @param[out]     bufferSizePtr 拷贝接收数据的缓存大小指针
+ * @retval         BUFREQ_OK           拷贝接收数据成功
+ * @retval         BUFREQ_E_NOT_OK     拷贝接收数据失败
+ * @retval         BUFREQ_E_BUSY       拷贝接收数据忙碌
+ * @retval         BUFREQ_E_OVFL       拷贝接收数据溢出
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+BufReq_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_copy_rx_data(PduIdType id, const PduInfoType* info, PduLengthType* bufferSizePtr);
+/*!*********************************************************************************************************************
+ * @brief          接收指示处理函数
+ * @details        通知CDD模块当前SDU接收完毕，并告知CDD模块本次接收结果
+ * @param[in]      id 接收指示的ID
+ * @param[in]      result 接收指示的结果
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_tp_rx_indication(PduIdType id, Std_ReturnType result);
+{%- endif %}
+{%- if cdd_stack_info['PduRTpUpper']['TxPduExisted'] == 'True' %}
+/*!*********************************************************************************************************************
+ * @brief          拷贝发送数据
+ * @details        拷贝发送的数据信息
+ * @param[in]      id 拷贝发送数据的ID
+ * @param[in]      retry 拷贝发送数据的重试次数
+ * @param[out]     info 拷贝发送数据的信息
+ * @param[out]     availableDataPtr 拷贝发送数据的可用数据指针
+ * @retval         BUFREQ_OK           拷贝发送数据成功
+ * @retval         BUFREQ_E_NOT_OK     拷贝发送数据失败
+ * @retval         BUFREQ_E_BUSY       拷贝发送数据忙碌
+ * @retval         BUFREQ_E_OVFL       拷贝发送数据溢出
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+BufReq_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_copy_tx_data(PduIdType id, const PduInfoType* info, const RetryInfoType* retry, PduLengthType* availableDataPtr);
+
+/*!*********************************************************************************************************************
+ * @brief          发送确认处理函数
+ * @details        通知CDD模块当前PDU发送完毕，并告知发送结果
+ * @param[in]      id 发送确认的ID
+ * @param[in]      result 发送确认的结果
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_tp_tx_confirmation(PduIdType id, Std_ReturnType result);
+{%- endif %}
+{%- endif %}
+{%- if (cdd_stack_info['ComIfUpper']['stackIsExist'] == 'True') %}
+
+/* API Description CddComIfUpperLayerContribution */
+{%- if cdd_stack_info['ComIfUpper']['RxPduExisted'] == 'True' %}
+{%- set canif_rx_pduname = get_canif_pdu_name() %}
+{%- set canif_cdd_rxindication_fun_name = canif_rx_pduname['canif_pduname']['Canif_Rx_PduName'] %}
+{%- for canif_cdd_rxindication in canif_cdd_rxindication_fun_name %}
+{%- if not ((canif_cdd_rxindication == 'Cdd_RxIndication') and (canif_rx_pduname['PduRIfUpper']['stackIsExist'] == 'True') and (canif_rx_pduname['PduRIfUpper']['RxPduExisted'] == 'True')) %}
+/*!*********************************************************************************************************************
+ * @brief          告知CDD模块接收CanIf模块传来的I-PDU
+ * @details        告知CDD模块接收CanIf模块传来的I-PDU
+ * @param[in]      RxPduId 接收PduId
+ * @param[out]     PduInfoPtr 接收Pdu信息指针
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{ canif_cdd_rxindication }}(PduIdType RxPduId, const PduInfoType* PduInfoPtr);
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if cdd_stack_info['ComIfUpper']['TxPduExisted'] == 'True' %}
+{%- set canif_tx_pduname = get_canif_pdu_name() %}
+{%- set canif_cdd_txconfirmation_fun_name = canif_tx_pduname['canif_pduname']['Canif_Tx_Pduname'] %}
+{%- for canif_cdd_txconfirmation in canif_cdd_txconfirmation_fun_name %}
+{%- if not ((canif_cdd_txconfirmation == 'Cdd_TxConfirmation') and (canif_tx_pduname['PduRIfUpper']['stackIsExist'] == 'True') and (canif_tx_pduname['PduRIfUpper']['TxPduExisted'] == 'True')) %}
+/*!*********************************************************************************************************************
+ * @brief          发送确认
+ * @details        告知CDD模块CanIf发从I-PDU流程结束
+ * @param[in]      TxPduId 发送PduId
+ * @param[in]      result 发送Pdu的结果
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{ canif_cdd_txconfirmation }}(PduIdType TxPduId, Std_ReturnType result);
+{%- endif %}
+{%- endfor %}
+
+ {%- if not ((canif_tx_pduname['PduRIfUpper']['stackIsExist'] == 'True') and (canif_tx_pduname['PduRIfUpper']['TxPduExisted'] == 'True')) %}
+/*!*********************************************************************************************************************
+ * @brief          触发发送函数
+ * @details        上层应用程序需要发送数据时，它可以调用Cdd_TriggerTransmit函数，并传递相关的参数
+ * @param[in]      TxPduId 触发发送的PduId
+ * @param[in]      PduInfoPtr 触发发送的Pdu信息指针
+ * @retval         E_OK 触发发送成功
+ * @retval         E_NOT_OK 触发发送失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_trigger_transmit(PduIdType TxPduId, const PduInfoType* PduInfoPtr);
+{%- endif %}
+{%- endif %}
+{%- endif %}
+
+{%- if cdd_stack_info['SoAdIfUpper']['stackIsExist'] == 'True' %}
+
+/* API Description CddSoAdUpperLayerContribution as IF */
+{%- if cdd_stack_info['SoAdIfUpper']['RxPduExisted'] == 'True' %}
+/*!*********************************************************************************************************************
+ * @brief         soad接收处理函数
+ * @details       一个接收I-PDU（数据单元）完毕时，该函数被调以表示接收完成
+ * @param[in]     RxPduId      CddPduRUpperLayerRxPdu的Id
+ * @param[in]     PduInfoPtr   接收到的I-PDU的有效载荷信息（指向数据和数据长度的指针）
+ * @reentrant     TRUE
+ * @synchronous   TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_if_rx_indication(PduIdType RxPduId, const PduInfoType* PduInfoPtr);
+{%- endif %}
+
+{%- if cdd_stack_info['SoAdIfUpper']['TxPduExisted'] == 'True'%}
+/*!*********************************************************************************************************************
+ * @brief         发送确认处理
+ * @details       用于SoAd模块调用通知CDD模块发送数据的结果
+ * @param[in]     TxPduId      CddSoAdUpperLayerTxPdu的id
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_if_tx_confirmation(PduIdType TxPduId);
+/*!*********************************************************************************************************************
+ * @brief          soad触发发送
+ * @details        上层应用程序需要发送数据时，它可以调用Cdd_SoAdIfTriggerTransmit函数，并传递相关的参数
+ * @param[in]      TxPduId soad触发发送PduId
+ * @param[in]      PduInfoPtr soad触发发送Pdu信息
+ * @retval         E_OK 触发发送成功
+ * @retval         E_NOT_OK 触发发送失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_if_trigger_transmit(PduIdType TxPduId, const PduInfoType* PduInfoPtr);
+{%- endif %}
+
+{%- endif -%}
+
+{%- if cdd_stack_info['SoAdTpUpper']['stackIsExist'] == 'True' %}
+
+/* API Description CddSoAdUpperLayerContribution as TP */
+{%- if cdd_stack_info['SoAdTpUpper']['RxPduExisted'] == 'True' %}
+/*!*********************************************************************************************************************
+ * @brief          soad开始接收数据
+ * @details        向CDD模块告知开始接收PDU片段
+ * @param[in]      id soad开始接收数据ID
+ * @param[in]      TpSduLength soad开始接收数据SDU长度
+ * @param[out]     info soad开始接收数据信息
+ * @param[out]     bufferSizePtr soad开始接收缓存大小指针
+ * @retval         BUFREQ_OK           soad开始接收数据成功
+ * @retval         BUFREQ_E_NOT_OK     soad开始接收数据失败
+ * @retval         BUFREQ_E_BUSY       soad开始接收数据忙碌
+ * @retval         BUFREQ_E_OVFL       soad开始接收数据溢出
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+BufReq_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_tp_start_of_reception(PduIdType id, const PduInfoType* info, PduLengthType TpSduLength,
+                                             PduLengthType* bufferSizePtr);
+/*!*********************************************************************************************************************
+ * @brief          soad拷贝接收数据
+ * @details        在接收中断中触发，并且完成CDD模块向底层模块复制PDU片段的流程
+ * @param[in]      id soad拷贝接收数据Id
+ * @param[out]     info soad拷贝接收数据信息
+ * @param[out]     bufferSizePtr soad拷贝接收数据缓存大小指针
+ * @retval         BUFREQ_OK           soad拷贝接收数据成功
+ * @retval         BUFREQ_E_NOT_OK     soad开始接收数据失败
+ * @retval         BUFREQ_E_BUSY       soad开始接收数据忙碌
+ * @retval         BUFREQ_E_OVFL       soad开始接收数据溢出
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+BufReq_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_tp_copy_rx_data(PduIdType id, const PduInfoType* info, PduLengthType* bufferSizePtr);
+/*!*********************************************************************************************************************
+ * @brief          soad接收处理函数
+ * @details        通知CDD模块当前SDU接收完毕，并告知CDD模块本次接收结果
+ * @param[in]      id soad接收处理的ID
+ * @param[in]      result soad接收处理的结果
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_tp_rx_indication(PduIdType id, Std_ReturnType result);
+{%- endif %}
+
+{%- if cdd_stack_info['SoAdTpUpper']['TxPduExisted'] == 'True' %}
+
+/*!*********************************************************************************************************************
+ * @brief          soad拷贝发送数据
+ * @details        向CDD模块告知开始接收PDU片段
+ * @param[in]      id soad拷贝发送数据ID
+ * @param[in]      retry soad拷贝发送数据重试次数
+ * @param[out]     info soad拷贝发送数据消息
+ * @param[out]     availableDataPtr soad拷贝发送可用缓存指针
+ * @retval         BUFREQ_OK           soad拷贝发送数据成功
+ * @retval         BUFREQ_E_NOT_OK     soad拷贝发送数据失败
+ * @retval         BUFREQ_E_BUSY       soad拷贝发送数据忙碌
+ * @retval         BUFREQ_E_OVFL       soad拷贝发送数据溢出
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+BufReq_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_tp_copy_tx_data(PduIdType id, const PduInfoType* info, const RetryInfoType* retry,
+                                       PduLengthType* availableDataPtr);
+/*!*********************************************************************************************************************
+ * @brief          soad发送确认处理函数
+ * @details        通知CDD模块当前PDU发送完毕，并告知发送结果
+ * @param[in]      id soad发送确认处理ID
+ * @param[in]      result soad发送确认处理结果
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+void {{cdd_prefix_name['cdd_prefix_name'] | lower }}_soad_tp_tx_confirmation(PduIdType id, Std_ReturnType result);
+{%- endif %}
+{%- endif %}
+
+{%- if (cdd_stack_info['PduRIfLower']['stackIsExist'] == 'True') or (cdd_stack_info['PduRTpLower']['stackIsExist'] == 'True') %}
+{%- if (cdd_stack_info['PduRIfLower']['RxPduExisted'] == 'True') or (cdd_stack_info['PduRIfLower']['TxPduExisted'] == 'True') or (cdd_stack_info['PduRTpLower']['TxPduExisted'] == 'True') %}
+/*!*********************************************************************************************************************
+ * @brief          发送函数
+ * @details        cdd发送函数
+ * @param[in]      TxPduId 发送函数对应的发送PduId
+ * @param[in]      PduInfoPtr 发送函数对应的发送Pdu信息指针
+ * @retval         E_OK 发送成功
+ * @retval         E_NOT_OK 发送失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_transmit(PduIdType TxPduId, const PduInfoType* PduInfoPtr);
+/*!*********************************************************************************************************************
+ * @brief          取消发送接口
+ * @details        cdd 取消发送接口
+ * @param[in]      TxPduId 取消发送接口的PduId
+ * @retval         E_OK 取消发送成功
+ * @retval         E_NOT_OK 取消发送失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_cancel_transmit(PduIdType TxPduId);
+{%- endif %}
+{%- endif %}
+
+{%- if (cdd_stack_info['PduRTpLower']['stackIsExist'] == 'True') and (cdd_stack_info['PduRTpLower']['RxPduExisted'] == 'True') %}
+/*!*********************************************************************************************************************
+ * @brief          取消接收接口
+ * @details        cdd取消接收接口
+ * @param[in]      Id 取消接收的ID
+ * @retval         E_OK 取消接收成功
+ * @retval         E_NOT_OK 取消接收失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_cancel_receive(PduIdType id);
+/*!*********************************************************************************************************************
+ * @brief          改变参数接口
+ * @details        cdd改变参数接口
+ * @param[in]      Id 改变参数接口的ID
+ * @param[in]      parameter 改变参数接口的参数
+ * @param[in]      value 改变参数接口的值
+ * @retval         E_OK 改变参数成功
+ * @retval         E_NOT_OK 改变参数失败
+ * @reentrant      TRUE
+ * @synchronous    TRUE
+ **********************************************************************************************************************/
+Std_ReturnType {{cdd_prefix_name['cdd_prefix_name'] | lower }}_change_parameter (PduIdType id, TPParameterType parameter,uint16 value);
+{%- endif %}
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* {{cdd_prefix_name['cdd_prefix_name'] | upper}}_H */

@@ -1,0 +1,11 @@
+# Python and virtual env
+**/__pycache__/
+*.pyc
+venv*
+*.egg-info
+
+# pytest
+.pytest_cache
+allure-results
+testcases/pytest/report
+testcases/pytest/logs

@@ -1,0 +1,250 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+/* Including File */
+#include "pdur.h"
+#include "pdur_cfg.h"
+#include "pdur_bufferpoolcfg.h"
+#include "Compiler.h"
+
+/* Global Variable Definition */
+{%- set pdur_1_to_n_index = namespace(value = 0) %}
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+{%- if path_value['PduRDestinatnNum'] > 1 %}
+{%- set pdur_1_to_n_index.value = pdur_1_to_n_index.value + 1 %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+{%- set pdur_dest_max_Num = get_pdur_dest_max_Num() %}
+
+{%- if pdur_1_to_n_index.value > 0 %}
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+static CONST(pdur_src_pdu_id_mapping_struct_type, PDUR_CONST) pdur_src_pdu_id_mapping_table[PDUR_SRC_PDUID_MAPPING_SIZE] = {
+{%- set pdur_1_to_n_index = namespace(value = 0) %}
+{%- set DestPduIdNum = namespace(value = 0) %}
+{%- set srcpduidindex = namespace(value = 0) %}
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+{%- if path_value['PduRDestinatnNum'] > 1 %}
+    /* {{ pdur_1_to_n_index.value }} */
+{%- set pdur_1_to_n_index.value = pdur_1_to_n_index.value + 1 %}
+    {
+        /* SrcPduId: */ PDUR_PDU_ID_{{path_value['PduRoutingPathName']}},
+        {
+{%- set DestPduIdNum.value = 0 %}
+{%- for pdu_name, pdu_value in path_value["PduRDestPdus"].items() %}
+{%- set DestPduIdNum.value = DestPduIdNum.value + 1 %}
+            /* DestPduId: */ PDUR_PDU_ID_{{pdu_name}},
+{%- endfor %}
+{%- for temp in range(DestPduIdNum.value, pdur_dest_max_Num) %}
+            /* DestPduId: */ PDUR_INVALID_PDU_ID,
+{%- endfor %}
+        },
+    },
+{%- set srcpduidindex.value = srcpduidindex.value + 1 %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+};
+{%- set jinja_PDUR_SRC_PDUID_MAPPING_SIZE = namespace(value = 0) %}
+{%- set pduidindex = namespace(value = 0) %}
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+{%- for pdu_name, pdu_value in path_value["PduRDestPdus"].items() %}
+{%- set srcpduId_by_destpduid_num = namespace(value = 0) %}
+{%- set srcpduId_list = get_srcpduid_by_destpduid(pdu_name) %}
+{%- for srcpduId in srcpduId_list %}
+{%- set srcpduId_by_destpduid_num.value = srcpduId_by_destpduid_num.value + 1 %}
+{%- endfor %}
+{%- if jinja_PDUR_SRC_PDUID_MAPPING_SIZE.value < srcpduId_by_destpduid_num.value %}
+{%- set jinja_PDUR_SRC_PDUID_MAPPING_SIZE.value = srcpduId_by_destpduid_num.value %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+{%- endif %}
+{%- set SrcPduIdNum = namespace(value = 0) %}
+{%- set pdur_n_to_1_index = namespace(value = 0) %}
+{%- set dest_pduid_no_duplicate = get_msg_dest_pduid_no_duplicate_config() %}
+{%- for pdu_name in dest_pduid_no_duplicate %}
+{%- set srcpduId_num = namespace(value = 0) %}
+{%- set srcpduId_list = get_srcpduid_by_destpduid(pdu_name) %}
+{%- for srcpduId in srcpduId_list %}
+{%- set srcpduId_num.value = srcpduId_num.value + 1 %}
+{%- endfor %}
+{%- if srcpduId_num.value > 1 %}
+{%- set pdur_n_to_1_index.value = pdur_n_to_1_index.value + 1 %}
+{%- endif %}
+{%- endfor %}
+
+{%- if pdur_n_to_1_index.value > 0 %}
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+static CONST(pdur_dest_pdu_id_mapping_struct_type, PDUR_CONST) pdur_dest_pdu_id_mapping_table[pdur_dest_PDUID_MAPPING_SIZE] = {
+{%- set n_to_1_index = namespace(value = 0) %}
+{%- set dest_pduid_no_duplicate = get_msg_dest_pduid_no_duplicate_config() %}
+{%- for pdu_name in dest_pduid_no_duplicate %}
+{%- set srcpduId_num = namespace(value = 0) %}
+{%- set srcpduId_list = get_srcpduid_by_destpduid(pdu_name) %}
+{%- for srcpduId in srcpduId_list %}
+{%- set srcpduId_num.value = srcpduId_num.value + 1 %}
+{%- endfor %}
+{%- if srcpduId_num.value > 1 %}
+    /* {{ n_to_1_index.value }} */
+{%- set n_to_1_index.value = n_to_1_index.value + 1 %}
+    {
+        /* DestPduId: */ PDUR_PDU_ID_{{pdu_name}},
+        {
+{%- set srcpduId_list = get_srcpduid_by_destpduid(pdu_name) %}
+{%- set SrcPduIdNum.value = 0 %}
+{%- for srcpduId in srcpduId_list %}
+{%- set SrcPduIdNum.value = SrcPduIdNum.value + 1 %}
+            /* SrcPduId: */ PDUR_PDU_ID_{{srcpduId}},
+{%- endfor %}
+{%- for temp in range(SrcPduIdNum.value, jinja_PDUR_SRC_PDUID_MAPPING_SIZE.value) %}
+            /* SrcPduId: */ PDUR_INVALID_PDU_ID,
+{%- endfor %}
+        },
+    },
+{%- endif %}
+{%- endfor %}
+};
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+{%- endif %}
+
+{%- set pdurIsrTable, pdurIsrTableLen = get_pdur_isr_table() %}
+{%- if pdurIsrTableLen != 0%}
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+static const OS_ISRID_DEF pdur_interrupt_service_routine_table[PDUR_ISR_TABLE_LEN] = {
+{%- for pdurIsr in pdurIsrTable %}
+{%- if pdurIsr['name'] == ''%}
+    OS_ISR_CNT,
+{%- else %}
+    OS_ISR_{{pdurIsr['isrref'].upper()}}_ID,
+{%- endif %}
+{%- endfor %}
+};
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+{%- endif %}
+
+#define PDUR_START_SEC_GLOBAL_VAR_INIT_UNSPECIFIED
+#include "pdur_memmap.h"
+{%- if pdur_1_to_n_index.value > 0 %}
+static pdur_src_pdu_id_mapping_struct_type const * pdur_src_pdu_id_mapping_table_ptr = &pdur_src_pdu_id_mapping_table[0u];
+{%- else %}
+static pdur_src_pdu_id_mapping_struct_type const * pdur_src_pdu_id_mapping_table_ptr = NULL;
+{%- endif %}
+{%- if pdur_n_to_1_index.value > 0 %}
+static pdur_dest_pdu_id_mapping_struct_type const * pdur_dest_pdu_id_mapping_table_ptr = &pdur_dest_pdu_id_mapping_table[0u];
+{%- else %}
+static pdur_dest_pdu_id_mapping_struct_type const * pdur_dest_pdu_id_mapping_table_ptr = NULL;
+{%- endif %}
+#define PDUR_STOP_SEC_GLOBAL_VAR_INIT_UNSPECIFIED
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC_P2CONST(OS_ISRID_DEF, AUTOMATIC, PDUR_CODE) pdur_get_isr_table(void)
+{
+{%- if pdurIsrTableLen != 0%}
+    return &pdur_interrupt_service_routine_table[0];
+{%- else %}
+    return NULL;
+{%- endif %}
+}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC(uint8, PDUR_CODE) pdur_get_isr_table_len(void)
+{
+{%- if pdurIsrTableLen != 0%}
+    return PDUR_ISR_TABLE_LEN;
+{%- else %}
+    return 0u;
+{%- endif %}
+}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+
+
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC(void, PDUR_CODE) pdur_set_src_pdu_id_mapping(const pdur_src_pdu_id_mapping_struct_type* table_ptr)
+{
+    pdur_src_pdu_id_mapping_table_ptr = table_ptr;
+    return;
+}
+
+FUNC(void, PDUR_CODE) pdur_set_dest_pdu_id_mapping(const pdur_dest_pdu_id_mapping_struct_type* table_ptr)
+{
+    pdur_dest_pdu_id_mapping_table_ptr = table_ptr;
+    return;
+}
+
+FUNC_P2CONST(pdur_src_pdu_id_mapping_struct_type, AUTOMATIC, PDUR_CODE) pdur_get_src_pdu_id_mapping(void)
+{
+    return pdur_src_pdu_id_mapping_table_ptr;
+}
+
+FUNC_P2CONST(pdur_dest_pdu_id_mapping_struct_type, AUTOMATIC, PDUR_CODE) pdur_get_dest_pdu_id_mapping(void)
+{
+    return pdur_dest_pdu_id_mapping_table_ptr;
+}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+{{''}}
+{%- set pdur_mainfunc = get_pdur_mainfunctionlist() %}
+{%- for mainfun in pdur_mainfunc %}
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC(void, PDUR_CODE) {{mainfun['name']}}(void)
+{
+    pdur_internal_main_function();
+}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+{%- endfor %}
+
+{%- set pdur_isr = get_pdur_isr() %}
+{%- for isr in pdur_isr %}
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+FUNC(void, PDUR_CODE) {{isr['name']}}(void)
+{
+    pdur_internal_interrupt_service_routine();
+}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+{%- endfor %}
+{{ "" }}

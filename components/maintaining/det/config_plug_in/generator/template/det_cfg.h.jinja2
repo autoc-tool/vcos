@@ -1,0 +1,82 @@
+#ifndef DET_CFG_H
+#define DET_CFG_H
+#include "rtfw_atomic.h"
+#include "Platform_Types.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+{%- set detgeneral = get_detgeneral_json_config()%}
+{%- set detflowcontrol = get_det_flow_control_config()%}
+
+#define BSW_MODULE_NUM                                  (256u)   ///< Bsw模块数
+#define DET_FORWARD_TO_DLT                              ({{switch_bool_to_std_on(detgeneral["DetForwardToDlt"]["Value"])}})   ///< 将错误发送到DLT
+
+#define DET_VERSIONINFO_API                             ({{switch_bool_to_std_on(detgeneral["DetVersionInfoApi"]["Value"])}}) ///< 使能允许调用API获取版本信息
+
+#define DET_BUCKET_CPPACITY                             ({{(detflowcontrol["DetFlowTokenNum"])}}) ///< 令牌桶个数
+#define DET_BUCKET_PERIOD_MS                            ({{(detflowcontrol["DetFlowTokenPeriod"])}}) ///< 令牌桶周期
+#define DET_BUCKET_PERIOD_EXPONENT                      ({{(detflowcontrol["DetFlowTokenPeriodExponent"])}}) ///< 令牌桶周期
+#define DET_FLOW_CONTROL                                ({{switch_bool_to_std_on(detflowcontrol["FlowControlEnable"])}})
+/* 令牌桶的容量 */
+#define MODULE_FLOW_CONTROL_NUM                         ({{detflowcontrol["FlowControlNum"]}})
+
+#define DET_ENABLE_ERROR_HOOK                           ({{compute_errorhook_json_config()}})     ///< 使能开发错误回调
+
+#define DET_ENABLE_TRANSIENT_FAULT_CALLOUT              ({{compute_transient_json_config()}})     ///< 使能瞬态错误回调
+
+#define DET_ENABLE_RUNTIME_ERROR_CALLOUT                ({{compute_runtime_json_config()}})       ///< 使能运行时错误回调
+
+#define DET_RUNTIMEERR_CALLOUT_TABLE_NUMBER              ({{compute_runtime_nbr_json_config()}}u)   ///< 运行时错误回调数量
+
+#define DET_ERROR_HOOK_TABLE_NUMBER                      ({{compute_errorhook_nbr_json_config()}}u) ///< 开发错误回调数量
+
+#define DET_TRANSIENT_FAULT_CALLOUT_NUMBER               ({{compute_transient_nbr_json_config()}}u) ///< 瞬态错误回调数量
+
+/*! DetModuleId symbolic name defines */
+{%- for key2,value2 in get_all_modulename().items() %}
+#define DetConf_DetModule_{{key2}} ({{value2}}uL)   ///< Det自定义ModuleNameId
+{%- endfor %}
+/*! Service port defines */
+{%- for key2,value2 in get_all_modulename().items() %}
+#define DetConf_{{key2}} ({{value2}}u)                ///< Det Service Mapping 提供的Port
+{%- endfor %}
+{%- for key2,value2 in get_all_instance_name().items() %}
+#define DetConf_{{key2}} ({{value2}}u)                ///< Det Service Mapping 提供的Port
+{%- endfor %}
+
+typedef struct {
+{%- if(detflowcontrol["FlowControlNum"] == 0) %}
+    sint32 capacity;     // 令牌桶容量
+    Atomic tokens[1];       // 当前令牌数量
+    Atomic detModuleLockFlag[1];
+    uint64 last_time; // 上次令牌添加的时间
+    Atomic globallockflag;     // 默认lockflag
+    Atomic globaltokennum;        // 默认令牌桶个数
+} Det_TokenBucket;
+{%- else %}
+    sint32 capacity;     // 令牌桶容量
+    Atomic tokens[MODULE_FLOW_CONTROL_NUM];       // 当前令牌数量
+    Atomic detModuleLockFlag[MODULE_FLOW_CONTROL_NUM];
+    uint64 last_time; // 上次令牌添加的时间
+    Atomic globallockflag;     // 默认lockflag
+    uint64 globallasttime;     // 默认的lasttime
+    Atomic globaltokennum;        // 默认令牌桶个数
+} Det_TokenBucket;
+{%- endif %}
+
+typedef struct {
+    uint8 module_id_info;
+    boolean module_enable_info;
+} Det_ModuleInfo;
+
+extern const Det_ModuleInfo Module_Flow_Info[BSW_MODULE_NUM];
+extern Det_TokenBucket Det_Bucket;
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DET_CFG_H */
+
+{# blank line at end of file #}

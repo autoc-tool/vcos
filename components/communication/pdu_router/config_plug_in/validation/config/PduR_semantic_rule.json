@@ -1,0 +1,40 @@
+{
+    "PDUR016002": {
+        "rule_name": "PDUR016002",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of PduRSourcePduHandleId.",
+        "rule_message": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths/PduRSrcPdu/PduRSourcePduHandleId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths/PduRSrcPdu/PduRSourcePduHandleId",
+            "base_path": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/PduR/PduRRoutingPaths/PduRSrcPdu/PduRSourcePduHandleId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    },
+    "PDUR016004": {
+        "rule_name": "PDUR016004",
+        "rule_type": "continuity_check",
+        "rule_summary": "Continuity check of PduRRoutingPathGroupId.",
+        "rule_message": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths/PduRRoutingPathGroup/PduRRoutingPathGroupId should increase continuously.",
+        "rule_ruleset": {
+            "mod_path": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths/PduRRoutingPathGroup/PduRRoutingPathGroupId",
+            "base_path": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths"
+        },
+        "auto_solve_list": [
+            {
+                "solve_info": "Repopulate /AUTOSAR/EcucDefs/PduR/PduRRoutingPaths/PduRRoutingPathGroup/PduRRoutingPathGroupId values automatically.",
+                "solve_type": "Repopulate_value",
+                "parameter": "/AUTOSAR/EcucDefs/PduR/PduRRoutingPaths",
+                "value": ""
+            }
+        ],
+        "manual_solve_list": []
+    }
+}

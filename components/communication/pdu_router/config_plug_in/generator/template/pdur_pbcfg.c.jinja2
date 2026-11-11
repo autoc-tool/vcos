@@ -1,0 +1,157 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+{%- set pdur_bsw_modules = get_pdur_bsw_modules_config() %}
+/* Including File */
+#include "pdur.h"
+#include "pdur_pbcfg.h"
+#include "pdur_internal.h"
+#include "Compiler.h"
+#include "pdur_routingcfg.h"
+{%- set pdur_bsw_modules_include = get_pdur_bsw_modules_config() %}
+{%- for module_name_include in pdur_bsw_modules_include %}
+#include "{{module_name_include | lower}}.h"
+{%- if module_name_include == 'CanIf' %}{# 部分模块的宏需要特殊包含 #}
+#include "canif_pbcfg.h"
+{%- elif module_name_include == 'Com' %}
+#include "com_pbcfg.h"
+{%- elif module_name_include == 'DoIP'%}
+#include "doip_cfg.h"
+{%- endif %}
+{%- endfor %}
+
+/* Routing Path Group, to be filled by user */
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+{%- set pdur_routing_path_config = get_pdur_routing_path_config() %}
+{%- set isEmpty = get_pdur_routing_path_group_idx_list_empty() %}
+{%- set group_idx_list = get_pdur_routing_path_group_idx_list() %}
+{%- if isEmpty == 'False' %}
+static CONST(pdur_routing_path_group_id_type, PDUR_CONST) pdur_routing_group_idx_in_list[] = { /* 每个DestPdu对应的RoutingPathGroup */
+{%- for pdu_name, group in group_idx_list.items() %}
+    /* {{pdu_name}} */
+    {%- for group_idx in group.destPduRoutingGroupIdx %}
+    {%- set group_name = get_pdur_routing_group_name_by_id(group_idx) %}
+    /* {{group_idx}} */ {{"PDUR_"}}{{group_name.upper()}},
+    {%- endfor %}
+{%- endfor %}
+};
+{%- endif %}
+
+{%- set pdur_dest_pdus_config = get_pdur_dest_pdu_list() %}
+{%- for dest_pdu_name, dest_pdu_value in pdur_dest_pdus_config.items() %}
+/* {{loop.index0}} {{ dest_pdu_name }} */
+static CONST(pdur_dest_pdu_type, PDUR_CONST) pdur_dest{{ dest_pdu_name | lower}} = {
+    .dest_module           = {{ dest_pdu_value['DestModule'].upper() }}, // DestPdu对应的目的模块
+    .pdur_dest_pdu_core      = {{ dest_pdu_value['PduRDestPduCore'] }}u, // DestPdu所属的核编号
+    .data_provision        = {{ dest_pdu_value['DataProvision'] }},
+    .idx_num               = {{ dest_pdu_value['IdxNum'] }}u, // DestPdu所属的RoutingPathGroup在List里的数量
+    .start_idx             = {{ dest_pdu_value['StartIdx'] }}u, // DestPdu所属的RoutingPathGroup在其List里的起始脚标
+    .dest_pdu_id            = {{ dest_pdu_value['DestPduId'] }}, // DestPdu对应的编号
+    .pdu_len_strategy       = {{ dest_pdu_value['PduLenStrategy'] }}, // DestPdu超出设定长度时的处理逻辑
+    .pdu_len_in_ecuc         = {{ dest_pdu_value['PduLenInEcuC'] }}u, // DestPdu的设定长度
+};
+
+{%- endfor %}
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+/* {{loop.index0}} {{ path_value['PduPathName'] }} */
+static const pdur_dest_pdu_type* const pdur_routing_dest_list_{{ path_value['PduPathName'] | lower }}[] = {
+{%- for pdu_name, pdu_value in path_value["PduRDestPdus"].items() %}
+    &pdur_dest{{ pdu_name | lower }},
+{%- endfor %}
+};
+{%- endif %}
+{% endfor %}
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+static CONST(pdur_routing_path_type, PDUR_CONST) pdur_routing_paths[] = {
+{%- for path_name, path_value in pdur_routing_path_config.items() %}
+{%- if path_name != "Tag" and path_name != "DefinitionRef" %}
+    {   /* {{loop.index0}} {{ path_name[:-5] }} */
+        .src_module         = {{ path_value['SrcModule'].upper() }},
+        .pdur_destinatn_num  = {{ path_value['PduRDestinatnNum'] }}u,
+        .pdur_src_pdu_core    = {{ path_value['PduRSrcPduCore'] }}u,
+        .pdur_direct_gateway = {{ path_value['PduRDirectGateway'] }},
+        .pdur_tp_threshld    = {{ path_value['PduRTpThreshld'] }}u,
+        .pdur_queue_depth    = {{ path_value['PduRQueueDepth'] }}u,
+        .src_pdu_id          = {{ path_value['SrcPduId'] }},
+        .pdur_dest_pdus      = pdur_routing_dest_list_{{ path_value['PduPathName'] | lower}},
+        .pdur_tx_buffer_idx   = {{ path_value['PduRTxBuffer']['idx'] }},
+    },
+{%- endif %}
+{%- endfor %}
+};
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+
+#define PDUR_START_SEC_CONST
+#include "pdur_memmap.h"
+{%- set pdur_routing_groups = get_pdur_routing_groups() %}
+{%- set pdur_routing_group_dest_pdu_list = get_pdur_routing_groups_dest_pdu_list() %}
+{%- if pdur_routing_groups|length %}
+
+static CONST(PduIdType, PDUR_CONST) pdur_routing_path_group_dest_pdu_list[] = {
+{%- for name, list in pdur_routing_group_dest_pdu_list.items() %}
+    /* {{"PDUR_"}}{{name.upper()}} */
+    {%- for destMacro in list['macro'] %}
+    /* {{list['groupid']}} */ {{destMacro}},
+    {%- endfor %}
+{%- endfor %}
+};
+
+static CONST(pdur_routing_path_group_type, PDUR_CONST) pdur_routing_path_group_init_value[] = {
+{%- for groupName, groupValue in pdur_routing_groups.items() %}
+    {   /* {{groupName}} */
+        .enabled_at_init =                     (boolean){{groupValue.PduRIsEnabledAtInit}},
+        .start_idx =                          {{groupValue.startIdx}}u,
+        .idx_num =                            {{groupValue.idxNum}}u,
+    },
+{%- endfor %}
+};
+{%- endif %}
+
+{%- set pdur_configuration_id = get_pdur_configuration_id() %}
+/* Exported config */
+CONST(pdur_pb_config_type, PDUR_CONST) pdur_config = {
+    .pdur_configuration_id                = {{ pdur_configuration_id }},
+    .routing_paths                       = pdur_routing_paths,
+    .n_routing_paths                      = (PduIdType)(sizeof(pdur_routing_paths) / sizeof(pdur_routing_paths[0u])),
+{%- if pdur_routing_groups|length %}
+    .routing_path_groups_init_value_list     = &pdur_routing_path_group_init_value[0u],
+    .routing_path_groups_dest_pdu_list       = &pdur_routing_path_group_dest_pdu_list[0u],
+    .routing_path_group_list               = &pdur_routing_group_idx_in_list[0u],
+{%- else %}
+    .routing_path_groups_init_value_list     = NULL,
+    .routing_path_groups_dest_pdu_list       = NULL,
+    .routing_path_group_list               = NULL,
+{%- endif %}
+};
+#define PDUR_STOP_SEC_CONST
+#include "pdur_memmap.h"
+{{ "" }}

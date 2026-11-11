@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Description: {{module_name}} ppc header
+ * AutoGenerate Code, DO NOT EDIT!!!
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+{%- set header_file_include = "ISOLATE_PPC_%s_H" | format(module_name.upper()) %}
+#ifndef {{header_file_include}}
+#define {{header_file_include}}
+
+#include "rtfw_isolate.h"
+#include "isolate_ppc_cfg.h"
+
+{%- set isolate_ppc_cfg = get_isolate_ppc_cfg() %}
+
+{%- for func_dict in isolate_ppc_cfg[module_name]["PpcList"] %}
+    {%- set caller = get_isolate_call_param(func_dict) %}
+    {%- set callee = caller | replace('...', '__VA_ARGS__') %}
+    {%- set func_id = func_dict['FunctionIDName']%}
+    {%- if func_dict["IsolateCallType"] == "ProtectedProcedureCall" %}
+{{'\n'}}
+#define {{func_dict["FunctionName"]}}({{caller}})   \
+        {%- if func_dict["IsolateCallRetRequired"] %}
+                        ({  {{func_dict["IsolateCallRetType"]}} __ret; \
+                            if (isolate_ppc_is_needed({{func_id}})) {\
+                                struct os_isolate_ppc_context_s ppc_context; \
+                                up_ppc_switch(ISOLATE_PPC_FLAG_CALL_ENTER, {{func_id}}, &ppc_context); \
+                                __ret = {{func_dict["FunctionName"]}}({{callee}});\
+                                up_ppc_switch(ISOLATE_PPC_FLAG_CALL_EXIT, {{func_id}}, &ppc_context);\
+                            } else {\
+                                __ret = {{func_dict["FunctionName"]}}({{callee}});\
+                            }\
+                            __ret; })
+        {%- else: %}
+                        ({\
+                            if (isolate_ppc_is_needed({{func_id}})) {\
+                                struct os_isolate_ppc_context_s ppc_context; \
+                                up_ppc_switch(ISOLATE_PPC_FLAG_CALL_ENTER, {{func_id}}, &ppc_context); \
+                                {{func_dict["FunctionName"]}}({{callee}});\
+                                up_ppc_switch(ISOLATE_PPC_FLAG_CALL_EXIT, {{func_id}}, &ppc_context);\
+                            } else {\
+                                {{func_dict["FunctionName"]}}({{callee}});\
+                            }\
+                        })
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
+
+#endif /* {{header_file_include}} */
+

@@ -1,0 +1,324 @@
+ /*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ /*!*********************************************************************************************************************
+ * @file        pdur_module_interface.h
+ * @brief       PduR接口头文件
+ * @details     主要包含PduR模块接口的配置
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+{%- set moduleConfig = get_interface_file_config() %}
+{%- set moduleName = moduleConfig['moduleName'] %}
+{%- set moduleType = moduleConfig['type'] %}
+#ifndef PDUR_{{moduleName.upper()}}_H
+#define PDUR_{{moduleName.upper()}}_H
+/* Description:  PduR - {{moduleName}}模块头文件 */
+#include "comstack_types.h"
+#include "pdur_types.h"
+
+/* Global Fuction Implementation */
+#define PDUR_START_SEC_CODE
+#include "pdur_memmap.h"
+{%- if moduleType == 1 %} {# DoIP/SoAd LoIf #}
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的RxIndication接口
+ * @details        PduR提供给{{moduleName}}的RxIndication接口
+ * @param[in]      pdu_id       报文标识
+ * @param[in]      pdu_info_ptr  报文内容指针
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_if_rx_indication(PduIdType pdu_id, const PduInfoType *pdu_info_ptr);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的tx_confirmation接口
+ * @details        PduR提供给{{moduleName}}的tx_confirmation接口
+ * @param[in]      pdu_id       报文标识
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_if_tx_confirmation(PduIdType pdu_id);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的Triggertransmit接口
+ * @details        PduR提供给{{moduleName}}的Triggertransmit接口
+ * @param[in]      pdu_id       报文标识
+ * @param[in]      pdu_info_ptr  报文内容指针
+ * @retval         E_OK           触发发送成功
+ * @retval         E_NOT_OK       触发发送失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_if_trigger_transmit(PduIdType pdu_id, PduInfoType *pdu_info_ptr);
+
+
+{%- elif  moduleType == 2 %} {# DoIP/SoAd LoTp #}
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的CopyRxData接口
+ * @details        PduR提供给{{moduleName}}的CopyRxData接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      pdu_info_ptr      报文内容指针
+ * @param[out]     BufferSizePtr   缓存大小指针
+ * @retval         BUFREQ_OK       缓存成功
+ * @retval         BUFREQ_E_NOT_OK 缓存失败
+ * @retval         BUFREQ_E_BUSY   缓存忙碌
+ * @retval         BUFREQ_E_OVFL   缓存溢出
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_tp_copy_rx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    PduLengthType *BufferSizePtr);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的CopyRxData接口
+ * @details        PduR提供给{{moduleName}}的CopyRxData接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      result          接收结果
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_tp_rx_indication(PduIdType pdu_id, NotifResultType result);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的StartOfReception接口
+ * @details        PduR提供给{{moduleName}}的StartOfReception接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      pdu_info_ptr      报文内容指针
+ * @param[in]      tp_sdu_length     TP长度
+ * @param[in]      info            PDU信息结构体指针
+ * @param[out]     BufferSizePtr   缓存大小指针
+ * @retval         BUFREQ_OK       缓存成功
+ * @retval         BUFREQ_E_NOT_OK 缓存失败
+ * @retval         BUFREQ_E_BUSY   缓存忙碌
+ * @retval         BUFREQ_E_OVFL   缓存溢出
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_tp_start_of_reception(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    PduLengthType tp_sdu_length, PduLengthType *BufferSizePtr);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的copy_tx_data接口
+ * @details        PduR提供给{{moduleName}}的copy_tx_data接口
+ * @param[in]      pdu_id              报文标识
+ * @param[in]      pdu_info_ptr         报文内容指针
+ * @param[in]      retry              重试次数
+ * @param[out]     AvailableDataPtr   可用大小指针
+ * @retval         BUFREQ_OK          缓存成功
+ * @retval         BUFREQ_E_NOT_OK    缓存失败
+ * @retval         BUFREQ_E_BUSY      缓存忙碌
+ * @retval         BUFREQ_E_OVFL      缓存溢出
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_tp_copy_tx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    RetryInfoType *retry, PduLengthType *AvailableDataPtr);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的Tptx_confirmation接口
+ * @details        PduR提供给{{moduleName}}的Tptx_confirmation接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      result          接收结果
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_tp_tx_confirmation(PduIdType pdu_id, NotifResultType result);
+
+{%- elif  moduleType == 3 %} {# LoIf #}
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的RxIndication接口
+ * @details        PduR提供给{{moduleName}}的RxIndication接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      pdu_info_ptr      报文内容指针
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_rx_indication(PduIdType pdu_id, const PduInfoType *pdu_info_ptr);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的tx_confirmation接口
+ * @details        PduR提供给{{moduleName}}的Tptx_confirmation
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      result          接收结果
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_tx_confirmation(PduIdType pdu_id, NotifResultType result);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的Triggertransmit接口
+ * @details        PduR提供给{{moduleName}}的Triggertransmit接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      pdu_info_ptr      报文内容指针
+ * @retval         E_OK            触发发送成功
+ * @retval         E_NOT_OK        触发发送失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_trigger_transmit(PduIdType pdu_id, PduInfoType *pdu_info_ptr);
+
+
+{%- elif  moduleType == 4 %} {# LoTp #}
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的CopyRxData接口
+ * @details        PduR提供给{{moduleName}}的CopyRxData接口
+ * @param[in]      pdu_id              报文标识
+ * @param[in]      pdu_info_ptr         报文内容指针
+ * @param[out]     BufferSizePtr      大小指针
+ * @retval         BUFREQ_OK          缓存成功
+ * @retval         BUFREQ_E_NOT_OK    缓存失败
+ * @retval         BUFREQ_E_BUSY      缓存忙碌
+ * @retval         BUFREQ_E_OVFL      缓存溢出
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_copy_rx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    PduLengthType *BufferSizePtr);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的CopyRxData接口
+ * @details        PduR提供给{{moduleName}}的CopyRxData接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      result          接收结果
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_rx_indication(PduIdType pdu_id, NotifResultType result);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的StartOfReception接口
+ * @details        PduR提供给{{moduleName}}的StartOfReception接口
+ * @param[in]      pdu_id              报文标识
+ * @param[in]      tp_sdu_length        TP长度
+ * @param[in]      Info               PDU信息结构体指针
+ * @param[out]     BufferSizePtr      大小指针
+ * @retval         BUFREQ_OK          缓存成功
+ * @retval         BUFREQ_E_NOT_OK    缓存失败
+ * @retval         BUFREQ_E_BUSY      缓存忙碌
+ * @retval         BUFREQ_E_OVFL      缓存溢出
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_start_of_reception(PduIdType pdu_id, const PduInfoType *Info, PduLengthType tp_sdu_length,
+    PduLengthType *BufferSizePtr);
+
+ /*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的copy_tx_data接口
+ * @details        PduR提供给{{moduleName}}的copy_tx_data接口
+ * @param[in]      pdu_id              报文标识
+ * @param[in]      pdu_info_ptr         报文指针
+ * @param[in]      retry              重试次数
+ * @param[out]     AvailableDataPtr   可用大小指针
+ * @retval         BUFREQ_OK          缓存成功
+ * @retval         BUFREQ_E_NOT_OK    缓存失败
+ * @retval         BUFREQ_E_BUSY      缓存忙碌
+ * @retval         BUFREQ_E_OVFL      缓存溢出
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(BufReq_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_copy_tx_data(PduIdType pdu_id, const PduInfoType *pdu_info_ptr,
+    RetryInfoType *retry, PduLengthType *AvailableDataPtr);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的tx_confirmation接口
+ * @details        PduR提供给{{moduleName}}的tx_confirmation接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      result          接收结果
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(void, PDUR_CODE) pdur_{{moduleName | lower}}_tx_confirmation(PduIdType pdu_id, NotifResultType result);
+
+
+{%- elif  moduleType == 5 %} {# UpIf #}
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的transmit接口
+ * @details        PduR提供给{{moduleName}}的transmit接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      pdu_info_ptr      报文内容
+ * @retval         E_OK            发送成功
+ * @retval         E_NOT_OK        发送失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_transmit(PduIdType pdu_id, const PduInfoType *pdu_info_ptr);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的cancel_transmit接口
+ * @details        PduR提供给{{moduleName}}的cancel_transmit接口
+ * @param[in]      pdu_id           报文标识
+ * @retval         E_OK            取消发送成功
+ * @retval         E_NOT_OK        取消发送失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_transmit(PduIdType pdu_id);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的cancel_receive接口
+ * @details        PduR提供给{{moduleName}}的cancel_receive接口
+ * @param[in]      pdu_id           报文标识
+ * @retval         E_OK            取消接收成功
+ * @retval         E_NOT_OK        取消接收失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_receive(PduIdType pdu_id);
+
+
+{%- elif  moduleType == 6 %} {# UpTp #}
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的transmit接口
+ * @details        PduR提供给{{moduleName}}的transmit接口
+ * @param[in]      pdu_id           报文标识
+ * @param[in]      pdu_info_ptr      报文内容
+ * @retval         E_OK            取消接收成功
+ * @retval         E_NOT_OK        取消接收失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_transmit(PduIdType pdu_id, const PduInfoType *pdu_info_ptr);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的cancel_transmit接口
+ * @details        PduR提供给{{moduleName}}的cancel_transmit接口
+ * @param[in]      pdu_id           报文标识
+ * @retval         E_OK            取消接收成功
+ * @retval         E_NOT_OK        取消接收失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_transmit(PduIdType pdu_id);
+
+/*!*********************************************************************************************************************
+ * @brief          PduR提供给{{moduleName}}的cancel_receive接口
+ * @details        PduR提供给{{moduleName}}的cancel_receive接口
+ * @param[in]      pdu_id           报文标识
+ * @retval         E_OK            取消接收成功
+ * @retval         E_NOT_OK        取消接收失败
+ * @reentrant      不可重入
+ * @synchronous    同步
+ **********************************************************************************************************************/
+FUNC(Std_ReturnType, PDUR_CODE) pdur_{{moduleName | lower}}_cancel_receive(PduIdType pdu_id);
+{%- else %}
+{%- endif %}
+#define PDUR_STOP_SEC_CODE
+#include "pdur_memmap.h"
+#endif /* PDUR_{{moduleName.upper()}}_H */
+{{ "" }}

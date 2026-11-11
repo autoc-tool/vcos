@@ -1,0 +1,53 @@
+{{get_copyright()}}
+/*!*********************************************************************************************************************
+ * @file		sysm_init_pb_header.c
+ * @brief	   	sysm_init PostBuild 部分配置源文件.
+ * @date		{{get_generation_time()}}
+ * @project	 	{{get_project_name()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+/* Including File */
+#include "sysm_init_pb_types.h"
+#include "precompiled_data_hash.h"
+
+/* Local Variable Definition */
+
+#define  ECUM_START_SEC_CONST
+#include "ecum_memmap.h"
+{%- set modules = get_post_modules(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for module in modules %}
+// coverity[misra_c_2012_rule_8_5_violation:SUPPRESS]
+{%- if module == "com" %}
+extern CONST(com_config_type, ECUM_CONST) com_configuration;
+{%- elif module == "pdur" %}
+extern CONST(pdur_pb_config_type, ECUM_CONST) pdur_config;
+{%- elif module == "cannm" %}
+extern CONST(cannm_cate_cfg, ECUM_CONST) cannm_config;
+{%- else %}
+extern CONST({{module}}_config_type, ECUM_CONST) {{module}}_config;
+{%- endif %}
+{%- endfor %}
+
+/* Local Type & Structure Definition */
+
+CONST(postbuild_config_t, ECUM_CONST) postbuild_config = {
+	.start_pattern = 0x5A5A5A5A,
+	.post_build_variant = 1,
+	.pre_compile_hash_low = PRE_COMPILED_DATA_HASH_LOW,
+	.pre_compile_hash_high = PRE_COMPILED_DATA_HASH_HIGH,
+{%- for module in modules %}
+{%- if module == "com" %}
+	.com_config_ptr = &com_configuration,
+{%- elif module == "pdur" %}
+	.pdur_config_ptr = &pdur_config,
+{%- elif module == "cannm" %}
+	.cannm_config_ptr = &cannm_config,
+{%- else %}
+	.{{module}}_config_ptr = &{{module}}_config,
+{%- endif %}
+{%- endfor %}
+};
+
+#define ECUM_STOP_SEC_CONST
+#include "ecum_memmap.h"

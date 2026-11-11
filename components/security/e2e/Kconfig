@@ -1,0 +1,5 @@
+config MODULE_E2E
+    bool "e2e support"
+    default n
+	---help---
+		Enable the MODULE_E2E

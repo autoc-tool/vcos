@@ -1,0 +1,298 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        dem_cfg.h
+ * @brief       Dem配置头文件
+ * @details     主要包含Dem模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+{%- set dem_general = get_dem_general_config() %}
+{%- set dem_enable_conditions_config = get_dem_enable_conditions_config() %}
+{%- set dem_storage_conditions_config = get_dem_storage_conditions_config() %}
+{%- set dem_event_classes_config = get_dem_event_classes_config() %}
+{%- set dem_event_parameters_config = get_dem_event_parameters_config() %}
+{%- set dem_indicators_config = get_dem_indicators_config() %}
+{%- set dem_indicator_Attributes = get_dem_indicator_attributes_config() %}
+{%- set dem_time_based_classes_config = get_dem_time_based_classes_config() %}
+{%- set dem_storage_conditions_config = get_dem_storage_conditions_config() %}
+{%- set dem_ext_data_record_config = get_dem_ext_data_record_config() %}
+{%- set dem_freeze_frame_max_nof_did_config = get_dem_freeze_frame_max_nof_did_config() %}
+{%- set dem_obd_freeze_frame_max_nof_pid_config = get_dem_obd_freeze_frame_max_nof_pid_config() %}
+{%- set dem_ext_data_max_nof_record_config = get_dem_ext_data_max_nof_record_config() %}
+{%- set dem_ext_data_max_record_num_config = get_dem_ext_data_max_record_num_config() %}
+{%- set dem_freeze_frame_max_nof_record_config = get_dem_freeze_frame_max_nof_record_config() %}
+{%- set dem_last_event_id_config = get_dem_last_event_id_config() %}
+{%- set dem_opcycles_config = get_dem_opcycles_config() %}
+{%- set dem_client_config = get_dem_client_config() %}
+{%- set dem_freeze_frame_record_class_config = get_dem_freeze_frame_record_class_config() %}
+{%- set dem_satellite_config = get_dem_satellite_config() %}
+{%- set dem_event_available_data_length_config = get_dem_event_available_data_length_config() %}
+{%- set dem_nvm_blocks = get_dem_nvm_blocks_config() %}
+{%- set dem_event_combined_groups_config = get_dem_event_combined_groups_config() %}
+{%- set dem_mil_indicator_id_config = get_dem_mil_indicator_id_config() %}
+{%- set dem_clear_dtc_notification_start_list_config = get_dem_clear_dtc_notification_start_list_config() %}
+{%- set dem_clear_dtc_notification_finish_list_config = get_dem_clear_dtc_notification_finish_list_config() %}
+{%- set dem_dtc_classes = get_dem_dtc_classes_config() %}
+{%- set dem_master_memmap_tag_str = get_dem_master_memmap_tag_str() %}
+{%- set dem_master_core = get_dem_master_core() %}
+
+#ifndef DEM_CFG_H
+#define DEM_CFG_H
+
+{%- if 'CONFIG_MODULE_OS' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_OS'] == 'y' %}
+#include "application_cfg.h"
+{%- endif %}
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#ifndef MAX
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#endif
+
+#define DEM_DEBOUNCE_DISABLE ({{dem_general.DemDebounceDisable}}) ///< 关闭Dem去抖功能
+#define DEM_DEV_ERROR_DET_SUPPORT ({{dem_general.DevelopmentErrorDetect}}) ///< 开发错误探测开关
+#define DEM_OBD_SUPPORT ({{dem_general.OBDSupport}}) ///< OBD支持开关
+#define DEM_CFG_ENABLE_OBDII ({{dem_general.OBDSupport}}) ///< 配置支持OBDII开关
+#define DEM_TYPE_OF_DTC_SUPPORTED ({{dem_general.DemTypeOfDTCSupported}}) ///< 支持的DTC的类型
+{%- if 'CONFIG_MODULE_NVM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_NVM'] == 'y' and dem_nvm_blocks | length %}
+#define DEM_USE_NVM (STD_ON) ///< 使用NVM
+{%- else %}
+#define DEM_USE_NVM (STD_OFF) ///< 不使用NVM
+{%- endif %}
+#define DEM_USE_PRIMARY_MEMORY_SUPPORT (STD_ON) ///< 使用基础内存开关
+#define DEM_USE_PERMANENT_MEMORY_SUPPORT ({% if dem_general.DemMaxNumberEventEntryPermanent > 0 %}{{ "(STD_ON)" }}{%- else %}{{ "(STD_OFF)" }}{% endif %}) ///< 使用永久内存开关
+#define DEM_ENABLE_CONDITION_SUPPORT ({{dem_general.EnableConditionSupport}}) ///< 使能条件支持开关
+#define DEM_STORAGE_CONDITION_SUPPORT ({{dem_general.StorageConditionSupport}}) ///< 储存条件支持开关
+#define DEM_EVENT_DISPLACEMENT_SUPPORT (STD_ON) ///< 事件替换开关
+#define DEM_OBD_DISPLACEMENT_SUPPORT (STD_OFF) ///< OBD替换开关
+#define DEM_IMMEDIATE_NV_STORAGE ({{dem_general.DemImmediateNvStorage}}) ///< 立即储存开关
+#define DEM_DTC_SUPPRESSION_SUPPORT ({{dem_general.SuppressionSupport}}) ///< DTC抑制开关
+#define DEM_ENABLE_PRESTORED_FF ({% if dem_general.MaxNumberPrestoredFF > 0%}{{"(STD_ON)"}}{%- else %}{{"(STD_OFF)"}}{%- endif %}) ///< 使能冻结帧预存储开关
+#define DEM_CFG_SUPPORT_IUMPR ({{dem_general.SupportIumpr}}) ///< 配置支持IUMPR开关
+#define DEM_EVENT_AVAILABLE_SUPPORT ({{dem_general.DemAvailabilitySupport}}) ///< 事件可用开关
+
+#define DEM_EVENT_KIND_SUPPORT ({{dem_general.DemEventKindSupport}}) ///< 事件类型开关
+#define DEM_CALLBACK_EVENT_UDS_STATUS_CHANGED_SUPPORT ({{dem_general.DemCallbackEventUdsStatusChangedSupport}}) ///< 事件UDS状态变化回调开关
+#define DEM_CALLBACK_EVENT_DATA_CHANGED_SUPPORT ({{dem_general.DemCallbackEventDataChangedSupport}}) ///< 事件数据变化回调开关
+#define DEM_CALLBACK_CLEAR_EVENT_ALLOWED_SUPPORT ({{dem_general.DemCallbackClearEventAllowedSupport}}) ///< 事件允许清除回调开关
+#define DEM_CALLBACK_INIT_M_FOR_E_SUPPORT ({{dem_general.DemCallbackInitMforESupport}}) ///< 初始化事件监控器回调开关
+
+#define DEM_NOF_DTCS ({{dem_dtc_classes | length}}u) ///< DTC个数
+#define DEM_BSW_ERROR_BUFFER_SIZE ({{dem_general.DemBswErrorBufferSize}}u) ///< 错误缓存大小
+#define DEM_MAX_NUMBER_EVENT_ENTRY_PRI ({{dem_general.DemMaxNumberEventEntryPrimary}}u) ///< 最大基础事件条目
+#define DEM_MAX_NUMBER_EVENT_ENTRY_MIR (0u) ///< 最大镜像事件条目
+#define DEM_MAX_NUMBER_EVENT_ENTRY_PER (0u) ///< 最大永久事件条目
+#define DEM_MAX_NUMBER_EVENT_ENTRY ({{dem_event_parameters_config | length}}u) ///< 最大事件条目
+#define DEM_NUM_ENABLECONDITIONS ({{dem_enable_conditions_config | length}}u) ///< 使能条件个数
+#define DEM_NUM_STORAGECONDITIONS ({{dem_storage_conditions_config | length}}u) ///< 储存条件个数
+#define DEM_MAX_NUMBER_PRESTORED_FF ({{dem_general.MaxNumberPrestoredFF}}u) ///< 最大预存储冻结帧个数
+#define DEM_INVALID_ADEG_DATA_INDEX ({{dem_event_parameters_config | length}}u) ///< 非法老化数据索引
+
+#define DEM_DTC_STATUS_AVAILABILITY_MASK ({{"0x%02X" | format(dem_general.DTCStatusAvailabilityMask)}}u) ///< DTC状态可用掩码
+#define DEM_MAX_NR_OF_RECORDS_IN_EXTENDED_DATA ({{dem_ext_data_max_nof_record_config}}u) ///< 最大扩展数据记录个数
+#define DEM_MAX_NR_OF_DIDS_IN_FREEZEFRAME_DATA ({{dem_freeze_frame_max_nof_did_config}}u) ///< 最大冻结帧数据DID个数
+#define DEM_MAX_NR_OF_PIDS_IN_FREEZEFRAME_DATA ({{dem_obd_freeze_frame_max_nof_pid_config}}u) ///< 最大冻结帧数据PID个数
+
+#define DEM_SUPPORT_EVENTCOMBINATION {% if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}{{"(STD_ON)"}}{%- else %}{{"(STD_OFF)"}}{%- endif %} ///< 事件组合开关
+#define DEM_SUPPORT_EVENTCOMBINATION_ONSTORAGE {% if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}{{"(STD_ON)"}}{%- else %}{{"(STD_OFF)"}}{%- endif %} ///< 存储事件组合开关
+#define DEM_SUPPORT_EVENTCOMBINATION_ONRETRIEVAL {% if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONRETRIEVAL" %}{{"(STD_OFF)"}}{%- else %}{{"(STD_OFF)"}}{%- endif %} ///< 检索事件组合开关
+{%- if dem_general.DemEventCombinationSupport == "DEM_EVCOMB_ONSTORAGE" %}
+#define DEM_EVENT_COMBINED_INVALID_GROUP_INDEX (255u) ///< 无效事件组合组索引
+#define DEM_MAX_NUMBER_EVENT_COMBINED_GROUP ({{ dem_event_combined_groups_config | length }}u) ///< 最大事件组合组个数
+{%- endif %}
+
+#define DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS ({{dem_freeze_frame_max_nof_record_config}}u) ///< 最大冻结帧记录个数
+#define DEM_MAX_RECORD_NUMBERS_IN_EXD_REC_NUM_CLASS ({{dem_ext_data_max_nof_record_config}}u) ///< 最大扩展数据记录个数
+
+#define DEM_MAX_SIZE_FF_DATA ({{ dem_general.DemMaxSizeFFData }}u) ///< 最大冻结帧数据大小
+#define DEM_MAX_SIZE_EXT_DATA ({{ dem_general.DemMaxSizeExtData }}u) ///< 最大扩展数据大小
+#define DEM_MAX_NUMBER_EVENT ({{dem_event_parameters_config | length}}u) ///< 最大事件个数
+
+#define DEM_NVMBLOCK_MGMT ({{ get_dem_nvram_block_num_config() }}u) ///< NVM管理块个数
+{%- set block_index = namespace(value = get_dem_nvram_block_num_config()) %}
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_NVMBLOCK_STATUS ({{block_index.value}}u) ///< NVM块状态
+{%- if dem_general.DataAgedCounter == "STD_ON" %}
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_AGED_COUNTER_DATA ({{block_index.value}}u) ///< 老化计数数据
+{%- endif %}
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_NVMBLOCK_AVAILABLE_DATA ({{block_index.value}}u) ///< 可用数据NVM块
+{%- endif %}
+{%- if dem_general.OBDSupport == "STD_ON" %}
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_NVMBLOCK_PERMANENT ({{block_index.value}}u) ///< 永久NVM块
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_NVMBLOCK_OBD_FREEZE_FRAME ({{block_index.value}}u) ///< OBD冻结帧NVM块
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_NVMBLOCK_INDICATOR_STATUS ({{block_index.value}}u) ///< Indicator status NVM块
+{%- endif %}
+{%- set block_index.value = block_index.value + 1 %}
+#define DEM_NOF_SUPPORTED_NVM_BLOCKS ({{block_index.value}}u) ///< 支持的NVM块个数
+
+#define DEM_MAX_NUMBER_NVM_BLOCKS ({{ dem_nvm_blocks | length }}) ///< 最大NVM块个数
+
+#define DEM_CURRENT_CONFIGURATION_ID ({{ dem_general.DemConfigurationId }}u) ///< 当前配置ID
+{%- if dem_general.OBDSupport == "STD_ON" %}
+#define DEM_CURRENT_PERMANENT_CONFICURATION_ID ({{ dem_general.DemPermanentConfigurationId }}u) ///< 当前配置Permanent ID
+{%- endif %}
+
+#define DEM_MAX_NUMBER_EVENT_PRI_MEM (DEM_MAX_NUMBER_EVENT_ENTRY_PRI) ///< 最大基础内存事件个数
+#define DEM_MAX_NUMBER_FF_DATA_PRI_MEM (DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS * DEM_MAX_NUMBER_EVENT_PRI_MEM) ///< 最大基础内存冻结帧数据个数
+#define DEM_MAX_NUMBER_EXT_DATA_PRI_MEM (DEM_MAX_NUMBER_EVENT_PRI_MEM) ///< 最大基础内存扩展数据个数
+
+#define DEM_MAX_NUMBER_EVENT_PERM_MEM ({{ dem_general.DemMaxNumberEventEntryPermanent }}u) ///< 最大永久内存个数事件
+#define DEM_FREEZEFRAME_DEFAULT_VALUE (0xFF) ///< 冻结帧默认值
+#define DEM_FREEZEFRAME_RECORD_NUMBER_EOL (0xFFu) ///< 冻结帧记录结束符
+
+#define DEM_HIGHEST_EXT_DATA_REC_NUM ({{dem_ext_data_max_record_num_config}}u) ///< 最高扩展数据记录数
+#define DEM_HIGHEST_FF_REC_NUM (2u) ///< 最高冻结帧记录数
+
+#define DEM_EXT_DATA_IN_PRI_MEM ((DEM_MAX_NUMBER_EXT_DATA_PRI_MEM > 0) && ((DEM_USE_PRIMARY_MEMORY_SUPPORT == STD_ON) && (DEM_MAX_RECORD_NUMBERS_IN_EXD_REC_NUM_CLASS))) ///< 基础内存扩展数据
+#define DEM_FF_DATA_IN_PRI_MEM  ((DEM_MAX_NUMBER_FF_DATA_PRI_MEM > 0) && ((DEM_USE_PRIMARY_MEMORY_SUPPORT == STD_ON)) && (DEM_MAX_RECORD_NUMBERS_IN_FF_REC_NUM_CLASS)) ///< 基础内存冻结帧数据
+
+#define DEM_EVENT_BUFF_INVAILD_INDEX ((uint16)0xFFFFu) ///< 无效事件缓存索引
+
+{%- if dem_general.DemDebounceDisable == "STD_ON" %}
+#define DEM_CFG_GLOBAL_DEBOUNCE_STORAGE_EVENT_COUNT (0u) ///< 配置全局去抖储存事件计数
+{% else %}
+#define DEM_CFG_GLOBAL_DEBOUNCE_STORAGE_EVENT_COUNT ({{ dem_general.global_debounce_storage_event_count }}u) ///< 配置全局去抖储存事件计数
+{%- endif %}
+
+{%- if dem_general.DemAvailabilitySupport == "STD_ON" %}
+#define DEM_CFG_EVENT_AVAILABLE_DATA_LENGTH ({{ dem_event_available_data_length_config }}u) ///< 配置事件可用数据长度
+{%- endif %}
+#define DEM_CFG_MAX_NUMBER_AGED_DTCS ({{ dem_general.dem_max_number_aged_dtcs }}u) ///< 配置最大老化DTC个数
+#define DEM_CFG_GLOBAL_CYCLE_COUNT ({{ dem_opcycles_config|length }}u) ///< 配置全局循环计数
+#define DEM_CFG_SUPPORT_OPCYCLE_STORAGE ({{ dem_general.OpCycleStorage }}) ///< 操作周期存储开关
+#define DEM_CFG_GLOBAL_PERMANENT_SIZE ({{ dem_general.GlobalPermanentSize }}u) ///< 全局永久内存大小
+#define DEM_CFG_GLOBAL_FREEZEFRAME_SIZE ({{ dem_general.GlobalFreezeFrameSize }}u) ///< 全局冻结帧大小
+#define DEM_CFG_MAX_SIZE_OBDFREEZEFRAME ({{ dem_general.DemMaxSizeOBDFFData }}u) ///< 最大OBD冻结帧大小
+#define DEM_SUPPORT_CURRENT_FDC ({{ dem_general.DataCurrentFdc }}) ///< 当前FDC开关
+#define DEM_CFG_DATA_CYCLES_SINCE_FIRST_FAILED ({{ dem_general.DataCyclesSinceFirstFailed }}) ///< 首次失败数据周期
+#define DEM_CFG_DATA_CYCLES_SINCE_LAST_FAILED ({{ dem_general.DataCyclesSinceLastFailed }}) ///< 末次失败数据周期
+#define DEM_CFG_DATA_FAILED_CYCLES ({{ dem_general.DataFailedCycles }}) ///< 失败数据周期
+#define DEM_SUPPORT_MAX_FDC_DURING_CURRENT_CYCLE ({{ dem_general.DataMaxFdcDuringCurrentCycle }}) ///< 最大当前周期的FDC
+#define DEM_CFG_DATA_OCCCTR ({{ dem_general.DataOccurCounter }}) ///< 数据发生计数
+#define DEM_CFG_DATA_OVER_FLOW_INDICATION ({{ dem_general.DataOverflow }}) ///< 数据溢出
+#define DEM_CFG_DTC_AGED_COUNTER ({{dem_general.DataAgedCounter}}) ///< 数据老化计数
+#define DEM_CFG_DATA_FAULT_PENDING_COUNTER ({{ dem_general.DataFailedPendingCounter }}) ///< 数据故障待处理计数
+#define DEM_SUPPORT_CYCLES_COUNTER {% if dem_general.DataCyclesSinceFirstFailed == "STD_ON" or dem_general.DataCyclesSinceLastFailed == "STD_ON" or dem_general.DataFailedCycles == "STD_ON" %}{{ "(STD_ON)" }}{% else %}{{ "(STD_OFF)" }}{% endif %} ///< 周期计数开关
+#define DEM_CFG_SUPPORT_OVFLIND_API ({{ dem_general.DemEvMemOverflowIndicationSupport }})  ///< 溢出API开关
+#define DEM_CFG_SUPPORT_WWHOBD (STD_OFF) ///< WWHOBD开关
+#define DEM_CFG_MAX_PRESTORE_FF_SIZE MAX(DEM_CFG_MAX_SIZE_OBDFREEZEFRAME, DEM_MAX_SIZE_FF_DATA) ///< 预存储数据长度为OBD冻结帧和UDS冻结帧的最大值
+
+#define DEM_NOF_INDICATORS ({{dem_indicators_config | length}}u) ///< 指示器个数
+#define DEM_INVALID_INDICATOR (0xFFu) ///< 无效指示器
+#define DEM_MIL_INIDICATOR_ID ({{ dem_mil_indicator_id_config.upper() }}) ///< MIL指示器ID
+
+#define DEM_NOF_EVENT_INDICATORS ({{dem_indicator_Attributes | length}}u) ///< 事件指示器个数
+#define DEM_INVALID_INDICATOR_INDEX (DEM_NOF_EVENT_INDICATORS) ///< 无效指示器索引
+
+{%- if dem_indicator_Attributes | length %}
+#define DEM_USE_INDICATORS
+#define DEM_INDICATOR_CNTR_MAX (255u) ///< 最大指示器
+{%- endif %}
+
+#define DEM_MEM_INDICATOR_BUFFER_SIZE (0u) ///< 指示器缓存大小
+#define DEM_MEM_STATUSBIT_BUFFER_SIZE ({{dem_general.DemMemoryStatusBitBufferSize}}u) ///< 状态位缓存大小
+
+#define DEM_SUPPORT_AGING (STD_ON) ///< 内部老化处理
+#define DEM_AGING_COUNTER_CLEAR_ON_FAIL_DURING_FAILURE_CYCLE (STD_ON) ///< 失败周期发生失败清除老化计数
+#define DEM_AGING_COUNTER_CLEAR_ON_FAIL_DURING_FAILURE_OR_AGING_CYCLE (STD_OFF) ///< 失败或老化周期发生失败清除老化计数
+#define DEM_HEALING_COUNTER_CLEAR_ON_FAIL_DURING_FAILURE_CYCLE (STD_ON) ///< 失败周期发生失败清除治愈计数
+{% if dem_freeze_frame_record_class_config["FreezeFrameTriggger"] == "DEM_TRIGGER_ON_TEST_FAILED" -%}
+#define DEM_FREEZE_FRAME_CAPTURE_ON_TEST_FAILED (STD_ON) ///< TEST_FAILED时冻结帧捕捉
+{%- elif dem_freeze_frame_record_class_config["FreezeFrameTriggger"] == "DEM_TRIGGER_ON_CONFIRMED" -%}
+#define DEM_FREEZE_FRAME_CAPTURE_ON_CONFIRMED (STD_ON) ///< CONFIRMED时冻结帧捕捉
+{%- elif dem_freeze_frame_record_class_config["FreezeFrameTriggger"] == "DEM_TRIGGER_ON_FDC_THRESHOLD" -%}
+#define DEM_FREEZE_FRAME_CAPTURE_ON_FDC_THRESHOLD (STD_ON) ///< FDC阈值时冻结帧捕捉
+{%- elif dem_freeze_frame_record_class_config["FreezeFrameTriggger"] == "DEM_TRIGGER_ON_PENDING" -%}
+#define DEM_FREEZE_FRAME_CAPTURE_ON_PENDING (STD_ON) ///< PENDING时冻结帧捕捉
+{%- endif %}
+#define DEM_EXTENDED_DATA_CAPTURE_TESTFAILED (STD_ON) ///< 测试失败时抓扩展数据
+#define DEM_EXTENDED_DATA_CAPTURE_EVENT_MEMORY_STORAGE (STD_OFF) ///< 事件内存存储时抓扩展数据
+
+#if (DEM_USE_PRIMARY_MEMORY_SUPPORT == STD_ON) || (DEM_USE_PERMANENT_MEMORY_SUPPORT == STD_ON)
+#define DEM_USE_MEMORY_FUNCTIONS (STD_ON) ///< 使用内存功能
+#endif
+#define DEM_NO_DTC (0xFFFFFFFFuL) ///< 无效DTC
+#define DEM_NO_OBDDTC ((uint16)0xFFFFu) ///< 无效OBDDTC
+
+#define DEM_GENERAL_EVENT_DATA_CB (STD_OFF) ///< 通用事件数据回调开关
+#define DEM_GENERAL_EVENT_STATUS_CB {% if dem_general.GeneralInterfaceSupport %}{{ "(STD_ON)" }}{%- else %}{{ "(STD_OFF)" }}{% endif %} ///< 通用事件状态回调
+
+#define DEM_CLEAR_DTC_NOTIFICATION_START {% if dem_clear_dtc_notification_start_list_config | length %}{{ "(STD_ON)" }}{%- else %}{{ "(STD_OFF)" }}{% endif %} ///< 开始清除DTC通知
+#define DEM_CLEAR_DTC_NOTIFICATION_FINISH {% if dem_clear_dtc_notification_finish_list_config | length %}{{ "(STD_ON)" }}{%- else %}{{ "(STD_OFF)" }}{% endif %} ///< 结束清除DTC通知
+
+#define DEM_NOF_TIME_BASE_PREDEB ({% if dem_time_based_classes_config | length %}{{ dem_time_based_classes_config | length }}{%- else %}{{1}}{% endif %}u) ///< 基于时间的预去抖个数
+#define DEM_TASK_TIME ({{dem_general.TaskTime}}u) ///< 任务时间
+#define DEM_NVM_STORAGE_TIME ({{dem_general.DemStoreImmediatelyTime}}u) ///< Dem中对应的NVM block立即存储的周期
+
+#define DEM_USE_CONFIGPTR (STD_ON) ///< 配置指针开关
+#define DEM_SUPPORT_MULTIPLE_SATELLITES (STD_ON) ///< 多卫星支持开关
+
+#define DEM_INVALID_U16_REF_INDEX ((uint16)0xFFFFu)   ///< 非法的U16索引
+#define DEM_ED_RECORD_NUMBER_INVALID (0u) ///< 无效记录个数
+#define DEM_EVENT_ID_NULL (0u) ///< 事件ID为空
+{%- for parameter_name, parameter in dem_event_parameters_config.items() %}
+{{  ("%-80s" | format("#define DemConf_DemEventParameter_" ~ parameter_name))}} ({{ parameter["EventId"] }}u) ///< 事件参数
+{%- endfor %}
+#define DEM_EVENT_ID_LAST_VALID_ID ({{dem_last_event_id_config}}u) ///< 上次有效事件ID
+
+{%- for indicator_name, indicator in dem_indicators_config.items() %}
+{{  ("%-80s" | format("#define " ~ indicator_name.upper()))}}({{ indicator["DemIndicatorID"]["Value"] }}u)  ///< 指示器ID
+{%- endfor %}
+
+{%- for opcycle_name, opcycle in dem_opcycles_config.items() %}
+{{  ("%-80s" | format("#ifndef " ~ opcycle_name.upper()))}}
+{{  ("%-80s" | format("#define " ~ opcycle_name.upper()))}}{{ "(dem_opcycle_id_type)" }} ({{ "0x%02X" | format(opcycle["DemOperationCycleId"]["Value"]) }})  ///< 操作周期ID
+{{  ("%-80s" | format("#endif"))}}
+{%- endfor %}
+{{  ("%-80s" | format("#define " ~ "DEM_OPERATION_CYCLE_ID_ENDMARK"))}} {{ "(dem_opcycle_id_type)" }} ({{ "0x%02X" | format(dem_opcycles_config|length) }})  ///< 操作周期个数
+
+{%- for client_name, client in dem_client_config.items() %}
+{{  ("%-80s" | format("#define DEM_CLIENT_ID_" ~ client_name.upper()))}} ({{ client["DemClientId"]["Value"] }}u) ///< 用户ID
+{%- endfor %}
+
+#define DEM_MEMMAP_BSW (0u) ///< BSW内存映射
+
+#define DEM_MAX_NUMBER_SATELLITE ({{ dem_satellite_config|length }}u) ///< 最大卫星个数
+#define DEM_SATELLITEINFO_SIZE ({{ dem_satellite_config|length }}u) ///< 卫星信息大小
+#define DEM_DEFAULT_SINGLE_SATELLITE_ID (0u) ///< 卫星应用0
+#define DEM_MASTER_APPLICATION_ID ({{ dem_general["DemMasterApplicationId"] }}) ///< 主应用ID
+
+{%- for satellite_name, satellite in dem_satellite_config.items() %}
+{{  ("%-80s" | format("#define DEM_SATELLITE_ID_" ~ satellite_name.upper()))}} ({{ loop.index0 }}u) ///< 卫星名
+{%- endfor %}
+
+#if (DEM_DEBOUNCE_DISABLE == STD_OFF)
+#if (DEM_NOF_TIME_BASE_PREDEB > 0)
+#define DEM_USE_TIME_BASE_PREDEBOUNCE ///< 使用基于时间的预去抖
+#endif
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DEM_CFG_H */

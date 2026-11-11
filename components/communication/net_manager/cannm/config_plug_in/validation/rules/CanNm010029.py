@@ -1,0 +1,117 @@
+from func_module.validation.common.basic_rule import BasicRule, timing_decorator
+from durable.lang import *
+from durable.engine import *
+
+
+class CanNm010029Rule(BasicRule):
+    ruleset_name = "CanNm010029"
+    validation_result = False
+
+    def __init__(self, logs, bsw_ecuc_cfg_class_dict) -> None:
+        super().__init__()
+        self.logs = logs
+        self.validation_code = self.__class__.ruleset_name
+        self.validation_summary = "CanNmPduNidPosition should not be CANNM_PDU_OFF if CanNmNodeDetectionEnabled is True;CanNmPduNidPosition can not be the same as CanNmPduCbvPosition when they are both not CANNM_PDU_OFF;CanNmPduNidPosition should be CANNM_PDU_BYTE_0 if not CANNM_PDU_OFF and CanNmPduCbvPosition is CANNM_PDU_OFF!"
+        self.bsw_ecuc_cfg_class_dict = bsw_ecuc_cfg_class_dict
+
+        self.durable_init()
+
+    def durable_init(self):
+        # 注：固定名称的规则集只能初始化一次，否则会异常报错
+        try:
+            get_host().get_ruleset(self.__class__.ruleset_name)
+        except Exception as e:
+            with ruleset(self.__class__.ruleset_name):
+
+                @when_all(+m.status)
+                def event(c):
+                    pass
+
+                @when_all(+m.frame_id)
+                def fact(c):
+                    self.__class__.validation_result = True
+
+            pass
+
+    def check_validation_run(self):
+        if not self.modules_are_exist(["CanNm"], self.bsw_ecuc_cfg_class_dict):
+            self.vlog(self.validation_code, self.validation_summary, "Data required for validation is missing",
+                self.validation_summary, "fail")
+            return False
+        return True
+
+    @timing_decorator
+    def validation_run(self):
+        # 1）准备校验数据
+        validation_data_list = []
+        valid = True
+        CanNmDict = self.bsw_ecuc_cfg_class_dict["CanNm"]["ArPackages"]["ActiveEcuC"]["CanNm"]
+        for CanNmConfigKey, CanNmConfigValue in CanNmDict.items():
+            if CanNmConfigKey == "DefinitionRef":
+                continue
+            if "DefinitionRef" not in CanNmConfigValue:
+                continue
+            if CanNmConfigValue["DefinitionRef"] == '/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig':
+                cannm_globalconfig_dict = CanNmDict[CanNmConfigKey]
+                for channelkey, channelvalue in cannm_globalconfig_dict.items():
+                    if not isinstance(cannm_globalconfig_dict, dict):
+                        continue
+                    if "DefinitionRef" not in cannm_globalconfig_dict:
+                        continue
+                    if channelkey == 'DefinitionRef':
+                        continue
+                    if "DefinitionRef" not in channelvalue:
+                        continue
+                    if channelvalue["DefinitionRef"] != '/AUTOSAR/EcucDefs/CanNm/CanNmGlobalConfig/CanNmChannelConfig':
+                        continue
+
+                    CanNmChannelConfig_dict = cannm_globalconfig_dict[channelkey]
+                    CanNmNodeDetectionEnabled = CanNmChannelConfig_dict["CanNmNodeDetectionEnabled"]["Value"]
+                    CanNmPduCbvPosition = CanNmChannelConfig_dict["CanNmPduCbvPosition"]["Value"]
+                    CanNmPduNidPosition = CanNmChannelConfig_dict["CanNmPduNidPosition"]["Value"]
+
+                    if CanNmNodeDetectionEnabled == None or CanNmNodeDetectionEnabled == "":
+                        valid = False
+                        break
+
+                    if CanNmPduCbvPosition == None or CanNmPduCbvPosition == "":
+                        valid = False
+                        break
+
+                    if CanNmPduNidPosition == None or CanNmPduNidPosition == "":
+                        valid = False
+                        break
+
+                    if True == CanNmNodeDetectionEnabled and CanNmPduNidPosition == "CANNM_PDU_OFF":
+                        valid = False
+                        break
+
+                    if CanNmPduCbvPosition != "CANNM_PDU_OFF" and CanNmPduNidPosition != "CANNM_PDU_OFF" and CanNmPduCbvPosition == CanNmPduNidPosition:
+                        valid = False
+                        break
+
+                    if CanNmPduNidPosition != "CANNM_PDU_OFF" and CanNmPduCbvPosition == "CANNM_PDU_OFF" and CanNmPduNidPosition != "CANNM_PDU_BYTE_0":
+                        valid = False
+                        break
+
+                service_id_path = "/ActiveEcuC/CanNm/" + CanNmConfigKey + "/" + channelkey + "/CanNmPduNidPosition"
+                # 2） 开始校验
+                # 格式："错误码", "摘要", "错误信息", "错误索引路径" "结果"
+                if valid:
+                    self.vlog(
+                    self.validation_code, self.validation_summary,
+                    f"/ActiveEcuC/CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmPduNidPosition[{CanNmPduNidPosition}] should not be CANNM_PDU_OFF if CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmNodeDetectionEnabled[{CanNmNodeDetectionEnabled}] is True;CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmPduNidPosition[{CanNmPduNidPosition}] can not be the same as CanNmPduCbvPosition[{CanNmPduCbvPosition}] when they are both not CANNM_PDU_OFF;CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmPduNidPosition[{CanNmPduNidPosition}] should be CANNM_PDU_BYTE_0 if not CANNM_PDU_OFF and CanNmPduCbvPosition[{CanNmPduCbvPosition}] is CANNM_PDU_OFF!",
+                    service_id_path, "pass")
+                else:
+                    self.vlog(
+                    self.validation_code, self.validation_summary,
+                    f"/ActiveEcuC/CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmPduNidPosition[{CanNmPduNidPosition}] should not be CANNM_PDU_OFF if CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmNodeDetectionEnabled[{CanNmNodeDetectionEnabled}] is True;CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmPduNidPosition[{CanNmPduNidPosition}] can not be the same as CanNmPduCbvPosition[{CanNmPduCbvPosition}] when they are both not CANNM_PDU_OFF;CanNm/{CanNmConfigKey}/CanNmChannelConfig/{channelkey}/CanNmPduNidPosition[{CanNmPduNidPosition}] should be CANNM_PDU_BYTE_0 if not CANNM_PDU_OFF and CanNmPduCbvPosition[{CanNmPduCbvPosition}] is CANNM_PDU_OFF!",
+                    service_id_path, "fail")
+                # 3）清空ruleset中的所有fact，为下一次校验做准备
+                if len(validation_data_list) > 0:
+                    retract_facts(self.__class__.ruleset_name, validation_data_list)
+                return valid
+        return valid
+
+    def add_rule_time(self):
+        pass

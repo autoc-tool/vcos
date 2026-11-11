@@ -1,0 +1,67 @@
+diff --git a/src/sigwaittest/sigwaittest.c b/src/sigwaittest/sigwaittest.c
+index 8c1c16f..7631922 100644
+--- a/src/sigwaittest/sigwaittest.c
++++ b/src/sigwaittest/sigwaittest.c
+@@ -19,11 +19,12 @@
+ #include <signal.h>
+ #include <string.h>
+ #include <time.h>
+-#include <utmpx.h>
+ #include <sys/types.h>
+ #include <sys/time.h>
++#ifndef __NuttX__
+ #include <linux/unistd.h>
+ #include <utmpx.h>
++#endif
+ #include <pthread.h>
+ #include <inttypes.h>
+ 
+@@ -65,7 +66,7 @@ static int wasforked_sender = -1;
+ static int wasforked_threadno = -1;
+ static int tracelimit;
+ 
+-void *semathread(void *param)
++static void *semathread(void *param)
+ {
+ 	int mustgetcpu = 0;
+ 	struct params *par = param;
+@@ -459,6 +460,7 @@ int main(int argc, char *argv[])
+ 	char f_opt[14];
+ 	struct timespec launchdelay, maindelay;
+ 
++    mustshutdown = 0;
+ 	rt_init(argc, argv);
+ 	process_options(argc, argv);
+ 
+@@ -586,6 +588,7 @@ int main(int argc, char *argv[])
+ 		receiver[i].max_cycles = max_cycles;
+ 		receiver[i].sender = 0;
+ 		receiver[i].neighbor = &sender[i];
++#ifndef __NuttX__
+ 		if (mustfork) {
+ 			pid_t pid = fork();
+ 			if (pid == -1) {
+@@ -606,6 +609,7 @@ int main(int argc, char *argv[])
+ 				    "#%d\n", i);
+ 			}
+ 		} else
++#endif
+ 			pthread_create(&receiver[i].threadid, NULL,
+ 			    semathread, &receiver[i]);
+ 
+@@ -614,6 +618,7 @@ int main(int argc, char *argv[])
+ 		memcpy(&sender[i], &receiver[i], sizeof(receiver[0]));
+ 		sender[i].sender = 1;
+ 		sender[i].neighbor = &receiver[i];
++#ifndef __NuttX__
+ 		if (mustfork) {
+ 			pid_t pid = fork();
+ 			if (pid == -1) {
+@@ -634,6 +639,7 @@ int main(int argc, char *argv[])
+ 				    "#%d\n", i);
+ 			}
+ 		} else
++#endif
+ 			pthread_create(&sender[i].threadid, NULL, semathread,
+ 			    &sender[i]);
+ 	}

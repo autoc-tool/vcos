@@ -1,0 +1,25 @@
+{
+    "apps": [
+        {
+            "app_name": "rt_demo",
+            "board_name": "scm7",
+            "board_build_path": "../nuttx",
+            "board_config": "../vendor/autoc/boards/scm7/configs/vcos",
+            "codegen_boot": "../vcos_studio/configurator/cmd_api/auto_cli.py",
+            "vcosproject_file_path": "../examples/rt_demo/system_cfg/scm7/rt_demo.vcosproject"
+        },
+        {
+            "app_name": "rt_demo",
+            "board_name": "mcm7",
+            "board_build_path": "../nuttx",
+            "board_config": "../vendor/autoc/boards/mcm7/configs/vcos",
+            "codegen_boot": "../vcos_studio/configurator/cmd_api/auto_cli.py",
+            "vcosproject_file_path": "../examples/rt_demo/system_cfg/mcm7/rt_demo.vcosproject"
+        }
+    ],
+    "maketool": "ninja",
+    "toolchain_path": "",
+    "build_mode": "",
+    "build_action": "",
+    "compiler": "gcc"
+}

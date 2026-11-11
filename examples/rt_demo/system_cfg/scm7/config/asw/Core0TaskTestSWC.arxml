@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AUTOSAR xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00046.xsd" xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>ComponentTypes</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE UUID="43FE606C-D460-4CEB-88D2-707DCA4F0956">
+          <SHORT-NAME>Core0TaskTestSWC</SHORT-NAME>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR UUID="CAE37E95-31EF-40D4-8D96-B2CE1F48D98F">
+              <SHORT-NAME>Core0TaskTestSWC_InternalBehavior</SHORT-NAME>
+              <EVENTS>
+                <TIMING-EVENT UUID="FD56C774-910F-40CE-A681-05BF221974AF">
+                  <SHORT-NAME>TMT_core0_actuatorin_runnable_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_actuatorin_runnable_10ms</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="E8ADBF9C-2C00-4EF4-ADFD-E2EEE54D2948">
+                  <SHORT-NAME>TMT_core0_actuatorout_runnable_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_actuatorout_runnable_10ms</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="E0E37F8A-A50C-4512-9F77-E6A30A901D8E">
+                  <SHORT-NAME>TMT_core0_asil_bsw_runnable_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_asil_bsw_runnable_10ms</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="12BA3C7A-0E4A-49FD-92AA-538E74C603A0">
+                  <SHORT-NAME>TMT_core0_asil_bsw_runnable_5ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_asil_bsw_runnable_5ms</START-ON-EVENT-REF>
+                  <PERIOD>0.005</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="B111441D-91D2-4834-A855-9667521F13B9">
+                  <SHORT-NAME>TMT_core0_bsw_runnable_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_bsw_runnable_10ms</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="22E5B79A-8967-4693-9DFA-3C5F51B43B93">
+                  <SHORT-NAME>TMT_core0_bsw_runnable_10ms_lowpriority</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_bsw_runnable_10ms_lowpriority</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="E4061600-BD81-4DF0-B3AD-EE17B174727E">
+                  <SHORT-NAME>TMT_core0_bsw_runnable_5ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_bsw_runnable_5ms</START-ON-EVENT-REF>
+                  <PERIOD>0.005</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="A7EB1F37-4A56-4EA1-A8B9-0A6F3151EE34">
+                  <SHORT-NAME>TMT_core0_bswapp_runnable_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_bswapp_runnable_10ms</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="60E1DF03-6131-4D76-A64C-C7DD3F741730">
+                  <SHORT-NAME>TMT_core0_bswapp_runnable_1ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_bswapp_runnable_1ms</START-ON-EVENT-REF>
+                  <PERIOD>0.001</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="7F962897-05D6-4AA3-8B8F-D1474FCDB6F6">
+                  <SHORT-NAME>TMT_core0_bswapp_runnable_5ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_bswapp_runnable_5ms</START-ON-EVENT-REF>
+                  <PERIOD>0.005</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="E459A55C-9DE3-46FB-AC30-25C2DA286896">
+                  <SHORT-NAME>TMT_Core0_Demo_Runnable_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_demo_runnable_10ms</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="2A30D9C8-4B4D-4517-95C4-37B01F5D1B98">
+                  <SHORT-NAME>TMT_Core0_Demo_Runnable_1ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_demo_runnable_1ms</START-ON-EVENT-REF>
+                  <PERIOD>0.001</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT UUID="C2D7CA0F-AE3C-4724-B83E-1E6F65F68353">
+                  <SHORT-NAME>TMT_Core0_Demo_Runnable_5ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior/core0_demo_runnable_5ms</START-ON-EVENT-REF>
+                  <PERIOD>0.005</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY UUID="A20528B7-C5F6-4FD5-AEFB-2374C9352A34">
+                  <SHORT-NAME>core0_actuatorin_runnable_10ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_actuatorin_runnable_10ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="1A5AF9EB-33E3-4345-9166-7789E2971F27">
+                  <SHORT-NAME>core0_actuatorout_runnable_10ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_actuatorout_runnable_10ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="75E8BD47-529A-4836-B9E9-BAFF44398E4E">
+                  <SHORT-NAME>core0_asil_bsw_runnable_10ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_asil_bsw_runnable_10ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="D0751881-8FE8-4F11-83F7-351FF03B5925">
+                  <SHORT-NAME>core0_asil_bsw_runnable_5ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_asil_bsw_runnable_5ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="540E08F3-4944-43BC-BF85-5F6286A8CD29">
+                  <SHORT-NAME>core0_bsw_runnable_10ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_bsw_runnable_10ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="D4AA8BAD-F1FD-4C55-A787-2109F939409C">
+                  <SHORT-NAME>core0_bsw_runnable_10ms_lowpriority</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_bsw_runnable_10ms_lowpriority</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="A56B5946-E33A-44C9-A7C4-E7A8B2111878">
+                  <SHORT-NAME>core0_bsw_runnable_5ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_bsw_runnable_5ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="E21C0C48-4876-496A-9A6D-B3E2DC365384">
+                  <SHORT-NAME>core0_bswapp_runnable_10ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_bswapp_runnable_10ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="A259CBE6-20F3-426C-8F36-61E15AC768EF">
+                  <SHORT-NAME>core0_bswapp_runnable_1ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_bswapp_runnable_1ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="DD032764-F8F2-413A-A733-CEDEB437A39A">
+                  <SHORT-NAME>core0_bswapp_runnable_5ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_bswapp_runnable_5ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="03E1D71B-DADB-4FF5-87D3-56844D248D76">
+                  <SHORT-NAME>core0_demo_runnable_10ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_demo_runnable_10ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="0746999C-8197-4BD9-A7AC-3CA9F7B5B7C5">
+                  <SHORT-NAME>core0_demo_runnable_1ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_demo_runnable_1ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY UUID="D7298DB3-AADA-43F5-BAB7-E0D6BF1B79D4">
+                  <SHORT-NAME>core0_demo_runnable_5ms</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <SYMBOL>core0_demo_runnable_5ms</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+              <SUPPORTS-MULTIPLE-INSTANTIATION>false</SUPPORTS-MULTIPLE-INSTANTIATION>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+        <SWC-IMPLEMENTATION UUID="504E4F2E-9008-413F-AC30-C703DB101312">
+          <SHORT-NAME>Core0TaskTestSWC_Implementation</SHORT-NAME>
+          <CODE-DESCRIPTORS>
+            <CODE>
+              <SHORT-NAME>Default</SHORT-NAME>
+              <ARTIFACT-DESCRIPTORS>
+                <AUTOSAR-ENGINEERING-OBJECT>
+                  <SHORT-LABEL>Default</SHORT-LABEL>
+                  <CATEGORY>SWSRC</CATEGORY>
+                </AUTOSAR-ENGINEERING-OBJECT>
+              </ARTIFACT-DESCRIPTORS>
+            </CODE>
+          </CODE-DESCRIPTORS>
+          <BEHAVIOR-REF DEST="SWC-INTERNAL-BEHAVIOR">/ComponentTypes/Core0TaskTestSWC/Core0TaskTestSWC_InternalBehavior</BEHAVIOR-REF>
+        </SWC-IMPLEMENTATION>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

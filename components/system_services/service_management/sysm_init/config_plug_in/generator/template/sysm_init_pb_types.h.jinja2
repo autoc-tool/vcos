@@ -1,0 +1,210 @@
+ {{get_copyright()}}
+ /*!*********************************************************************************************************************
+ * @file		EcuM_PBTypes.h
+ * @brief	   	EcuM 部分模块的 PostBuild 配置数据结构定义
+ * @date		{{get_generation_time()}}
+ * @project	 	{{get_project_name()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+#ifndef ECUM_PBTYPES_H
+#define ECUM_PBTYPES_H
+
+#include "Std_Types.h"
+#if (VCOS_MODULE_CONFIG_VCOSMTNCE == 1)
+#include "vcosMtnce_Cfg.h"
+#endif
+{%- set modules = get_post_modules(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for module in modules %}
+{%- if module == 'canif' %}
+#include "canif.h"
+{%- elif module == 'com' %}
+#include "com.h"
+{%- elif module == 'comm' %}
+#include "comm.h"
+{%- elif module == 'pdur' %}
+#include "pdur.h"
+{%- else %}
+#include "{{module}}.h"
+{%- endif %}
+{%- endfor %}
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/*!*********************************************************************************************************************
+ * @brief	   启动阶段打点trace功能开启标志位
+ **********************************************************************************************************************/
+#define EcuM_INITPHASEDOT			  (1U)
+
+/*!*********************************************************************************************************************
+ * @brief	   Postbuild配置结构体
+ **********************************************************************************************************************/
+typedef struct {
+	const uint32 start_pattern; ///< 启动模式模式
+	const uint32 post_build_variant; ///< Postbuild变体
+#ifdef CFG_POSTBUILD_PARTNUMBER
+	const post_build_part_no_t part_number; ///< Postbuild部件编号
+#endif
+	const uint64 pre_compile_hash_low; ///< 编译时的低位MD5哈希值
+	const uint64 pre_compile_hash_high; ///< 编译时的高位MD5哈希值
+
+	{%- for module in modules %}
+	{%- if module == "pdur" %}
+	const pdur_pb_config_type *const {{module}}_config_ptr; ///< {{module}}的配置指针
+	{%- elif module == "cannm" %}
+	const cannm_cate_cfg *const {{module}}_config_ptr; ///< {{module}}的配置指针
+	{%- else %}
+	const {{module}}_config_type* const {{module}}_config_ptr; ///< {{module}}的配置指针
+	{%- endif %}
+	{%- endfor %}
+	
+	const uint32* const end_pattern; ///< 结束模式
+} postbuild_config_t;
+
+#if(EcuM_INITPHASEDOT == 1u)
+/*!*********************************************************************************************************************
+ * @brief	   EcuM零时初始化结构体
+ **********************************************************************************************************************/
+typedef struct ecum_init_zero_time_struct {
+	{%- if "EcuMDriverInitListZero" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+	{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListZero"] %}
+	{%- set init_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListZero"]["EcuMDriverInitItems"].items() %}
+
+	{%- for item_name, item_value in init_items %}
+	{%- if item_name != "Tag" %}
+	{% set  init_zero_member=  get_initfunc_name(gen_init_func(item_name, item_value),0)  %}
+	uint32 m_{{ init_zero_member }}; ///< {{ init_zero_member}} 初始化时间戳
+	{%- endif %}
+	{%- endfor %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+} ecum_init_zero_time_t;
+
+/*!*********************************************************************************************************************
+ * @brief	   EcuM第一次初始化结构体
+ **********************************************************************************************************************/
+{%- set initcontent = get_initfunc_name("test",-1) %}
+typedef struct ecum_init_one_time_struct {
+	{%- if "EcuMDriverInitListOne" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"] %}
+	{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListOne"] %}
+	{%- set init_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]["EcuMDriverInitListOne"]["EcuMDriverInitItems"].items() %}
+
+	{%- for item_name, item_value in init_items %}
+	{%- if item_name != "Tag" %}
+	{% set  init_one_member= get_initfunc_name(gen_init_func(item_name, item_value),1)  %}
+	uint32 m_{{init_one_member}} ; ///< {{init_one_member}} 初始化时间戳
+	{%- endif %}
+	{%- endfor %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+} ecum_init_one_time_t;
+
+/*!*********************************************************************************************************************
+ * @brief	   EcuM第二次初始化结构体
+ **********************************************************************************************************************/
+typedef struct ecum_init_two_time_struct {
+	{%- if "EcuMDriverInitListTwo" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+	{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListTwo"] %}
+	{%- set init_two_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListTwo"]["EcuMDriverInitItems"].items() %}
+
+	{%- for item_name, item_value in init_two_items %}
+	{%- if item_name != "Tag" %}
+	{% set init_two_member= get_initfunc_name(gen_init_func(item_name, item_value),2) %}
+	uint32 m_{{init_two_member}}; ///< {{init_two_member}} 初始化时间戳
+	{%- endif %}
+	{%- endfor %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+} ecum_init_two_time_t;
+
+/*!*********************************************************************************************************************
+ * @brief	   EcuM第三次初始化结构体
+ **********************************************************************************************************************/
+typedef struct ecum_init_three_time_struct {
+	{%- if "EcuMDriverInitListThree" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+	{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListThree"] %}
+	{%- set init_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListThree"]["EcuMDriverInitItems"].items() %}
+
+	{%- for item_name, item_value in init_items %}
+	{%- if item_name != "Tag" %}
+	{% set init_three_member=  get_initfunc_name(gen_init_func(item_name, item_value),3)  %}
+	uint32 m_{{ init_three_member }}; ///< {{ init_three_member }} 初始化时间戳
+	{%- endif %}
+	{%- endfor %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+	{%- else %}
+	uint8 stub; ///< 占位符
+	{%- endif %}
+} ecum_init_three_time_t;
+
+{% set cores = dict_bsw["dict_ecuc"]["ActiveEcuC"]["EcuC"]["EcucHardware"].items() %}
+{% set core_num = get_coreNums(cores)%}
+#if (ECUM_NUMBER_OF_CORES > 1)
+/*!*********************************************************************************************************************
+ * @brief	   EcuM初始化结构体核心1
+ **********************************************************************************************************************/
+typedef struct ecum_init_core1_time_struct {
+	uint32 core1_begin; ///< 核心1初始化开始标志
+	
+	{%- if "EcuMDriverInitListCore1" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+	{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListCore1"] %}
+	{%- set core_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]["EcuMDriverInitListCore1"]["EcuMDriverInitItems"].items() %}
+	
+	{%- for item_name, item_value in core_items %}
+	{%- if item_name != "Tag" %}
+	{% set init_core1_member=  get_initfunc_name(gen_init_func(item_name, item_value),11) %}
+	uint32 m_{{ init_core1_member }}; ///< 核心1的{{ init_core1_member}}初始化时间戳
+	{%- endif %}
+	{%- endfor %}
+	{%- endif %}
+	{%- endif %}
+} ecum_init_core1_time_struct_t;
+
+{%- for i in range(2,core_num) %}
+
+/*!*********************************************************************************************************************
+ * @brief	   EcuM初始化结构体核心{{i}}
+ **********************************************************************************************************************/
+typedef struct {{"ecum_init_core" ~ i ~ "_time_struct_t"}} {
+	uint32 {{"core" ~ i ~ "_begin"}}; ///< 核心{{i}}初始化开始标志
+	
+	{%- if get_index("EcuMDriverInitListCore", i) in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"] %}
+	{%- if "EcuMDriverInitItems" in dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"][get_index("EcuMDriverInitListCore", i)] %}
+	{%- set core_items = dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"][get_index("EcuMDriverInitListCore", i)]["EcuMDriverInitItems"].items() %}
+	
+	{%- for item_name, item_value in core_items %}
+	{%- if item_name != "Tag" %}
+	{% set init_core_i_member = get_initfunc_name(gen_init_func(item_name, item_value),10+i) %}
+	uint32 m_{{ init_core_i_member }}; ///< 核心{{i}}的{{ init_core_i_member }}初始化时间戳
+	{%- endif %}
+	{%- endfor %}
+	{%- endif %}
+	{%- endif %}
+} {{"ecum_init_core" ~ i ~ "_time_struct_t"}};
+{%- endfor %}
+
+#endif
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ECUM_PBTYPES_H */

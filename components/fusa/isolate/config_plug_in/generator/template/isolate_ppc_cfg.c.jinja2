@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Description:
+ * AutoGenerate Code, DO NOT EDIT!!!
+ * {{get_generation_time()}}
+ * {{get_project_name()}}
+ * {{get_vcos_version()}}
+ */
+
+#include "application_cfg.h"
+#include "isolate_ppc_cfg.h"
+
+#define ISOLATE_START_SEC_CONST
+#include "isolate_memmap.h"
+{%- set isolate_ppc_cfg = get_isolate_ppc_cfg() %}
+
+{%- for module_name, module_value in isolate_ppc_cfg.items()  %}
+{%- if module_value["PpcList"] | length > 0 %}
+{{'\n'}}
+static CONST(uint8, ISOLATE_CONST) {{module_name.lower()}}_app_id_table[{{module_value["AppList"] | length}}] = {
+        {%- for app_name in module_value["AppList"]  %}
+    [{{loop.index0}}] = {{app_name}},
+        {%- endfor %}
+};
+{%- endif %}
+{%- endfor %}
+
+
+CONSTP2CONST(uint8, ISOLATE_CONST, AUTOMATIC) ppc_func_config[ISOLATE_PPC_FUNC_CNT] = {
+{%- for module_name, module_value in isolate_ppc_cfg.items()  %}
+    {%- for ppc_func_cfg in module_value["PpcList"]  %}
+        {%- if ppc_func_cfg["IsolateCallType"] == "ProtectedProcedureCall" %}
+    [{{ppc_func_cfg["FunctionID"]}}] = {{module_name.lower()}}_app_id_table,
+        {%- endif %}
+    {%- endfor %}
+{%- endfor %}
+};
+{{'\n'}}
+#define ISOLATE_STOP_SEC_CONST
+#include "isolate_memmap.h"
+

@@ -1,0 +1,255 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!*********************************************************************************************************************
+ * @file        canif_cfg.h
+ * @brief       CanIf 配置头文件
+ * @details     主要包含CanIf模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef CANIF_CFG_H
+#define CANIF_CFG_H
+
+#include "comstack_types.h"
+
+{%- if is_module_used["is_cdd_used"] == "true" and canif_public_cfg["CanIfPublicCddHeaderFileUsed"] == true and canif_public_cfg["CanIfPublicCddHeaderFile"]%}
+{% for filename in canif_public_cfg["CanIfPublicCddHeaderFile"] %}
+#include "{{filename}}"
+{%- endfor %}
+{%- else %}
+{%- endif %}
+
+{%- if canif_public_cfg["CanIfPublicUserCbkHeaderFileUsed"] == true and canif_public_cfg["CanIfPublicUserCbkHeaderFile"]%}
+{% for filename in canif_public_cfg["CanIfPublicUserCbkHeaderFile"] %}
+#include "{{filename}}"
+{%- endfor %}
+{%- else %}
+{%- endif %}
+
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+
+#define {{canif_version}}                   ///< 定义CanIf版本
+{{ "" }}
+{%- if canif_ctrl_multicore_enable == true %}
+#define CANIF_MULTICORE_SUPPORT							(STD_ON)        ///< CANIF多核功能开启 
+{%- else %}
+#define CANIF_MULTICORE_SUPPORT							(STD_OFF)        ///< CANIF多核功能关闭
+{%- endif %}
+{{"#define CANIF_MULTICORE_MASTER_COREID                    (%su)   ///< CANIF主核ID " | format(master_core_id)}}
+
+#define CANIF_CAN_HOH_ORDERED_TYPE          {{can_hoh_order_type}}
+
+{{"#define CANIF_ACTIVATED_CORE_CNT                         (%su)  ///< CANIF使能核数量 " | format(canif_activated_core_cnt) }} 
+{{"#define CANIF_MAX_ACTIVATED_CORE_CNT                         (%su)  ///< CANIF使能的核ID最大值 + 1 " | format(canif_max_activated_core_id + 1) }} 
+
+#define CANIF_INVALID_TXBUFFER_START_INDEX   (0xFFFFU)
+#define CANIF_INVALID_TXBUFFER_END_INDEX   (0xFFFFU)
+
+{%- for core_name, txbuffer_len in len_multicore_txbuffercfgs_dict.items() %}
+{%- if txbuffer_len > 0 %}
+{{"#define CANIF_MAX_NOF_TX_BUFFERS_%s                           (%su)  ///< %s发送缓存个数" | format(core_name, txbuffer_len, core_name) }} 
+{%- endif %}
+{%- endfor %}
+
+{%- for core_name, lpdu_attr in max_lpdu_num_cores_txbuf_dict.items() %}
+{%- if lpdu_attr["lpdu_num"] > 0 %}
+{{"#define CANIF_MAX_NUM_LPDU_TX_BUF_%s                       (%su)   ///< 最大发送缓存个数" | format(core_name, lpdu_attr["lpdu_num"]) }} 
+{%- endif %}
+{%- endfor %}
+
+{{"#define CANIF_RXPDU_USER_RXINDICATION_UL_CANNM             (%su)  ///< CANNM UL的RxIndication函数标号" | format(G_CANNM_RXPDU_UL_RXINDICATION_INDEX) }} 
+
+{%- if canif_private_cfg["CanIfPrivateDataLengthCheck"]["Value"] == true %}
+#define CANIF_PRIVATE_DLC_CHECK							(STD_ON)        ///< 私有DLC检查
+{%- else %}
+#define CANIF_PRIVATE_DLC_CHECK							(STD_OFF)        ///< 私有DLC检查
+{%- endif %}
+
+/* Macro definition of CanIfPublicCfg */
+#define CANIF_PUBLIC_CANCEL_TRANSMIT_SUPPORT			(STD_OFF)        ///< 公共取消发送支持
+#define CANIF_PUBLIC_CHANGE_BAUDRATE_SUPPORT			(STD_OFF)        ///< 公共改变边界支持
+
+{%- if canif_public_cfg["CanIfDevErrorDetect"]["Value"] == true %}
+#define CANIF_PUBLIC_DEV_ERROR_DETECT					(STD_ON)       ///< 开发错误探测
+{%- else %}
+#define CANIF_PUBLIC_DEV_ERROR_DETECT					(STD_OFF)     ///< 开发错误探测
+{%- endif %}
+{%- if canif_public_cfg["CanIfPublicDebugSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_DEBUG_SUPPORT						(STD_ON)     ///< 收发包维测支持
+{%- else %}
+#define CANIF_PUBLIC_DEBUG_SUPPORT						(STD_OFF)   ///< 收发包维测支持
+{%- endif %}
+
+#define CANIF_PUBLIC_MULTIPLE_DRV_SUPPORT				(STD_OFF)     ///< 多驱动支持
+{{ "" }}
+{%- if canif_public_cfg["CanIfPublicPnSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_PN_SUPPORT							(STD_ON)     ///< 局部网络支持
+{%- else %}
+#define CANIF_PUBLIC_PN_SUPPORT							(STD_OFF)   ///< 局部网络支持
+{%- endif %}
+
+{%- if trcv_pn_support_found == "TRUE" %}
+#define CANIF_TRCV_PN_ENABLE						    (STD_ON)   ///< 局部网络收发处理
+{%- else %}
+#define CANIF_TRCV_PN_ENABLE						    (STD_OFF)   ///< 局部网络收发处理
+{%- endif %}
+{{ "" }}
+
+{%- if canif_public_cfg["CanIfPublicTxBuffering"]["Value"] == true %}
+#define CANIF_PUBLIC_TX_BUFFERING						(STD_ON) ///< 发送缓存
+{%- else %}
+#define CANIF_PUBLIC_TX_BUFFERING					    (STD_OFF) ///< 发送缓存
+{%- endif %}
+{%- if canif_public_cfg["CanIfPublicTxBufferMaxDepthFetchSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_TXBUFFER_MAX_DEPTH_FETCH_SUPPORT   (STD_ON)  ///< TxBuffer最大使用深度捞取维测支持
+{%- else %}
+#define CANIF_PUBLIC_TXBUFFER_MAX_DEPTH_FETCH_SUPPORT	(STD_OFF) ///< TxBuffer最大使用深度捞取维测支持
+{%- endif %}
+
+#define CANIF_TX_BUF_FIFO_ENABLE                      (STD_ON) ///< 发送缓存FIFO
+
+{%- if canif_public_cfg["CanIfPublicTxConfirmPollingSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_TXCONFIRM_POLLING_SUPPORT			(STD_ON) ///< 发送确认轮询
+{%- else %}
+#define CANIF_PUBLIC_TXCONFIRM_POLLING_SUPPORT			(STD_OFF) ///< 发送确认轮询
+{%- endif %}
+
+#define CANIF_CANFD_SUPPORT                             (STD_ON) ///< 支持CANFD
+{{ "" }}
+#define CANIF_TRANSCEIVER_API			                ({{trcv_api_enable}})
+{{ "" }}
+{%- if canif_public_cfg["CanIfWakeupSupport"]["Value"] == true %}
+#define CANIF_WAKEUP_FUN_ENABLE						    (STD_ON) ///< 唤醒支持
+{%- else %}
+#define CANIF_WAKEUP_FUN_ENABLE						    (STD_OFF) ///< 唤醒支持
+{%- endif %}
+
+{%- if ctrl_wakeup_found == "TRUE" %}
+#define CANIF_CTRL_WAKEUP_SUPPORT						(STD_ON) ///< 控制器唤醒支持
+{%- else %}
+#define CANIF_CTRL_WAKEUP_SUPPORT						(STD_OFF) ///< 控制器唤醒支持
+{%- endif %}
+
+{%- if trcv_wakeup_found == "TRUE" %}
+#define CANIF_TRCV_WAKEUP_SUPPORT						(STD_ON) ///< 收发器器唤醒支持
+{%- else %}
+#define CANIF_TRCV_WAKEUP_SUPPORT						(STD_OFF) ///< 收发器器唤醒支持
+{%- endif %}
+
+{%- if canif_public_cfg["CanIfPublicWakeupCheckValidByNM"]["Value"] == true %}
+#define CANIF_PUBLIC_WAKEUP_CHECK_VALID_BY_NM			(STD_ON) ///< 通过nm唤醒检查校验
+{%- else %}
+#define CANIF_PUBLIC_WAKEUP_CHECK_VALID_BY_NM			(STD_OFF) ///< 通过nm唤醒检查校验
+{%- endif %}
+
+{%- if canif_public_cfg["CanIfPublicWakeupCheckValidSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_WAKEUP_CHECK_VALIDATION_SUPPORT	(STD_ON) ///< 唤醒检查校验
+{%- else %}
+#define CANIF_PUBLIC_WAKEUP_CHECK_VALIDATION_SUPPORT	(STD_OFF) ///< 唤醒检查校验
+{%- endif %}
+{{ "" }}
+{%- if canif_public_cfg["CanIfUserTxCalloutSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_APPL_CANIF_TX_CALLOUT_SUPPORT	(STD_ON) ///< appl_canif_tx_callout API支持
+{%- else %}
+#define CANIF_PUBLIC_APPL_CANIF_TX_CALLOUT_SUPPORT	(STD_OFF) ///< appl_canif_tx_callout API支持
+{%- endif %}
+
+{%- if canif_public_cfg["CanIfUserTxConfirmationCalloutSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_APPL_CANIF_TXCONFIRMATION_CALLOUT_SUPPORT	(STD_ON) ///< appl_canif_tx_confirmation_callout API支持
+{%- else %}
+#define CANIF_PUBLIC_APPL_CANIF_TXCONFIRMATION_CALLOUT_SUPPORT	(STD_OFF) ///< appl_canif_tx_confirmation_callout API支持
+{%- endif %}
+
+{%- if canif_public_cfg["CanIfUserRxIndicationCalloutSupport"]["Value"] == true %}
+#define CANIF_PUBLIC_APPL_CANIF_RXINDICATION_CALLOUT_SUPPORT	(STD_ON) ///< appl_canif_rx_indication_callout API支持
+{%- else %}
+#define CANIF_PUBLIC_APPL_CANIF_RXINDICATION_CALLOUT_SUPPORT	(STD_OFF) ///< appl_canif_rx_indication_callout API支持
+{%- endif %}
+
+#define CANIF_INVALID_CANIF_HRH                                    (0xFFFFu) ///< HRH
+#define CANIF_MAX_CONTROLLER_COUNT                                 ({{canif_controllers_config | length}}u)     ///< 最大控制器计数
+
+/* Software filter */
+{%- if canif_private_cfg["CanIfPrivateSoftwareFilterType"]["Value"] == "LINEAR" %}
+#define CANIF_PRIVATE_SOFTWARE_FILTER_TYPE_LINEAR ///< 软件过滤线性类型
+{%- elif canif_private_cfg["CanIfPrivateSoftwareFilterType"]["Value"] == "BINARY" %}
+#define CANIF_PRIVATE_SOFTWARE_FILTER_TYPE_BINARY ///< 软件过滤二进制类型
+{%- endif %}
+/*!*********************************************************************************************************************
+ * @brief   定义canif通道id类型
+ **********************************************************************************************************************/
+typedef uint8 canif_channel_id_type;
+{% for CanIfCtrlCfg in canif_controllers_config %}
+{{  "#define CanIfConf_CanIfCtrlCfg_%s                    ((canif_channel_id_type)%su)" | format(CanIfCtrlCfg["controller_name"], CanIfCtrlCfg["ctrl_chnl_id"]) }} ///< 控制器ID
+{%- endfor %}
+{{  "#define CANIF_CONTROLLER_CHANNEL_CNT                                          (%su)" | format(controller_channel_count) }} ///< 通道个数
+
+/*!*********************************************************************************************************************
+ * @brief   定义canif收发器id类型
+ **********************************************************************************************************************/
+typedef uint8 canif_trcv_id_type;
+{% for CanIfTrcvCfg in canif_transceivers_config %}
+{{  "#define CanIfConf_CanIfTrcvCfg_%s                    ((canif_trcv_id_type)%su)" | format(CanIfTrcvCfg["transceiver_name"], CanIfTrcvCfg["trcv_chnl_id"]) }} ///< 收发器名称
+{%- endfor %}
+{{"#define CANIF_TRANSCEIVER_CHANNEL_CNT                              (%su)" | format(trcv_channel_count) }} ///< 通道个数
+{{ "" }}
+{{"#define CANIF_TRANSCEIVER_ENABLE_TYPE_CNT                              (%su)" | format(trcv_channel_enable_type_count) }} ///< 使能收发器型号的个数
+{{"#define CANIF_MAX_NOF_TX_BUFFERS                        (%su)" | format(canif_init_config.canif_all_tx_buf_num) }} ///< 发送缓存个数
+{{"#define CANIF_MAX_NOF_RX_PDU                            (%su)" | format(canif_init_config.canif_all_rx_pdu_num) }} ///< 接收PDU个数
+{{"#define CANIF_MAX_NOF_HRH_COUNT                         (%su)" | format(hrh_cfglist|length) }} ///< 接收最大计数
+{{"#define CANIF_MAX_NOF_TX_PDU                            (%su)" | format(canif_init_config.canif_all_tx_pdu_num) }} ///< 发送PDU个数
+{{"#define CANIF_CFG_MAX_DYN_TXPDUS                        (%su)" | format(max_dyn_pdus) }} ///< 最大动态PDU
+#define CANIF_ULMOUDLE_COUNT                            (8u) ///< 上层模块个数
+
+{% if trcv_api_enable == "STD_ON" and trcv_type_enable["CanTrcv1043"] == "True" %}
+/* Micro Define Function Used for CanTrcv1043 */
+{{ "" }}
+#define CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1043 ({{offset_index_from_start_index_cantrcv1043}}u)
+{{ "" }}
+{% if trcvApi_for_canif_cfg_h["trcv_api_cantrcv1043"]["CanIfTrcvTrcvModeIndicationFctName"] != "NULL" %}
+#define {{trcvApi_for_canif_cfg_h["trcv_api_cantrcv1043"]["CanIfTrcvTrcvModeIndicationFctName"]}}(TransceiverId, TransceiverMode) (canif_trcv_mode_indication(CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1043 + (TransceiverId), (TransceiverMode)))
+{%- endif %}
+{%- endif %}
+{{ "" }}
+
+{% if trcv_api_enable == "STD_ON" and trcv_type_enable["CanTrcv1145"] == "True" %}
+/* Micro Define Function Used for CanTrcv1145 */
+{{ "" }}
+#define CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1145 ({{offset_index_from_start_index_cantrcv1145}}u)
+{{ "" }}
+{% if trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvClearTrcvWufFlagIndicationFctName"] != "NULL" and trcv_pn_support_found == "TRUE" %}
+#define {{trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvClearTrcvWufFlagIndicationFctName"]}}(TransceiverId) (canif_clear_trcv_wuf_flag_indication(CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1145 + (TransceiverId)))
+{%- endif %}
+{% if trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvCheckTrcvWakeFlagIndicationFctName"] != "NULL" and trcv_pn_support_found == "TRUE" %}
+#define {{trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvCheckTrcvWakeFlagIndicationFctName"]}}(TransceiverId) (canif_check_trcv_wake_flag_indication(CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1145 + (TransceiverId)))
+{%- endif %}
+{% if trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvConfirmPnAvailabilityFctName"] != "NULL" and trcv_pn_support_found == "TRUE" %}
+#define {{trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvConfirmPnAvailabilityFctName"]}}(TransceiverId) (canif_confirm_pn_availability(CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1145 + (TransceiverId)))
+{%- endif %}
+{%- endif %}
+{% if trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvTrcvModeIndicationFctName"] != "NULL" %}
+#define {{trcvApi_for_canif_cfg_h["trcv_api_cantrcv1145"]["CanIfTrcvTrcvModeIndicationFctName"]}}(TransceiverId, TransceiverMode) (canif_trcv_mode_indication(CANIF_CANTRCV_TYPE_BASE_OFFSET_TJA1145 + (TransceiverId), (TransceiverMode)))
+{%- endif %}
+{{ "" }}
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CANIF_CFG_H */
+{{ "" }}

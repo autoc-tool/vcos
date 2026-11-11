@@ -1,0 +1,28 @@
+
+#ifndef __OS_MEMPOOL_CFG_H_
+#define __OS_MEMPOOL_CFG_H_
+#include "rtfw_mempool.h"
+
+{%- for module_name in os_mempool_all_cfg["module_cfg"]  %}
+extern const os_mempool_module_cfg_t osmempool_module_{{module_name | lower}}_cfg;
+{%- endfor %}
+{%- set os_mempool_pool_cfg = os_mempool_all_cfg["pool_cfg"] %}
+{%- for pool_name in os_mempool_pool_cfg  %}
+extern const os_mempool_cfg_t osmempool_{{pool_name}}_cfg;
+{%- endfor %}
+
+#if (CONFIG_RT_FRAMEWORK_MEMPOOL == 1)
+extern const os_mempool_module_entry_t mempool_module_map[];
+#endif
+
+{%- for module_name in os_mempool_all_cfg["module_cfg"]  %}
+	{%- if module_name|lower != "os" %}
+#define {{module_name | lower}}_mempool_alloc(type, size, alignment)  os_mempool_alloc(&osmempool_module_{{module_name | lower}}_cfg, (type), (size), (alignment))
+#define {{module_name | lower}}_mempool_free(mem,alignment)  os_mempool_free((mem), (alignment))
+#define {{module_name | lower}}_mempool_auto_alloc(type, size)  os_mempool_auto_alloc(&osmempool_module_{{module_name | lower}}_cfg, (type), (size))
+#define {{module_name | lower}}_mempool_auto_free(mem)  os_mempool_auto_free((mem))
+	{%- endif %}
+{%- endfor %}
+
+
+#endif /* __OS_MEMPOOL_CFG_H_ */

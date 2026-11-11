@@ -1,0 +1,66 @@
+diff --git a/src/hackbench/hackbench.c b/src/hackbench/hackbench.c
+index 55be325..7691df3 100644
+--- a/src/hackbench/hackbench.c
++++ b/src/hackbench/hackbench.c
+@@ -111,6 +111,7 @@ static void print_usage_exit(int error)
+ 	exit(error);
+ }
+ 
++#ifndef __NuttX__
+ static int inet_socketpair(int fds[2])
+ {
+ 	int s1, s2;
+@@ -150,18 +151,21 @@ static int inet_socketpair(int fds[2])
+ 
+ 	return 0;
+ }
++#endif
+ 
+ static void fdpair(int fds[2])
+ {
+ 	if (use_pipes) {
+ 		if (pipe(fds) == 0)
+ 			return;
++#ifndef __NuttX__
+ 	} else if (use_inet) {
+ 		if (inet_socketpair(fds) == 0)
+ 			return;
+ 	} else {
+ 		if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0)
+ 			return;
++#endif
+ 	}
+ 	barf("Creating fdpair");
+ }
+@@ -255,6 +259,7 @@ static int create_worker(childinfo_t *child, void *ctx, void *(*func)(void *))
+ 	int err;
+ 
+ 	switch (process_mode) {
++#ifndef __NuttX__
+ 	case PROCESS_MODE: /* process mode */
+ 		/* Fork the sender/receiver child. */
+ 		switch ((child->pid = fork())) {
+@@ -266,6 +271,7 @@ static int create_worker(childinfo_t *child, void *ctx, void *(*func)(void *))
+ 				exit(0);
+ 		}
+ 		break;
++#endif
+ 
+ 	case THREAD_MODE: /* threaded mode */
+ 		if (pthread_attr_init(&attr) != 0) {
+@@ -313,6 +319,7 @@ unsigned int reap_workers(childinfo_t *child, unsigned int totchld, unsigned int
+ 	for( i = 0; i < totchld; i++ ) {
+ 		int pid;
+ 		switch( process_mode ) {
++#ifndef __NuttX__
+ 		case PROCESS_MODE: /* process mode */
+ 			fflush(stdout);
+ 			pid = wait(&status);
+@@ -321,6 +328,7 @@ unsigned int reap_workers(childinfo_t *child, unsigned int totchld, unsigned int
+ 			if (!WIFEXITED(status))
+ 				rc++;
+ 			break;
++#endif
+ 		case THREAD_MODE: /* threaded mode */
+ 			err = pthread_join(child[i].threadid, &thr_status);
+ 			if( err != 0 ) {

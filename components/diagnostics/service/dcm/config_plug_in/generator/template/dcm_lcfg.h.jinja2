@@ -1,0 +1,1080 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/*!*********************************************************************************************************************
+ * @file        dcm_lcfg.h
+ * @brief       dcm本地配置头文件
+ * @details     主要包含dcm模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef DCM_LCFG_H
+#define DCM_LCFG_H
+
+#include "comstack_types.h"
+#include "dcm_types.h"
+{%- if 'CONFIG_MODULE_NVM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_NVM'] == 'y' %}
+#include "nvm.h"
+{%- endif %}
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define DCM_INVALID_PDU_ID ((PduIdType)0xFFFFu) ///< 无效PduId
+
+{% if 'CONFIG_MODULE_RTE' not in sys_cfg['modules_info']['kfg_module_all_list'] or sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_RTE'] != 'y' %}
+/*!*********************************************************************************************************************
+ *  @brief          声明请求数据数组类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_request_data_array_type[2];  ///< 适配去除RTE模块后的编译
+{%- endif %}
+
+/*!*********************************************************************************************************************
+ *  @brief          声明回调获取对话改变权限类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_ses_chg_permission_fnc_type)(dcm_ses_ctrl_type ses_ctrl_type_active,
+dcm_ses_ctrl_type ses_ctrl_type_new);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明回调改变索引权限类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_change_indication_fnc_type)(dcm_ses_ctrl_type ses_ctrl_type_old,
+dcm_ses_ctrl_type ses_ctrl_type_new);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明回调确认响应类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_confirmation_resp_pend_fnc_type)(dcm_conf_status_type status);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明回调获取种子带记录类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_seed_fnc_type_with_record)(const uint8 *security_access_data_record,
+dcm_op_status_type op_status, uint8 *seed, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明回调获取种子不带记录类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_seed_fnc_type_without_record)(dcm_op_status_type op_status, uint8 *seed,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明回调获取种子类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_callback_get_seed_fnc_type_with_record get_seed_with_record; ///< 获取种子带记录
+    dcm_callback_get_seed_fnc_type_without_record get_seed_without_record; ///< 获取种子不带记录
+} dcm_callback_get_seed_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_compare_key_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_compare_key_fnc_type)(uint8 *key, dcm_op_status_type op_status,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_set_security_attempt_counter_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_set_security_attempt_counter_fnc_type)(dcm_op_status_type op_status, uint8 attempt_counter);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_get_security_attempt_counter_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_security_attempt_counter_fnc_type)(dcm_op_status_type op_status, uint8 *attempt_counter);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明获取pid值类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_pid_value_fnc_type)(uint8 *data_value_buffer);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明did是否可用类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_did_range_is_did_available_fnc_type)(uint16 did,dcm_op_status_type op_status,uint8 *supported);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明did阅读数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_did_range_read_data_fnc_type)(uint16 did,const uint8 *data,dcm_op_status_type op_status,
+uint16 *data_length, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明did范围长度类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_read_did_range_data_length_fnc_type)(uint16 did,dcm_op_status_type op_status,uint16 *data_length);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明did范围写数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_did_range_write_data_fnc_type)(uint16 did,const uint8 *data, dcm_op_status_type op_status,
+uint16 data_length, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明同步回调阅读数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_synch_callback_read_data_fnc_type)(uint8 *data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明异步回调阅读数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_asynch_callback_read_data_fnc_type)(dcm_op_status_type op_status, uint8 *data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明sr回调阅读数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_read_data_fnc_type)(void *data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明同步回调固定长度写数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_fix_len_synch_callback_write_data_fnc_type)(uint8 *data, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明异步回调固定长度写数据类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_fix_len_asynch_callback_write_data_fnc_type)(uint8 *data, dcm_op_status_type op_status,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dyn_len_synch_callback_write_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dyn_len_synch_callback_write_data_fnc_type)(uint8 *data, uint16 data_length,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dyn_len_asynch_callback_write_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dyn_len_asynch_callback_write_data_fnc_type)(uint8 *data, uint16 data_length,
+dcm_op_status_type op_status, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_uint8_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_uint8_data_fnc_type)(uint8 data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_sint8_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_sint8_data_fnc_type)(sint8 data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_uint16_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_uint16_data_fnc_type)(uint16 data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_sint16_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_sint16_data_fnc_type)(sint16 data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_uint32_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_uint32_data_fnc_type)(uint32 data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_sint32_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_sint32_data_fnc_type)(sint32 data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_sr_callback_write_boolean_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_sr_callback_write_boolean_data_fnc_type)(boolean data);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_read_data_length_fnc_type类型
+ **********************************************************************************************************************/
+
+// read_data_length
+typedef Std_ReturnType(*dcm_callback_read_data_length_fnc_type)(uint16 *did_length);/* @req DCM796 */
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_synch_condition_check_read_fnc_type类型
+ **********************************************************************************************************************/
+
+typedef Std_ReturnType(*dcm_callback_synch_condition_check_read_fnc_type)(dcm_nrc_type *error_code);
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_asynch_condition_check_read_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_asynch_condition_check_read_fnc_type)(dcm_op_status_type op_status,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_return_control_to_ecu_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_return_control_to_ecu_fnc_type)(dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_synch_reset_to_default_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_synch_reset_to_default_fnc_type)(dcm_nrc_type *error_code);
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_asynch_reset_to_default_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_asynch_reset_to_default_fnc_type)(dcm_op_status_type op_status,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_synch_freeze_current_state_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_synch_freeze_current_state_fnc_type)(dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_asynch_freeze_current_state_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_asynch_freeze_current_state_fnc_type)(dcm_op_status_type op_status,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_synch_short_term_adjustment_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_synch_short_term_adjustment_fnc_type)(uint8 *control_option_record,
+dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_func_callback_asynch_short_term_adjustment_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_func_callback_asynch_short_term_adjustment_fnc_type)(uint8 *control_option_record,
+dcm_op_status_type op_status, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_ecu_signal_callback_return_control_to_ecu_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_ecu_signal_callback_return_control_to_ecu_fnc_type)(uint8 action, uint8 *control_option_record);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_ecu_signal_callback_reset_to_default_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_ecu_signal_callback_reset_to_default_fnc_type)(uint8 action, uint8 *control_option_record);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_ecu_signal_callback_freeze_current_state_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_ecu_signal_callback_freeze_current_state_fnc_type)(uint8 action, uint8 *control_option_record);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_ecu_signal_callback_short_term_adjustment_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_ecu_signal_callback_short_term_adjustment_fnc_type)(uint8 action, uint8 *control_option_record);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_get_info_type_value_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_info_type_value_fnc_type)(dcm_op_status_type op_status, uint8 *data_value_buffer,
+uint8* data_value_buffer_size);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_get_dtr_value_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_get_dtr_value_fnc_type)(dcm_op_status_type op_status, uint16 *testval, uint16 *minlimit,
+uint16 *maxlimit, uint8 *status);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_start_routine_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_start_routine_fnc_type)(uint8 *indata, dcm_op_status_type op_status, uint8 *outdata,
+    uint16 *current_data_length, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_stop_routine_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_stop_routine_fnc_type)(uint8 *indata, dcm_op_status_type op_status, uint8 *outdata,
+    uint16 *current_data_length, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_request_result_routine_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_request_result_routine_fnc_type)(dcm_op_status_type op_status, uint8 *outdata,
+    uint16 *current_data_length, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_request_control_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_request_control_type)(uint8 *out_buffer, uint8 *in_buffer);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_start_protocol_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_start_protocol_fnc_type)(dcm_protocol_type protocol_id, uint16 tester_source_address,
+uint16 connection_id);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_stop_protocol_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_stop_protocol_fnc_type)(dcm_protocol_type protocol_id, uint16 tester_source_address,
+uint16 connection_id);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_notification_indication_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_notification_indication_fnc_type)(uint8 sid, dcm_request_data_array_type request_data,
+uint16 data_size, uint8 req_type, uint16 connection_id,  dcm_nrc_type *error_code,
+dcm_protocol_type protocol_type, uint16 soruce_address);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_notification_confirmation_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_notification_confirmation_fnc_type)(uint8 sid, uint8 req_type,  uint16 connection_id,
+dcm_conf_status_type status, dcm_protocol_type protocol_type,uint16 source_address);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_ecu_reset_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_callback_ecu_reset_type)(uint8 reset_type, dcm_nrc_type *error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsd_condition_get_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dsd_condition_get_fnc_type)(void);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsd_reset_pids_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dsd_reset_pids_fnc_type)(void);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsd_dsp_sid_tab_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dsd_dsp_sid_tab_fnc_type)(dcm_op_status_type op_status, dcm_msg_context_type *p_msg_context);
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_com_control_mode_switch_fcn_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_com_control_mode_switch_fcn_type)(uint8 mode);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_diag_response_indication_fcn_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dsl_diag_response_indication_fcn_type)(const uint8 *dataptr, uint16 length);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_session_response_multiple_pending_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_dsp_session_response_multiple_pending_fnc_type)(dcm_protocol_type active_protocol_id, dcm_nrc_type* error_code);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_read_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_synch_callback_read_data_fnc_type synch_data_read_fnc; ///< 同步读数据
+    dcm_asynch_callback_read_data_fnc_type asynch_data_read_fnc; ///< 异步读数据
+    dcm_sr_callback_read_data_fnc_type sr_data_read_fnc; ///< sr数据读
+} dcm_callback_read_data_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_write_data_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_fix_len_synch_callback_write_data_fnc_type fix_len_synch_data_write_fnc; ///< 固定长度同步数据写
+    dcm_fix_len_asynch_callback_write_data_fnc_type fix_len_asynch_data_write_fnc; ///< 固定长度异步数据写
+    dcm_dyn_len_synch_callback_write_data_fnc_type dyn_len_synch_data_write_fnc; ///< 动态长度同步数据写
+    dcm_dyn_len_asynch_callback_write_data_fnc_type dyn_len_asynch_data_write_fnc; ///< 固定长度异步数据写
+    dcm_sr_callback_write_uint8_data_fnc_type sr_data_write_fnc_uint8; ///< 写数据uint8
+    dcm_sr_callback_write_sint8_data_fnc_type sr_data_write_fnc_sint8; ///< 写数据sint8
+    dcm_sr_callback_write_uint16_data_fnc_type sr_data_write_fnc_uint16; ///< 写数据uint16
+    dcm_sr_callback_write_sint16_data_fnc_type sr_data_write_fnc_sint16; ///< 写数据sint16
+    dcm_sr_callback_write_uint32_data_fnc_type sr_data_write_fnc_uint32; ///< 写数据uint32
+    dcm_sr_callback_write_sint32_data_fnc_type sr_data_write_fnc_sint32; ///< 写数据sint32
+    dcm_sr_callback_write_boolean_data_fnc_type sr_data_write_fnc_boolean; ///< 写数据boolean
+} dcm_callback_write_data_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_condition_check_read_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_callback_synch_condition_check_read_fnc_type synch_condition_check_read_fnc; ///< 同步条件检查读
+    dcm_callback_asynch_condition_check_read_fnc_type asynch_condition_check_read_fnc; ///< 异步条件检查读
+} dcm_callback_condition_check_read_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_reset_to_default_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_func_callback_synch_reset_to_default_fnc_type func_synch_reset_to_default_fnc; ///< 同步功能重置为默认值
+    dcm_func_callback_asynch_reset_to_default_fnc_type func_asynch_reset_to_default_fnc; ///< 异步功能重置为默认值
+    dcm_ecu_signal_callback_reset_to_default_fnc_type ecu_signal_reset_to_default_fnc; ///< 信号重置为默认值
+} dcm_callback_reset_to_default_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_return_control_to_ecu_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_func_callback_return_control_to_ecu_fnc_type func_return_control_to_ecu_fnc; ///< 读返回值控制
+    dcm_ecu_signal_callback_return_control_to_ecu_fnc_type ecu_signal_return_control_to_ecu_fnc; ///< 信号返回控制
+} dcm_callback_return_control_to_ecu_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_short_term_adjustment_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_func_callback_synch_short_term_adjustment_fnc_type func_synch_short_term_adjustment_fnc; ///< 同步短调整
+    dcm_func_callback_asynch_short_term_adjustment_fnc_type func_asynch_short_term_adjustment_fnc; ///< 异步短调整
+    dcm_ecu_signal_callback_short_term_adjustment_fnc_type ecu_signal_short_term_adjustment_fnc; ///< 信号短调整
+} dcm_callback_short_term_adjustment_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_callback_freeze_current_state_fnc_type类型
+ **********************************************************************************************************************/
+typedef union {
+    dcm_func_callback_synch_freeze_current_state_fnc_type func_synch_freeze_current_state_fnc; ///< 同步冻结当前状态
+    dcm_func_callback_asynch_freeze_current_state_fnc_type func_asynch_freeze_current_state_fnc; ///< 异步冻结当前状态
+    dcm_ecu_signal_callback_freeze_current_state_fnc_type ecu_signal_freeze_current_state_fnc; ///< 信号冻结当前状态
+} dcm_callback_freeze_current_state_fnc_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_session_for_boot_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_dsp_session_for_boot_type;
+#define DCM_NO_BOOT ((dcm_dsp_session_for_boot_type)0u) ///<非boot
+#define DCM_OEM_BOOT ((dcm_dsp_session_for_boot_type)1u) ///<OEM BOOT
+#define DCM_SYS_BOOT ((dcm_dsp_session_for_boot_type)2u) ///< 系统boot
+#define DCM_OEM_BOOT_RESPAPP ((dcm_dsp_session_for_boot_type)3u) ///<OEM boot响应
+#define DCM_SYS_BOOT_RESPAPP ((dcm_dsp_session_for_boot_type)4u) ///< 系统boot响应
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_session_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_ses_ctrl_type dsp_session_level; ///< 会话等级
+    const dcm_dsp_session_for_boot_type dsp_session_for_boot; ///< 会话
+    const uint16 dsp_session_p2server_max; ///< 会话服务最大
+    const uint16 dsp_session_p2star_server_max; ///< 会话开始服务最大
+    const dcm_dsp_session_response_multiple_pending_fnc_type dsp_session_response_multiple_pending_fnc; ///< 响应多个pending回调函数
+} dcm_dsp_session_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_security_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_sec_lv_type dsp_security_level; ///< 安全等级
+    const uint8 dsp_security_num_att_delay; ///< 安全个数
+    const uint8 dsp_security_seed_size; ///< 安全种子大小
+    const uint8 dsp_security_key_size; ///< 安全钥匙大小
+    const uint8 dsp_security_adr_size; ///< 安全adr大小
+    const uint16 dsp_security_delay_time_on_boot; ///< 安全延迟时间boot阶段
+    const uint16 dsp_security_delay_time; ///< 安全延迟时间
+    dcm_callback_get_seed_fnc_type get_seed; ///< 获取种子
+    dcm_callback_compare_key_fnc_type compare_key; ///< 比较key
+#if (defined(DCM_SEC_ATT_CNTR_ENABLED)&&(DCM_SEC_ATT_CNTR_ENABLED == STD_ON))
+    dcm_callback_set_security_attempt_counter_fnc_type set_attempt_counter; ///< 设置尝试个数
+    dcm_callback_get_security_attempt_counter_fnc_type get_attempt_counter; ///< 获取尝试个数
+#endif
+} dcm_dsp_security_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_read_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_did_read_vsg_ref_size; ///< 读大小
+    const uint8 dsp_did_read_session_mask; ///< did读会话掩码
+    const uint8 dsp_did_read_security_mask; ///< did读安全掩码
+    const dcm_vsg_id_type *dsp_did_read_vsg_ref; ///< did读vsg引用指针
+} dcm_dsp_did_read_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_write_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_did_write_vsg_ref_size; ///< did写vsg
+    const uint8 dsp_did_write_session_mask; ///< did写会话掩码
+    const uint8 dsp_did_write_security_mask; ///< did写安全掩码
+    const dcm_vsg_id_type *dsp_did_write_vsg_ref; ///< did写vsg引用指针
+} dcm_dsp_did_write_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_control_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_did_control_vsg_ref_size; ///< did控制vsg引用大小
+    const uint8 dsp_did_control_session_mask; ///< did控制会话掩码
+    const uint8 dsp_did_control_security_mask; ///< did控制安全掩码
+    const dcm_vsg_id_type *dsp_did_control_vsg_ref; ///< did控制vsg引用
+} dcm_dsp_did_control_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_access_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_dsp_did_read_type *dsp_did_read; ///< 读did
+    const dcm_dsp_did_write_type *dsp_did_write; ///< 写did
+    const dcm_dsp_did_control_type *dsp_did_control; ///< did控制
+} dcm_dsp_did_access_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_info_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_dsp_did_access_type dsp_did_access; ///< did接入
+} dcm_dsp_did_info_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_data_info_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const boolean dsp_did_fixed_length; ///< did固定长度
+} dcm_dsp_data_info_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_data_port_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_data_port_type;
+#define DATA_PORT_NO_PORT ((dcm_data_port_type)0u) ///< 无端口
+#define DATA_PORT_BLOCK_ID ((dcm_data_port_type)1u) ///< 块id
+#define DATA_PORT_ASYNCH ((dcm_data_port_type)2u) ///< 异步通道
+#define DATA_PORT_SYNCH ((dcm_data_port_type)3u) ///< 同步通道
+#define DATA_PORT_ECU_SIGNAL ((dcm_data_port_type)4u) ///< ecu信号
+#define DATA_PORT_SR ((dcm_data_port_type)5u) ///< sr端口
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_data_endianess_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_dsp_data_endianess_type;
+#define DCM_BIG_ENDIAN ((dcm_dsp_data_endianess_type)0u) ///< 大端
+#define DCM_LITTLE_ENDIAN ((dcm_dsp_data_endianess_type)1u) ///< 小端
+#define DCM_ENDIAN_NOT_USED ((dcm_dsp_data_endianess_type)2u) ///< 未使用
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_data_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_data_type;
+#define DCM_BOOLEAN ((dcm_data_type)0u) ///< 布尔
+#define DCM_UINT8 ((dcm_data_type)1u) ///< 无符号int8
+#define DCM_UINT16 ((dcm_data_type)2u) ///< 无符号int16
+#define DCM_UINT32 ((dcm_data_type)3u) ///< 无符号int32
+#define DCM_SINT8 ((dcm_data_type)4u) ///< 有符号int8
+#define DCM_SINT16 ((dcm_data_type)5u) ///< 有符号int16
+#define DCM_SINT32 ((dcm_data_type)6u) ///< 有符号int32
+#define DCM_UINT8_N ((dcm_data_type)7u) ///< 无符号int8
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_data_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const boolean dsp_did_fixed_length; ///< did固定长度
+    const dcm_data_type dsp_data_type; ///< 数据类型
+    const dcm_dsp_data_endianess_type dsp_data_endianess; ///< 数据大端
+    const dcm_data_port_type dsp_data_use_port; ///< 数据使用端口
+    const uint16 dsp_data_bit_size; ///< 数据bit大小
+{%- if 'CONFIG_MODULE_NVM' in sys_cfg['modules_info']['kfg_module_all_list'] and sys_cfg['modules_info']['kfg_module_all_list']['CONFIG_MODULE_NVM'] == 'y' %}
+    nvm_block_id_type dsp_nvm_use_block_id; ///< 块id
+{%- endif %}
+#if (DCM_DSP_DATA_READ_DATA_LENGTH_FNC_ENABLED == STD_ON)
+    dcm_callback_read_data_length_fnc_type dsp_data_read_data_length_fnc; ///< 读数据长度
+#endif
+#if (DCM_DSP_DATA_CONDITION_CHECK_READ_FNC_ENABLED == STD_ON)
+    dcm_callback_condition_check_read_fnc_type dsp_data_condition_check_read_fnc; ///< 数据条件检查读
+#endif
+#if (DCM_DSP_DATA_READ_DATA_FNC_ENABLED == STD_ON)
+    dcm_callback_read_data_fnc_type dsp_data_read_data_fnc; ///< 数据读数据
+#endif
+#if (DCM_DSP_DATA_WRITE_DATA_FNC_ENABLED == STD_ON)
+    dcm_callback_write_data_fnc_type dsp_data_write_data_fnc; ///< 数据写数据
+#endif
+#if (DCM_DSP_DATA_FREEZE_CURRENT_STATE_FNC_ENABLED == STD_ON)
+    dcm_callback_freeze_current_state_fnc_type dsp_data_freeze_current_state_fnc; ///< 冻结当前状态
+#endif
+#if (DCM_DSP_DATA_RESET_TO_DEFAULT_FNC_ENABLED == STD_ON)
+    dcm_callback_reset_to_default_fnc_type dsp_data_reset_to_default_fnc; ///< 重置默认
+#endif
+#if (DCM_DSP_DATA_RETURN_CONTROL_TO_ECU_FNC_ENABLED == STD_ON)
+    dcm_callback_return_control_to_ecu_fnc_type dsp_data_return_control_to_ecu_fnc; ///< 返回控制
+#endif
+#if (DCM_DSP_DATA_SHORT_TERM_ADJUSTMENT_FNC_ENABLED == STD_ON)
+    dcm_callback_short_term_adjustment_fnc_type dsp_data_short_term_adjustment_fnc; ///< 短期调整
+#endif
+} dcm_dsp_data_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_signal_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint16 dsp_signal_bit_position; ///< 信号比特位置
+    const dcm_dsp_data_type *dsp_signal_data_ref; ///< 信号数据引用
+} dcm_dsp_signal_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_type类型
+ **********************************************************************************************************************/
+typedef struct dcm_dsp_did_type {
+    const uint16 dsp_did_identifier; ///< did标识
+    const uint16 dsp_nof_signals; ///< 通知信号
+    const uint16 dsp_did_data_byte_size; ///< did数据字节大小
+    const dcm_dsp_did_info_type *dsp_did_info_ref; ///< did信息引用
+    const dcm_dsp_signal_type *const dsp_signal_ref; ///< 信号引用
+} dcm_dsp_did_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_did_range_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    boolean dcm_eol; ///< 结束符
+    const uint16 dsp_did_range_max_data_length; ///< 最大范围
+    const uint16 dsp_did_range_lower_limit; ///< 范围下限
+    const uint16 dsp_did_range_upper_limit; ///< 范围上限
+    dcm_did_range_is_did_available_fnc_type did_range_is_did_available; ///< did可用
+    dcm_did_range_read_data_fnc_type did_range_read_data_fnc; ///< 范围读数据
+    dcm_read_did_range_data_length_fnc_type read_did_range_data_length_fnc; ///< 读did范围长度
+    dcm_did_range_write_data_fnc_type did_range_write_data_fnc; ///< 写数据
+    const dcm_dsp_did_info_type *dsp_did_range_info_ref; ///< did范围信息引用
+} dcm_dsp_did_range_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_pid_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const boolean dcm_pid_enabled; ///< pid使能
+    const uint8 dsp_pid_identifier; ///< pid标识
+    const uint8 dsp_pid_size; ///< pid大小
+    const dcm_pid_svc_type dsp_pid_service; ///< pid服务
+    dcm_callback_get_pid_value_fnc_type dsp_get_pid_val_fnc; ///< 获取pdi值
+} dcm_dsp_pid_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_request_control_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_request_control; ///< 请求控制
+    const uint8 dsp_request_control_out_buffer_size; ///< 请求控制超出缓存大小
+    const uint8 dsp_request_control_test_id; ///< 请求控制测试id
+} dcm_dsp_request_control_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_routine_authorization_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_routine_mode_rule_index; ///< 规则索引
+    const uint8 dsp_routine_vsg_ref_size; ///< vsg大小
+    const uint8 dsp_routine_session_mask; ///< 会话掩码
+    const uint8 dsp_routine_security_mask; ///< 安全掩码
+    const dcm_vsg_id_type *dsp_routine_vsg_ref; ///< vsg引用
+} dcm_dsp_routine_authorization_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_routine_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const boolean dsp_routine_use_port; ///< 使用端口
+    const uint16 dsp_routine_identifier; ///< 标识
+    const PduLengthType dsp_start_routine_ctrl_opt_rec_size; ///< 开始大小
+    const PduLengthType dsp_start_routine_sts_opt_rec_size; ///<  开始大小
+    const PduLengthType dsp_stop_routine_ctrl_opt_rec_size; ///< 停止大小
+    const PduLengthType dsp_stop_routine_sts_opt_rec_size; ///< 停止大小
+    const PduLengthType dsp_req_res_rtn_ctrl_opt_rec_size; ///< 请求响应控制
+    dcm_callback_start_routine_fnc_type dsp_start_routine_fnc; ///< 开始历程
+    dcm_callback_stop_routine_fnc_type dsp_stop_routine_fnc; ///< 停止历程
+    dcm_callback_request_result_routine_fnc_type dsp_request_result_routine_fnc; ///< 请求结果历程
+    const dcm_dsp_routine_authorization_type dsp_routine_authorization; ///< 历程鉴权
+} dcm_dsp_routine_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_veh_info_data_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_veh_info_size; ///< 车辆信息大小
+    dcm_callback_get_info_type_value_fnc_type dsp_get_veh_info_type_fnc; ///< 获取车辆信息类型
+} dcm_dsp_veh_info_data_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_veh_info_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsp_veh_info_type; ///< 车辆信息类型
+    const uint8 dsp_veh_info_number_of_data_items; ///< 车辆信息个数
+    const uint16 dsp_veh_info_total_size; ///< 车辆信息总大小
+    const dcm_dsp_veh_info_data_type *dsp_veh_info_data_items; ///< 车辆信息数据条目
+} dcm_dsp_veh_info_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_memory_range_info类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 memory_range_session_mask; ///< 存储范围会话掩码
+    const uint8 memory_range_security_mask; ///< 存储范围安全掩码
+    const uint32 memory_address_high; ///< 存储地址高
+    const uint32 memory_address_low; ///< 存储地址低
+} dcm_dsp_memory_range_info;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_memory_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 read_memory_range_info_length; ///< 读存储范围信息长度
+    const uint8 write_memory_range_info_length; ///< 写存储范围信息长度
+    const dcm_dsp_memory_range_info *read_memory_info; ///< 读存储信息
+    const dcm_dsp_memory_range_info *write_memory_info; ///< 写存储信息
+} dcm_dsp_memory_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_com_control_specific_channel_type类型
+ **********************************************************************************************************************/
+
+{% if dcm_DcmDspComControl_specificChannels|length > 0 %}
+typedef struct {
+    const uint8 comm_channel_index; ///< 通道索引
+    const uint8 subnet_number; ///< 子网个数
+} dcm_dsp_com_control_specific_channel_type;
+{% endif %}
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_com_control_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 *dsp_control_all_channel; ///< 控制总通道
+{%- if dcm_DcmDspComControl_specificChannels|length > 0 %}
+    const dcm_dsp_com_control_specific_channel_type *dsp_control_specific_channel; ///< 控制规范通道
+{%- endif %}
+} dcm_dsp_com_control_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_vehicle_system_group_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_vsg_id_type *vsg_id_map; ///< vsg映射
+    dcm_vsg_state_type *vsg_enable_state; ///< vsg状态
+} dcm_dsp_vehicle_system_group_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsp_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_dsp_did_type *dsp_did; ///< DID
+    const dcm_dsp_did_range_type *dsp_did_range; ///< did范围
+    const dcm_dsp_pid_type *dsp_pid; ///< PID
+    const dcm_dsp_routine_type *dsp_routine; ///< 历程
+    const dcm_dsp_security_type *dsp_security; ///< 安全
+    const dcm_dsp_session_type *dsp_session; ///< 会话
+    const dcm_dsp_veh_info_type *dsp_veh_info; ///< 车辆信息
+    const dcm_dsp_memory_type *dsp_memory; ///< 存储
+    const dcm_dsp_com_control_type *dsp_com_control; ///< 通信控制
+    const dcm_dsp_vehicle_system_group_type *dsp_vehicle_system_group; ///< 车辆系统组
+} dcm_dsp_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dsd_sub_service_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dsd_sub_service_fnc_type)(dcm_op_status_type op_status, dcm_msg_context_type *msg);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsd_sub_service_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsd_sub_service_id; ///< 子服务id
+    const uint8 sub_service_mode_rule_index; ///< 自复位模式规则索引
+    const uint8 dsd_sub_service_security_mask; ///< 子服务安全掩码
+    const uint8 dsd_sub_service_session_mask; ///< 子服务会话掩码
+    {% if get_user_define_sub_service_enabled_value(dcm_DcmDsdService) == "STD_ON" %} DsdSubServiceFncType DsdSubServiceFnc;{% endif %} ///< 子服务功能
+} dcm_dsd_sub_service_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsd_service_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsd_sid_tab_service_id; ///< 服务id
+    const uint8 dsd_sid_sub_service_count; ///< 子服务计数
+    const uint8 dsd_sid_tab_mode_rule_index; ///< 规则索引
+    const uint8 dsd_sid_tab_security_mask; ///< 安全掩码
+    const uint8 dsd_sid_tab_session_mask; ///< 会话掩码
+    const dcm_dsd_sub_service_type *const dsd_sub_service_list; ///< 子服务列表
+    {% if get_user_define_service_enabled_value(dcm_DcmDsdService) == "STD_ON" %} dcm_dsd_dsp_sid_tab_fnc_type DspSidTabFnc;{% endif %} ///< 服务表
+} dcm_dsd_service_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsd_service_table_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 nof_services; ///< 服务个数
+    const dcm_dsd_service_type *dsd_service; ///< 服务
+} dcm_dsd_service_table_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_buffer_status_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_dsl_buffer_status_type;
+#define BUFFER_AVAILABLE ((dcm_dsl_buffer_status_type)0u) ///< 缓存可用
+#define BUFFER_BUSY ((dcm_dsl_buffer_status_type)1u) ///< 缓存忙碌
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_buffer_runtime_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    dcm_dsl_buffer_status_type status;  ///< 状态
+#if defined(DCM_USE_SPLIT_TASK_CONCEPT)&&(DCM_USE_SPLIT_TASK_CONCEPT == STD_ON)
+    boolean dsp_processing_active; ///< 工程激活
+#endif
+    PduLengthType nof_bytes_handled; ///< 字节处理个数
+    PduIdType dcm_rx_pdu_id;  ///< 接收pduid
+} dcm_dsl_buffer_runtime_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_buffer_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    PduInfoType pdu_info; ///< pdu信息
+    dcm_dsl_buffer_runtime_type *external_buffer_runtime_data; ///< 外部缓存时间数据
+} dcm_dsl_buffer_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_response_on_event_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_dsl_response_on_event_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_main_connection_type类型
+ **********************************************************************************************************************/
+typedef struct dcm_dsl_main_connection_type_t dcm_dsl_main_connection_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_protocol_row_type类型
+ **********************************************************************************************************************/
+typedef struct dcm_dsl_protocol_row_type_t dcm_dsl_protocol_row_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_protocol_rx_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 comm_channel_internal_index; ///< 通道内部索引
+    const dcm_protocol_addr_type_type dsl_protocol_addr_type; ///< 协议地址类型
+    const PduIdType dcm_dsl_protocol_rx_pdu_id; ///< 协议接收pduid
+    const dcm_dsl_main_connection_type *dsl_main_connection_parent; ///< 主链接
+    const dcm_dsl_protocol_row_type *dsl_protocol_row; ///< 协议列
+} dcm_dsl_protocol_rx_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_protocol_tx_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const PduIdType dcm_dsl_protocol_tx_pdu_id; ///< 协议发送pduid
+    const dcm_dsl_protocol_row_type *dsl_protocol_row; ///< 协议列
+} dcm_dsl_protocol_tx_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_main_connection_type_t类型
+ **********************************************************************************************************************/
+
+struct dcm_dsl_main_connection_type_t {
+    const uint16 dsl_rx_tester_source_address; ///< 源地址
+    const uint16 connection_id; ///< 链接id
+    const dcm_dsl_protocol_rx_type *dsl_physical_protocol_rx; ///< 物理协议收
+    const dcm_dsl_protocol_tx_type *dsl_protocol_tx; ///< 协议发
+};
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_buffer_user_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_dsl_buffer_user_type;
+#define NOT_IN_USE ((dcm_dsl_buffer_user_type)0u) ///< 未使用
+#define IN_USE ((dcm_dsl_buffer_user_type)1u) ///< 在使用
+#define PROVIDED_TO_PDUR ((dcm_dsl_buffer_user_type)2u) ///< 提供给pdur
+#define DSD_PENDING_RESPONSE_SIGNALED ((dcm_dsl_buffer_user_type)3u) ///< 响应信息
+#define DCM_TRANSMIT_SIGNALED ((dcm_dsl_buffer_user_type)4u) ///< 发送信息
+#define PROVIDED_TO_DSD ((dcm_dsl_buffer_user_type)5u) ///< 提供给dsd
+#define PREEMPT_TRANSMIT_NRC ((dcm_dsl_buffer_user_type)6u) ///< 发送nsr
+#define UNDEFINED_USAGE ((dcm_dsl_buffer_user_type)255u) ///< 未定义使用
+
+#define DCM_DSL_LOCAL_BUFFER_LENGTH (8u) ///< 本地缓存长度
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_local_buffer_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    dcm_dsl_buffer_user_type status; ///< 状态
+    dcm_nrc_type response_code; ///< 响应码
+    PduIdType dcm_rx_pdu_id;    ///< 接收pduid
+    uint8 buffer[DCM_DSL_LOCAL_BUFFER_LENGTH];  ///< 缓存
+    PduLengthType message_lenght; ///< 消息长度
+    PduLengthType nof_bytes_handled; ///< 字节个数
+    PduInfoType pdu_info; ///< pdu信息
+} dcm_dsl_local_buffer_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_run_time_protocol_parameters_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    boolean s3server_started; ///< 服务
+    boolean protocol_started;  ///< 协议开始
+    boolean diagnostic_active_comm; ///< 诊断激活comm
+    dcm_sec_lv_type security_level; ///< 安全等级
+    dcm_ses_ctrl_type session_control; ///< 会话控制
+    uint8 response_pending_count; ///< 响应计数
+    dcm_dsl_buffer_user_type external_rx_buffer_status; ///< 外部接收缓存状态
+    dcm_dsl_buffer_user_type external_tx_buffer_status; ///< 外部发送缓存状态
+    PduIdType diag_reqest_rx_pdu_id;   ///< 诊断请求接收p_du_id
+    PduIdType diag_response_tx_pdu_id; ///< 诊断响应发送pduid
+    uint16 state_timeout_count;  ///< 状态超时计数
+    uint16 preempt_timeout_count; ///< 超时计数
+    uint16 s3server_timeout_count; ///< 服务超时计数
+    PduInfoType diagnostic_request_from_tester; ///< 诊断请求
+    PduInfoType diagnostic_response_from_dsd; ///< 诊断响应
+    dcm_dsl_local_buffer_type local_rx_buffer; ///< 本地接收缓存
+    dcm_dsl_local_buffer_type local_tx_buffer; ///< 本地发送缓存
+} dcm_dsl_run_time_protocol_parameters_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_protocol_row_type_t类型
+ **********************************************************************************************************************/
+
+struct dcm_dsl_protocol_row_type_t {
+    const boolean dsl_send_resp_pend_on_trans_to_boot; ///< 响应到boot
+    const uint8 dsl_protocol_priority; ///< 协议优先级
+    const uint8 connection_count; ///< 链接计数
+    const dcm_protocol_type dsl_protocol_id; ///< 协议id
+    const uint8 dcm_dem_client_id; ///< 用户id
+    const uint16 dsl_protocol_preempt_timeout; ///< 协议超时
+    const uint16 tim_str_p2server_adjust; ///< 服务调整
+    const uint16 tim_str_p2star_server_adjust; ///< 服务调整
+    const uint16 tim_str_s3server; ///< s3服务
+    const dcm_dsl_buffer_type *dsl_protocol_rx_buffer; ///< 接收缓存
+    const dcm_dsl_buffer_type *dsl_protocol_tx_buffer; ///< 协议发送缓存
+    const dcm_dsd_service_table_type *dsl_protocol_sid_table; ///< 协议sid表
+    const dcm_dsl_main_connection_type *dsl_main_connections;  ///< 主链接
+    dcm_dsl_run_time_protocol_parameters_type *dsl_run_time_protocol_parameters;  ///< 协议参数
+};
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_protocol_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_dsl_protocol_rx_type *dsl_protocol_rx_global_list; ///< 接收全局列表
+    const dcm_dsl_protocol_tx_type *dsl_protocol_tx_global_list; ///< 发送全局列表
+    const dcm_dsl_protocol_row_type *dsl_protocol_row_list; ///< 协议列表
+} dcm_dsl_protocol_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_callback_dcm_request_service_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    dcm_callback_start_protocol_fnc_type start_protocol; ///< 开始协议
+    dcm_callback_stop_protocol_fnc_type stop_protocol; ///< 停止协议
+} dcm_dsl_callback_dcm_request_service_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_service_request_notification_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    dcm_callback_notification_indication_fnc_type indication; ///< 标识
+    dcm_callback_notification_confirmation_fnc_type confirmation; ///< 确认
+} dcm_dsl_service_request_notification_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_dsl_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dsl_diag_resp_max_num_resp_pend; ///< 响应最大数
+    const dcm_dsl_buffer_type *dsl_buffer; ///< dsl缓存
+    const dcm_dsl_protocol_type *dsl_protocol; ///< dsl协议
+    const dcm_dsl_callback_dcm_request_service_type *dsl_callback_dcm_request_service; ///< 回调dcm请求服务
+    const dcm_dsl_service_request_notification_type *dsl_service_request_notification; ///< 服务请求通知
+#if (DCM_RESPONSE_INDICATION == STD_ON)
+    const dcm_dsl_diag_response_indication_fcn_type dsl_diag_response_indication;
+#endif
+} dcm_dsl_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_comm_channel_config_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 internal_index; ///< 内部索引
+    const NetworkHandleType network_handle; ///< 网络id
+    dcm_com_control_mode_switch_fcn_type mode_switch_fnc; ///< 模式切换
+} dcm_comm_channel_config_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_condition_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_condition_type;
+#define DCM_EQUALS ((dcm_condition_type)0u) ///< 相等
+#define DCM_EQUALS_NOT ((dcm_condition_type)1u) ///< 不相等
+#define DCM_GREATER_OR_EQUAL ((dcm_condition_type)2u) ///< 大于等于
+#define DCM_GREATER_THAN ((dcm_condition_type)3u) ///< 大于
+#define DCM_LESS_OR_EQUAL ((dcm_condition_type)4u) ///< 小于等于
+#define DCM_LESS_THAN ((dcm_condition_type)5u) ///< 小于
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_logical_operator_type类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_logical_operator_type;
+#define DCM_AND ((dcm_logical_operator_type)0u) ///< 与
+#define DCM_OR ((dcm_logical_operator_type)1u) ///< 或
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_mode_rule_nrc_value类型
+ **********************************************************************************************************************/
+typedef uint8 dcm_mode_rule_nrc_value;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_swc_mode_ref_fnc_type类型
+ **********************************************************************************************************************/
+typedef Std_ReturnType(*dcm_swc_mode_ref_fnc_type)(void);
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_mode_condition_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const uint8 dcm_processing_condition_mode; ///< 处理条件模式
+    const dcm_condition_type condition; ///< 条件
+    dcm_swc_mode_ref_fnc_type swc_mode_ref; ///< 切换模式
+} dcm_mode_condition_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_mode_rule_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_logical_operator_type logical_operator; ///< 逻辑运行
+    const dcm_mode_rule_nrc_value mode_rule_nrc_value; ///< 切换规则值
+    const uint8 nof_condition_in_rule; ///< 通知条件规则个数
+    const uint8 nof_rule_in_rule; ///< 规则个数
+    const uint8 *condition_index_list; ///< 条件索引列表
+    const uint8 *rule_index_list; ///< 规则索引列表
+} dcm_mode_rule_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_processing_conditions_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_mode_condition_type *mode_condition; ///< 模式条件
+    const dcm_mode_rule_type *mode_rule; ///< 模式规则
+} dcm_processing_conditions_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_config_type类型
+ **********************************************************************************************************************/
+typedef struct {
+    const dcm_dsp_type *dsp; ///< DSP
+    const dcm_dsl_type *dsl; ///< DSL
+    const dcm_comm_channel_config_type *dcm_comm_channel_cfg; ///< 通道配置
+    const dcm_processing_conditions_type *dcm_processing_conditions; ///< 处理条件
+} dcm_config_type;
+
+/*!*********************************************************************************************************************
+ *  @brief          声明dcm_config类型
+ **********************************************************************************************************************/
+#define DCM_START_SEC_CONST
+#include "dcm_memmap.h"
+extern CONST(dcm_config_type, DCM_CONST) dcm_config;
+#define DCM_STOP_SEC_CONST
+#include "dcm_memmap.h"
+
+# define Dcm_UtiGetReqDataAsU8Rel(msgContextPtr, index)              ((msgContextPtr)[(index)]) ///< 获取请求数据
+# define Dcm_UtiGetResDataAsU8At(msgContextPtr, index)               (&(msgContextPtr)[(index)]) ///< 获取响应数据
+/*! compose a 32bit value from single bytes */
+# define Dcm_UtiMake32Bit(hiHiByte,hiLoByte,loHiByte,loLoByte)       ((uint32)((((uint32)(hiHiByte))<<24)| \
+                                                                     (((uint32)(hi_lo_byte))<<16)| \
+                                                                     (((uint32)(lo_hi_byte))<<8) | \
+                                                                     ((uint32)(lo_lo_byte)))) ///< 转换32比特
+/*! compose a 16 bit value from bytes */
+# define Dcm_UtiMake16Bit(hiByte,loByte)                             ((uint16)((((uint16)(hiByte))<<8)| \
+                                                                     ((uint16)(lo_byte)))) ///< 转换16比特
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DCM_LCFG_H */
+

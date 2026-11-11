@@ -1,0 +1,128 @@
+{{get_copyright()}}
+/*!*********************************************************************************************************************
+ * @file		EcuM_Cfg.h
+ * @brief	    EcuM 模块配置宏定义头文件.
+ * @date		{{get_generation_time()}}
+ * @project	    {{get_project_name()}}
+ * @toolversion {{get_vcos_version()}}
+ **********************************************************************************************************************/
+
+#ifndef ECUM_CFG_H
+#define ECUM_CFG_H
+
+#include "Std_Types.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+{% set cores = dict_bsw["dict_ecuc"]["ActiveEcuC"]["EcuC"]["EcucHardware"].items() %}
+{% set core_num = get_coreNums(cores) %}
+
+
+
+
+#define USE_ECUM_FIXED						 ({{get_ecum_mode(dict_config["ActiveEcuC"]["EcuM"]["EcuMFlexGeneral"]["EcuMModeHandling"]["Value"])}})	///< 是否使用 EcuM 固定模式
+
+{%- set module_marcos = get_module_marcos(sys_cfg["modules_info"]["enabled_module_list"]) %}
+{%- for module_marco in module_marcos %}
+#define {{module_marco}}	///< 和 EcuM 交互的其他模块宏定义
+{%- endfor %}
+
+#define ECUM_NUMBER_OF_CORES				   ({{core_num}}U)	///< 内核数量
+#ifndef OS_CORE_ID_MASTER
+#define ECUM_CORE_ID_BSW					   (0u)	///< BSW 内核ID
+#else
+#define ECUM_CORE_ID_BSW					   (OS_CORE_ID_MASTER)	///< 使用操作系统定义的BSW内核ID
+#endif
+
+/* PostBuildVariant */
+#define POST_BUILD_VARIANT					 (1u)	///< 后构建变体
+
+#ifndef OSDEFAULTAPPMODE
+#define ECUM_DEFAULT_APPMODE				   (1u)	///< 默认应用模式
+#else
+#define ECUM_DEFAULT_APPMODE				   (OSDEFAULTAPPMODE)	///< 使用操作系统定义的默认应用模式
+#endif
+
+#define ECUM_VERSION_INFO_API				  {{gen_switch_macro(dict_config["ActiveEcuC"]["EcuM"]["EcuMGeneral"]["EcuMVersionInfoApi"]["Value"])}}	///< 版本信息API开关
+#define ECUM_DEV_ERROR_DETECT				  {{gen_switch_macro(dict_config["ActiveEcuC"]["EcuM"]["EcuMGeneral"]["EcuMDevErrorDetect"]["Value"])}}	///< 错误检测开关
+
+#define ECUM_MAIN_FUNCTION_PERIOD			  {{float_to_int(dict_config["ActiveEcuC"]["EcuM"]["EcuMGeneral"]["EcuMMainFunctionPeriod"]["Value"] * 1000)}}u	///< 主函数周期
+
+#define ECUM_NVRAM_READALL_TIMEOUT			 (10000)	///< NVM ReadAll 超时时间
+#define ECUM_NVRAM_WRITEALL_TIMEOUT			(10000)	///< NVM WriteAll 超时时间
+#define ECUM_NVRAM_MIN_RUN_DURATION			(10000)	///< NVM 最短运行时间
+
+
+#define ECUM_RESET_LOOP_DETECTION			  ({{gen_switch_macro(dict_config["ActiveEcuC"]["EcuM"]["EcuMFlexGeneral"]["EcuMResetLoopDetection"]["Value"])}})	///< 复位环检测开关
+
+/* 模式处理开关 */
+#define ECUM_MODE_HANDLING					 ({{gen_switch_macro(dict_config["ActiveEcuC"]["EcuM"]["EcuMFlexGeneral"]["EcuMModeHandling"]["Value"])}})	///< 模式处理开关
+#define ECUM_VALIDATION_TIMEOUT				(1000u)	///< 唤醒验证超时时间
+
+{% set users = check_exist("EcuMFlexUserConfigs", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]) %}
+{%- if users != "NULL" %}
+{%- for user_name, user_value in users.items() %}
+{%- if user_name != "Tag" %}
+#define ECUM_{{ user_name }}						 ({{ user_value["EcuMFlexUser"]["Value"] }}u)	///< 定义 {{ user_name }} 的用户ID
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+#define ECUM_USER_ENDMARK					  ({{ users|length-1 }}u)	///< 用户结束标志
+
+{% set sources = check_exist("EcuMWakeupSources", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]) %}
+{%- if sources != "NULL" %}
+
+{%- for source_name, source_value in sources.items() %}
+{%- if source_name != "Tag" %}
+#define {{ source_name }}					  (ecum_wakeup_source_t)(1uL << {{source_value["EcuMWakeupSourceId"]["Value"]}}u)	///< 定义 {{ source_name }} 的唤醒源ID
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+#define ECUM_MCURESETREFNUM					({{get_ecum_McuResetRefNum(sources)}}U)	///< MCU 复位参考数量
+#ifndef ECUM_WKSOURCE_SYSTEM_CNT
+#define ECUM_WKSOURCE_SYSTEM_CNT			   ({{ sources|length-1 }}U)	///< 系统唤醒源数量
+#endif
+#ifndef ECUM_WKSOURCE_USER_CNT
+#define ECUM_WKSOURCE_USER_CNT				 ({{ get_VldWakeupSourceNum(sources) }}U)	///< 用户定义唤醒源通道数量
+#endif
+#define EcuM_SizeOfWakeupSourceList			(ECUM_WKSOURCE_SYSTEM_CNT)	///< 唤醒源列表长度
+
+#define ECUM_COMM_NETWORKS_CNT				 (COMM_CHANNEL_COUNT)	///< 通信网络总数
+
+#define VALIED_WAKEUP_SOURCES					   ({{ get_VldWakeupSources(sources) }} | ECUM_WKSOURCE_NONE)	///< 有效唤醒源
+
+{% set shutdowncauses = check_exist("EcuMShutdownCauses", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]) %}
+{%- if shutdowncauses != "NULL" %}
+{%- for cause_name, cause_value in shutdowncauses.items() %}
+{%- if cause_name != "Tag" %}
+#define {{ cause_name }}					   ({{ cause_value["EcuMShutdownCauseId"]["Value"] }}u)	///< 定义 {{ cause_name }} 的Shutdown原因
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{% set resetmodes = check_exist("EcuMResetModes", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMFlexConfiguration"]) %}
+{%- if resetmodes != "NULL" %}
+{%- for mode_name, mode_value in resetmodes.items() %}
+{%- if mode_name != "Tag" %}
+#define Conf_{{ mode_name }}				   ({{ 256 + mode_value["EcuMResetModeId"]["Value"] }}u)	///< 定义 {{ mode_name }} 的复位模式ID
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{% set sleepmodes = check_exist("EcuMSleepModes", dict_config["ActiveEcuC"]["EcuM"]["EcuMConfiguration"]["EcuMCommonConfiguration"]) %}
+{%- if sleepmodes != "NULL" %}
+{%- for mode_name, mode_value in sleepmodes.items() %}
+{%- if mode_name != "Tag" %}
+#define {{ mode_name }}						({{ mode_value["EcuMSleepModeId"]["Value"] }}u)	///< 定义 {{ mode_name }} 的休眠模式ID
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ECUM_CFG_H */

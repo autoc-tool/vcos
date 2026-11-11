@@ -1,0 +1,386 @@
+/*
+ * Copyright (c) 2025 Li Auto Inc. and its affiliates
+ * Licensed under the Apache License, Version 2.0(the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*!*********************************************************************************************************************
+ * @file        dcm_cfg.h
+ * @brief       Dcm配置头文件
+ * @details     主要包含Dcm模块的配置相关信息
+ * @date        {{get_generation_time_temp()}}
+ * @toolversion {{get_vcos_version_temp()}}
+ **********************************************************************************************************************/
+
+#ifndef DCM_CFG_H
+#define DCM_CFG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define DCM_VERSION_INFO_API                      ({{ get_enable_value_from_boolean(dcm_DcmGeneral["DcmVersionInfoApi"]["Value"]) }})    ///< 版本信息
+#define DCM_DEV_ERROR_DETECT                      ({{ get_enable_value_from_boolean(dcm_DcmGeneral["DcmDevErrorDetect"]["Value"]) }})     ///< 开发错误
+#define DCM_RESPOND_ALL_REQUEST                   ({{ get_enable_value_from_boolean(dcm_DcmGeneral["DcmRespondAllRequest"]["Value"]) }})   ///< 响应全部请求
+#define DCM_SEC_ATT_CNTR_ENABLED                  ({{ get_dcm_sec_att_cntr_enabled_value(dcm_DcmDspSecurityRow) }})    ///< 27服务失败尝试计数器功能使能
+#define DCM_DSP_DID_RANGE_ENABLED                 ({{ get_dcm_dsp_did_range_enabled_value(dcm_DcmDspDidRanges) }})     ///< DidRange功能使能
+#define DCM_RESPONSE_INDICATION                   ({{ get_dsl_diag_response_Indication_func(dcm_DcmDslDiagResp)[0] }}) ///< diag_response trace使能
+#define DCM_RESPONSE_MULTIPLE_PENDING_ENABLED     ({% if get_fnc_value_enabled(dcm_DcmDspSessionRow) == True %}STD_ON {%- else %}STD_OFF {%- endif %}) ///< 响应多个pending使能
+#define DCM_MANUFACTURER_NOTIFICATION             ({{ get_enable_value_from_boolean(dcm_DcmDsdServiceRequestManufacturerNotification) }}) ///< Manufacturer通知
+#define DCM_SUPPLIER_NOTIFICATION                 ({{ get_enable_value_from_boolean(dcm_DcmDsdServiceRequestSupplierNotification) }}) ///< Supplier通知
+#define DCM_SERVICE_USER_DEFINED                  ({{ get_user_define_service_enabled_value(dcm_DcmDsdService) }}) ///< 自定义服务功能使能
+#define DCM_SUB_SERVICE_USER_DEFINED              ({{ get_user_define_sub_service_enabled_value(dcm_DcmDsdService) }}) ///< 自定义子服务功能使能
+#define DCM_MAIN_FUNCTION_PERIOD_TIME_MS          ({{ (dcm_DcmGeneral["DcmTaskTime"]["Value"] * 1000) | int }}u) ///< 主函数周期毫秒
+#define DCM_DSL_PROTOCOL_LIST_LENGTH              ({{ dcm_DcmDslProtocolRows|length }}u) ///< 协议列表长度
+#define DCM_DSL_BUFFER_LIST_LENGTH                ({{ dcm_DcmDslBuffers|length }}u) ///< 缓存列表长度
+#define DCM_SECURITY_EOL_INDEX                    ({{ dcm_DcmDspSecurityRow|length }}u) ///< 安全会话列表长度
+#define DCM_SESSION_EOL_INDEX                     ({{ dcm_DcmDspSessionRow|length }}u) ///< 会话列表长度
+#define DCM_DSP_MEMORY_LIST_LENGTH                ({{ dcm_DcmDspMemoryIdInfoList|length }}u) ///< 内存列表长度
+#define DCM_MODEMGR_RULES_SIZE                    ({{ dcm_DcmModeRules|length }}u) ///< 模式管理的Rule个数
+#define DCM_MODEMGR_CONDITIONS_SIZE               ({{ dcm_DcmModeConditions|length }}u) ///< 模式管理的Condition个数
+#define DCM_NOF_IOCONTROL_DIDS                    ({{ get_nof_iocontrol_dids(dcm_DcmDspDidInfos) }}u) ///< IO控制DID的个数
+#define DCM_MAX_IOCONTROL_DID_SIGNALS             (1u) ///< IO控制DID的最大信号数量
+#define DCM_NOF_COMM_CHANNELS                     ({{ dcm_DcmDspComControlList|length }}u) ///< 通信通道数量
+#define DCM_NOF_COMCONTROL_ALL_CHANNELS           ({{ dcm_DcmDspComControl_allChannels|length }}u) ///< 通信控制-AllChannel个数
+#define DCM_NOF_COMCONTROL_SPECIFIC_CHANNELS      ({{ dcm_DcmDspComControl_specificChannels|length }}u) ///< 通信控制-SpecificChannel个数
+#define DCM_VSG_CHECK_ENABLED                     ({% if dcm_DcmDspVehicleSystemGroupRow|length > 0 %}STD_ON {%- else %}STD_OFF {%- endif %}) ///< VSG是否使能
+#define DCM_NOF_VEHICLE_SYSTEM_GROUPS             ({{ dcm_DcmDspVehicleSystemGroupRow|length }}u) ///< VSG配置个数
+#define DCM_DID_LIST_EOL_INDEX                    ({{ dcm_DcmDspDids|length }}u) ///< 支持的DID列表长度
+#define DCM_MAX_NOF_DID_TO_READ                   (1u) ///< DcmDspMaxDidToRead 当前只支持1
+#define DCM_RID_LIST_EOL_INDEX                    ({{ dcm_DcmDspRoutines|length }}u) ///< 支持的RID列表长度
+#define DCM_PID_LIST_EOL_INDEX                    ({{ dcm_DcmDspPids|length }}u) ///< 支持的PID列表长度
+#define DCM_VID_LIST_EOL_INDEX                    ({{ dcm_DcmDspVehInfos|length }}u) ///< 支持的VID列表长度
+
+{%- if isDspDataReadDataLengthFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_READ_DATA_LENGTH_FNC_ENABLED  (STD_ON)     ///< DspDataLengthFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_READ_DATA_LENGTH_FNC_ENABLED  (STD_OFF)    ///< DspDataLengthFnc使能开关
+{%- endif %}
+
+{%- if isDspDataConditionCheckReadFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_CONDITION_CHECK_READ_FNC_ENABLED  (STD_ON)  ///< DspDataConditionCheckReadFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_CONDITION_CHECK_READ_FNC_ENABLED  (STD_OFF) ///< DspDataConditionCheckReadFnc使能开关
+{%- endif %}
+
+{%- if isDspDataReadDataFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_READ_DATA_FNC_ENABLED  (STD_ON)   ///< DspDataReadFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_READ_DATA_FNC_ENABLED  (STD_OFF)  ///< DspDataReadFnc使能开关
+{%- endif %}
+
+{%- if isDspDataWriteDataFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_WRITE_DATA_FNC_ENABLED  (STD_ON)    ///< DspDataWriteFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_WRITE_DATA_FNC_ENABLED  (STD_OFF)   ///< DspDataWriteFnc使能开关
+{%- endif %}
+
+{%- if isDspDataReturnControlToEcuFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_RETURN_CONTROL_TO_ECU_FNC_ENABLED  (STD_ON)   ///< DspDataReturnControlToEcuFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_RETURN_CONTROL_TO_ECU_FNC_ENABLED  (STD_OFF)  ///< DspDataReturnControlToEcuFnc使能开关
+{%- endif %}
+
+{%- if isDspDataResetToDefaultFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_RESET_TO_DEFAULT_FNC_ENABLED  (STD_ON)   ///< DspDataResetToDefaultFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_RESET_TO_DEFAULT_FNC_ENABLED  (STD_OFF)   ///< DspDataResetToDefaultFnc使能开关
+{%- endif %}
+
+{%- if isDspDataFreezeCurrentStateFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_FREEZE_CURRENT_STATE_FNC_ENABLED  (STD_ON)   ///< DspDataFreezeCurrentStateFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_FREEZE_CURRENT_STATE_FNC_ENABLED  (STD_OFF)  ///< DspDataFreezeCurrentStateFnc使能开关
+{%- endif %}
+
+{%- if isDspDataShortTermAdjustmentFncEnable(dcm_DcmDspDatas, dcm_DcmDspDidInfos, dcm_DcmDspDids) %}
+#define DCM_DSP_DATA_SHORT_TERM_ADJUSTMENT_FNC_ENABLED  (STD_ON)   ///< DspDataShortTermAdjustmentFnc使能开关
+{%- else %}
+#define DCM_DSP_DATA_SHORT_TERM_ADJUSTMENT_FNC_ENABLED  (STD_OFF)  ///< DspDataShortTermAdjustmentFnc使能开关
+{%- endif %}
+
+
+{% if check_dcm_callback_session_enabled_value(dcm_DcmDsp) %}#define DCM_CALLBACK_SESSIONCONTROL_ENABLED{%- endif %}
+{% if check_dcm_callback_ecu_reset_enabled_value(dcm_DcmDsp) %}#define DCM_CALLBACK_ECURESET_ENABLED{%- endif %}
+
+{% for key, value in dcm_DcmDslProtocolRxs.items() %}
+{{  "#define DCM_PDU_ID_%-70s  (%su)" | format(dcm_get_last_str(value["DcmDslProtocolRxPduRef"]["ValueRef"]),loop.index-1) }} ///< 接收PDuId
+{%- endfor %}
+#define DCM_DSL_RX_PDU_ID_LIST_LENGTH                                                      ({{ dcm_DcmDslProtocolRxs|length }}u) ///< 接收PDU列表长度
+
+{%- for key, value in dcm_DcmDslProtocolTxs.items() %}
+{{  "#define DCM_PDU_ID_%-70s  (%su)" | format(dcm_get_last_str(value["DcmDslProtocolTxPduRef"]["ValueRef"]),loop.index-1) }} ///< 发送PDuId
+{%- endfor %}
+#define DCM_DSL_TX_PDU_ID_LIST_LENGTH                                                      ({{ dcm_DcmDslProtocolTxs|length }}u) ///< 发送PDU列表长度
+
+{% if use_jumptoboot(dcm_DcmDspSessionRow) == true  %}
+#define DCM_USE_JUMP_TO_BOOT                                                               (STD_ON) ///< BOOT功能使能
+{% endif %}
+{%- if is_nvmdid_used(dcm_DcmDspDatas) %}
+#define DCM_USE_NVM_DID (STD_ON)///< Did相关服务需要关联Nvm模块
+{%- endif %}
+
+// support service list
+{%- if check_service_enable(0x10, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_DIAGNOSTICSESSIONCONTROL (STD_ON)///< UDS 0x10服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_DIAGNOSTICSESSIONCONTROL (STD_OFF)///< UDS 0x10服务 使能
+{%- endif %}
+{%- if check_service_enable(0x11, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_ECURESET (STD_ON)///< UDS 0x11服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_ECURESET (STD_OFF)///< UDS 0x11服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x14, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION (STD_ON)///< UDS 0x14服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_CLEARDIAGNOSTICINFORMATION (STD_OFF)///< UDS 0x14服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x19, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_READDTCINFORMATION  (STD_ON)///< UDS 0x19服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_READDTCINFORMATION  (STD_OFF)///< UDS 0x19服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x22, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_READDATABYIDENTIFIER  (STD_ON)///< UDS 0x22服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_READDATABYIDENTIFIER  (STD_OFF)///< UDS 0x22服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x23, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_READMEMORYBYADDRESS (STD_ON)///< UDS 0x23服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_READMEMORYBYADDRESS (STD_OFF)///< UDS 0x23服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x2E, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_WRITEDATABYIDENTIFIER  (STD_ON)///< UDS 0x2E服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_WRITEDATABYIDENTIFIER  (STD_OFF)///< UDS 0x2E服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x2F, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_INPUTOUTPUTCONTROLBYIDENTIFIER (STD_ON)///< UDS 0x2F服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_INPUTOUTPUTCONTROLBYIDENTIFIER (STD_OFF)///< UDS 0x2F服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x27, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_SECURITYACCESS  (STD_ON)///< UDS 0x27服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_SECURITYACCESS  (STD_OFF)///< UDS 0x27服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x28, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_COMMUNICATIONCONTROL  (STD_ON)///< UDS 0x28服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_COMMUNICATIONCONTROL  (STD_OFF)///< UDS 0x28服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x31, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_ROUTINECONTROL  (STD_ON)///< UDS 0x31服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_ROUTINECONTROL  (STD_OFF)///< UDS 0x31服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x34, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTDOWNLOAD   (STD_ON)///< UDS 0x34服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTDOWNLOAD   (STD_OFF)///< UDS 0x34服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x35, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTUPLOAD   (STD_ON)///< UDS 0x35服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTUPLOAD   (STD_OFF)///< UDS 0x35服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x36, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_TRANSFERDATA  (STD_ON)///< UDS 0x36服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_TRANSFERDATA  (STD_OFF)///< UDS 0x36服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x37, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTTRANSFEREXIT  (STD_ON)///< UDS 0x37服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTTRANSFEREXIT  (STD_OFF)///< UDS 0x37服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x38, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTFILETRANSFER  (STD_ON)///< UDS 0x38服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTFILETRANSFER  (STD_OFF)///< UDS 0x38服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x3d, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_WRITEMEMORYBYADDRESS  (STD_ON)///< UDS 0x3D服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_WRITEMEMORYBYADDRESS  (STD_OFF)///< UDS 0x3D服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x3E, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_TESTERPRESENT  (STD_ON)///< UDS 0x3E服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_TESTERPRESENT  (STD_OFF)///< UDS 0x3E服务 不使能
+{%- endif %}
+{%- if check_service_enable(0x85, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_CONTROLDTCSETTING  (STD_ON)///< UDS 0x85服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_CONTROLDTCSETTING  (STD_OFF)///< UDS 0x85服务 不使能
+{%- endif %}
+
+// OBD
+{%- if check_service_enable(1, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGNOSTICDATA   (STD_ON)///< OBD 0x01服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTCURRENTPOWERTRAINDIAGNOSTICDATA   (STD_OFF)///< OBD 0x01服务 不使能
+{%- endif %}
+{%- if check_service_enable(2, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA  (STD_ON)///< OBD 0x02服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTPOWERTRAINFREEZEFRAMEDATA  (STD_OFF)///< OBD 0x02服务 不使能
+{%- endif %}
+{%- if check_service_enable(3, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDIAGNOSTICTROUBLECODES  (STD_ON)///< OBD 0x03服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDIAGNOSTICTROUBLECODES  (STD_OFF)///< OBD 0x03服务 不使能
+{%- endif %}
+{%- if check_service_enable(4, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA  (STD_ON)///< OBD 0x04服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_CLEAREMISSIONRELATEDDIAGNOSTICDATA  (STD_OFF)///< OBD 0x04服务 不使能
+{%- endif %}
+{%- if check_service_enable(7, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASTCOMPLETEDDRIVINGCYCLE (STD_ON)///< OBD 0x07服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSDETECTEDDURINGCURRENTORLASTCOMPLETEDDRIVINGCYCLE (STD_OFF)///< OBD 0x07服务 不使能
+{%- endif %}
+{%- if check_service_enable(9, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTVEHICLEINFORMATION (STD_ON)///< OBD 0x09服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTVEHICLEINFORMATION (STD_OFF)///< OBD 0x09服务 使能
+{%- endif %}
+{%- if check_service_enable(0xA, dcm_DcmDsdServiceIdList) %}
+#define DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSWITHPERMANENTSTATUS (STD_ON)///< OBD 0x0A服务 使能
+{%- else %}
+#define DCM_USE_SERVICE_REQUESTEMISSIONRELATEDDTCSWITHPERMANENTSTATUS (STD_OFF)///< OBD 0x0A服务 不使能
+{%- endif %}
+// OBD
+
+/*!  ----- Symbolic name values for DCM VSGs -----  */
+///< DCM的VSG配置
+{%- for key, value in dcm_DcmDspVehicleSystemGroupRow.items() %}
+{{  "#define DcmConf_DcmDspVSGRow_%-40s  (%su)" | format(dcm_get_last_str(key), value["DcmDspVehicleSystemGroupId"]["Value"]) }}
+{%- endfor %}
+
+{%- for key, value in dcm_DcmDspRoutines.items() %}
+    {%- if check_key_exit(value, "DcmDspStartRoutine") %}
+        {%- if value["DcmDspRoutineUsePort"]["Value"] %}
+        {%- else %}
+#define DCM_START_SEC_CODE
+#include "dcm_memmap.h"
+FUNC(Std_ReturnType, DCM_CODE) {{ get_ui_func_by_use_port(value["DcmDspRoutineUsePort"]["Value"], value["DcmDspStartRoutine"]["DcmDspStartRoutineFnc"]["Value"], "Rte_Call_RoutineServices_"+key+"_Start") }}(
+            {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineIn") %}
+                {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"]) %}
+                {%- for signal_name, signals_type in signals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspStartRoutineIn")}} dataInIn_{{signal_name}},
+                {%- endfor %}
+            {%- endif %}
+    dcm_op_status_type op_status,
+            {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineOut") %}
+                {%- set outsignals_type_dict = get_routine_parameters_signal_type(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) %}
+                {%- for signal_name, signals_type in outsignals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspStartRoutineOut")}} *outdata_{{signal_name}},
+                {%- endfor %}
+            {%- endif %}
+            {%- if check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineIn") %}
+                {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStartRoutine"]["DcmDspStartRoutineIn"]) %}
+    uint16 current_data_length,
+                {%- endif %}
+            {%- elif check_key_exit(value["DcmDspStartRoutine"], "DcmDspStartRoutineOut") %}
+                {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStartRoutine"]["DcmDspStartRoutineOut"]) %}
+    uint16 current_data_length,
+                {%- endif %}
+            {%- endif %}
+    dcm_nrc_type *error_code
+);
+#define  DCM_STOP_SEC_CODE
+#include "dcm_memmap.h"
+        {%- endif %}
+    {%- endif %}
+
+    {%- if check_key_exit(value, "DcmDspStopRoutine") %}
+        {%- if value["DcmDspRoutineUsePort"]["Value"] %}
+        {%- else %}
+#define DCM_START_SEC_CODE
+#include "dcm_memmap.h"
+FUNC(Std_ReturnType, DCM_CODE) {{get_ui_func_by_use_port(value["DcmDspRoutineUsePort"]["Value"], value["DcmDspStopRoutine"]["DcmDspStopRoutineFnc"]["Value"], "Rte_Call_RoutineServices_"+key+"_Stop")}}(
+            {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineIn") %}
+                {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"]) %}
+                {%- for signal_name, signals_type in signals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspStopRoutineIn")}} dataInIn_{{signal_name}},
+                {%- endfor %}
+            {%- endif %}
+    dcm_op_status_type op_status,
+            {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineOut") %}
+                {%- set outsignals_type_dict = get_routine_parameters_signal_type(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) %}
+                {%- for signal_name, signals_type in outsignals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspStopRoutineOut")}} *outdata_{{signal_name}},
+                {%- endfor %}
+            {%- endif %}
+            {%- if check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineIn") %}
+                {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStopRoutine"]["DcmDspStopRoutineIn"]) %}
+    uint16 current_data_length,
+                {%- endif %}
+            {%- elif check_key_exit(value["DcmDspStopRoutine"], "DcmDspStopRoutineOut") %}
+                {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspStopRoutine"]["DcmDspStopRoutineOut"]) %}
+    uint16 current_data_length,
+                {%- endif %}
+            {%- endif %}
+    dcm_nrc_type *error_code
+);
+#define  DCM_STOP_SEC_CODE
+#include "dcm_memmap.h"
+        {%- endif %}
+    {%- endif %}
+
+    {%- if check_key_exit(value, "DcmDspRequestRoutineResults") %}
+        {%- if value["DcmDspRoutineUsePort"]["Value"] %}
+        {%- else %}
+#define DCM_START_SEC_CODE
+#include "dcm_memmap.h"
+FUNC(Std_ReturnType, DCM_CODE) {{get_ui_func_by_use_port(value["DcmDspRoutineUsePort"]["Value"], value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsFnc"]["Value"], "Rte_Call_RoutineServices_"+key+"_RequestResults")}}(
+            {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsIn") %}
+                {%- set signals_type_dict = get_routine_parameters_signal_type(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsIn"]) %}
+                {%- for signal_name, signals_type in signals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspRequestRoutineResultsIn")}} dataInIn_{{signal_name}},
+                {%- endfor %}
+            {%- endif %}
+    dcm_op_status_type op_status,
+            {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsOut") %}
+                {%- set outsignals_type_dict = get_routine_parameters_signal_type(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) %}
+                {%- for signal_name, signals_type in outsignals_type_dict.items() %}
+    {{ get_routine_transform_signal_type(signals_type,"DcmDspRequestRoutineResultsOut")}} *outdata_{{signal_name}},
+                {%- endfor %}
+            {%- endif %}
+            {%- if check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsIn") %}
+                {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsIn"]) %}
+    uint16 current_data_length,
+                {%- endif %}
+            {%- elif check_key_exit(value["DcmDspRequestRoutineResults"], "DcmDspRequestRoutineResultsOut") %}
+                {%- if get_routine_is_VARIABLE_LENGTH_contained(value["DcmDspRequestRoutineResults"]["DcmDspRequestRoutineResultsOut"]) %}
+    uint16 current_data_length,
+                {%- endif %}
+            {%- endif %}
+    dcm_nrc_type *error_code
+);
+#define  DCM_STOP_SEC_CODE
+#include "dcm_memmap.h"
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DCM_CFG_H */
+

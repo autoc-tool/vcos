@@ -4,20 +4,20 @@
 using sysbus
 
 $name?="scm7"
-$bin?=@D:/code/haloos/output/rt_demo_scm7_gcc/rt_demo.elf
-
-include @D:/code/haloos/vcos/vendor/autoc/renode/rtt_console.py
+$bin?=$ORIGIN/../../../../../output/rt_demo_scm7_gcc/rt_demo.elf
 
 mach create $name
-machine LoadPlatformDescription @D:/code/haloos/vcos/vendor/autoc/boards/scm7/renode/scm7.repl
-machine CreateVirtualConsole "rtt"
+machine LoadPlatformDescription $ORIGIN/scm7.repl
+
+include @scripts/single-node/segger-rtt.py
 
 macro reset
 """
     sysbus LoadELF $bin
     sysbus.cpu Reset
-    setup_rtt_console sysbus.rtt
 """
 runMacro $reset
 
-showAnalyzer sysbus.rtt
+machine CreateVirtualConsole "segger_rtt"
+setup_segger_rtt sysbus.segger_rtt false true true true true
+showAnalyzer sysbus.segger_rtt

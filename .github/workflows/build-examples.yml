@@ -18,13 +18,62 @@ jobs:
           cache: pip
           cache-dependency-path: vcos_studio/configurator/requirements.txt
 
+      - name: restore apt archives
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-archives
+          key: apt-${{ runner.os }}-${{ hashFiles('.github/workflows/build-examples.yml') }}
+
       - name: install build tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends cmake ninja-build gcc-arm-none-eabi
+          mkdir -p "$HOME/apt-archives"
+          echo "Dir::Cache::Archives \"${HOME}/apt-archives\";" | sudo tee /etc/apt/apt.conf.d/01cache
+          echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+          retry() {
+            ok=0
+            for attempt in 1 2 3 4 5; do
+              if "$@"; then
+                ok=1
+                break
+              fi
+              echo "command failed (attempt ${attempt}): $*"
+              sleep $((attempt * 10))
+            done
+            test "$ok" = 1
+          }
+          retry sudo apt-get update
+          retry sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi ccache
+
+      - name: restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
+      - name: enable ccache
+        run: |
+          mkdir -p "$HOME/.local/lib/ccache" "$HOME/.cache/ccache"
+          ln -sf "$(command -v ccache)" "$HOME/.local/lib/ccache/arm-none-eabi-gcc"
+          ln -sf "$(command -v ccache)" "$HOME/.local/lib/ccache/arm-none-eabi-g++"
+          echo "$HOME/.local/lib/ccache" >> "$GITHUB_PATH"
+          {
+            echo "CCACHE_DIR=$HOME/.cache/ccache"
+            echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE"
+            echo "CCACHE_MAXSIZE=1G"
+            echo "CCACHE_COMPRESS=true"
+            echo "CCACHE_SLOPPINESS=time_macros"
+          } >> "$GITHUB_ENV"
+          ccache --zero-stats
 
       - name: install python dependencies
         run: python -m pip install -r vcos_studio/configurator/requirements.txt
 
       - name: build examples
         run: python tools/build_examples.py
+
+      - name: ccache stats
+        if: always()
+        run: ccache --show-stats

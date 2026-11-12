@@ -43,7 +43,7 @@
  *
  ****************************************************************************/
 
-void modifyreg16(volatile uint16_t *addr, uint16_t clearbits, uint16_t setbits)
+void modifyreg16(uintptr_t addr, uint16_t clearbits, uint16_t setbits)
 {
   irqstate_t flags;
   uint16_t   regval;

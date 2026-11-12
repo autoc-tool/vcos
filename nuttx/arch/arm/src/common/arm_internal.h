@@ -308,9 +308,9 @@ EXTERN uint8_t _eramfuncs[];       /* Copy destination end address in RAM */
 #ifndef __ASSEMBLY__
 /* Atomic modification of registers */
 
-void modifyreg8(volatile uint8_t *addr, uint8_t clearbits, uint8_t setbits);
-void modifyreg16(volatile uint16_t *addr, uint16_t clearbits, uint16_t setbits);
-void modifyreg32(volatile uint32_t *addr, uint32_t clearbits, uint32_t setbits);
+void modifyreg8(uintptr_t addr, uint8_t clearbits, uint8_t setbits);
+void modifyreg16(uintptr_t addr, uint16_t clearbits, uint16_t setbits);
+void modifyreg32(uintptr_t addr, uint32_t clearbits, uint32_t setbits);
 
 /* Low level initialization provided by board-level logic *******************/
 

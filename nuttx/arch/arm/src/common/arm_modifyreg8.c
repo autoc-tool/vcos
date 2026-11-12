@@ -43,7 +43,7 @@
  *
  ****************************************************************************/
 
-void modifyreg8(volatile uint8_t *addr, uint8_t clearbits, uint8_t setbits)
+void modifyreg8(uintptr_t addr, uint8_t clearbits, uint8_t setbits)
 {
   irqstate_t flags;
   uint8_t    regval;

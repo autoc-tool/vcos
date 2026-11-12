@@ -120,7 +120,7 @@
                     "max_tp_interrupt_priority": 1,
                     "max_cat1_interrupt_priority": 0,
                     "max_cat2_interrupt_priority": 1,
-                    "min_interrupt_priority": 7,
+                    "min_interrupt_priority": 255,
                     "min_OsTaskStackSize": 1024
                 }
             },

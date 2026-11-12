@@ -31,22 +31,22 @@ cpu3: CPU.CortexM @ sysbus
         IsHalted true
 
 nvic0: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu0 }
-    priorityMask: 0xE0
+    priorityMask: 0xFF
     systickFrequency: 160000000
     -> cpu0@0
 
 nvic1: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu1 }
-    priorityMask: 0xE0
+    priorityMask: 0xFF
     systickFrequency: 160000000
     -> cpu1@0
 
 nvic2: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu2 }
-    priorityMask: 0xE0
+    priorityMask: 0xFF
     systickFrequency: 160000000
     -> cpu2@0
 
 nvic3: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu3 }
-    priorityMask: 0xE0
+    priorityMask: 0xFF
     systickFrequency: 160000000
     -> cpu3@0
 

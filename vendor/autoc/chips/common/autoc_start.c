@@ -37,7 +37,9 @@ void __start(void)
   arm_fpuconfig();
 #endif
 
+#ifdef USE_EARLYSERIALINIT
   arm_earlyserialinit();
+#endif
   nx_start();
 
   for (;;)

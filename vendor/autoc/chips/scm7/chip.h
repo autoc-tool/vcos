@@ -7,7 +7,7 @@
 #define ARMV7M_DCACHE_LINESIZE 32
 #define ARMV7M_ICACHE_LINESIZE 32
 
-#define g_cpu1_idlestack ((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE)
-#define g_cpu2_idlestack ((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE * 2)
+#define g_cpu1_idlestack ((const uint32_t *)((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE))
+#define g_cpu2_idlestack ((const uint32_t *)((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE * 2))
 
 #endif

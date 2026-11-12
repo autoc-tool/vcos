@@ -1,5 +1,5 @@
 :name: autoc mcm7
-:description: Three Cortex-M7 cores, one ELF. Console is Segger RTT.
+:description: Four Cortex-M7 cores, one ELF. Console is Segger RTT.
 
 using sysbus
 
@@ -17,9 +17,11 @@ macro reset
     sysbus.coreid0 WriteDoubleWord 0 0
     sysbus.coreid1 WriteDoubleWord 0 1
     sysbus.coreid2 WriteDoubleWord 0 2
+    sysbus.coreid3 WriteDoubleWord 0 3
     sysbus.cpu0 Reset
     sysbus.cpu1 Reset
     sysbus.cpu2 Reset
+    sysbus.cpu3 Reset
 """
 runMacro $reset
 

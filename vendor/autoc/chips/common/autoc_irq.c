@@ -40,6 +40,9 @@ const uint32_t g_irqstack_top[CONFIG_BMP_NCPUS] =
 #if CONFIG_BMP_NCPUS > 2
   (uint32_t)g_irqstack_alloc + (3 * CONFIG_ARCH_INTERRUPTSTACK),
 #endif
+#if CONFIG_BMP_NCPUS > 3
+  (uint32_t)g_irqstack_alloc + (4 * CONFIG_ARCH_INTERRUPTSTACK),
+#endif
 };
 
 uintptr_t up_get_intstackbase(int cpu)
@@ -225,6 +228,14 @@ void up_clear_irq(int irq)
       putreg32(bit, regaddr);
     }
 }
+
+#ifdef CONFIG_BMP
+void up_affinity_irq(int irq, cpu_set_t cpuset)
+{
+  UNUSED(irq);
+  UNUSED(cpuset);
+}
+#endif
 
 bool up_irq_is_enabled(int irq)
 {

@@ -70,6 +70,9 @@ SECTIONS
     _core2_percpu_reserve_start = .;
     . += 12K;
     _core2_percpu_reserve_end = .;
+    _core3_percpu_reserve_start = .;
+    . += 12K;
+    _core3_percpu_reserve_end = .;
   } > sram
 #endif
 

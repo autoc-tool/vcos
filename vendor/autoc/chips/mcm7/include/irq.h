@@ -23,6 +23,9 @@
 void up_init_irq(int irq, int irq_prio);
 bool up_irq_is_enabled(int irq);
 void up_clear_irq(int irq);
+void up_ipicall_attach(void *handler);
+int up_trigger_ipicall(unsigned int core_id);
+void up_trigger_ipicalls(unsigned int core_mask);
 #endif
 
 #endif

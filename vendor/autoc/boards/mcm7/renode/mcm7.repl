@@ -21,6 +21,15 @@ cpu2: CPU.CortexM @ sysbus
     reset:
         IsHalted true
 
+cpu3: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    cpuId: 3
+    nvic: nvic3
+    init:
+        IsHalted true
+    reset:
+        IsHalted true
+
 nvic0: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu0 }
     priorityMask: 0xE0
     systickFrequency: 160000000
@@ -36,6 +45,11 @@ nvic2: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE0
     systickFrequency: 160000000
     -> cpu2@0
 
+nvic3: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu3 }
+    priorityMask: 0xE0
+    systickFrequency: 160000000
+    -> cpu3@0
+
 dwt0: Miscellaneous.DWT @ sysbus new Bus.BusPointRegistration { address: 0xE0001000; cpu: cpu0 }
     frequency: 160000000
 
@@ -45,6 +59,9 @@ dwt1: Miscellaneous.DWT @ sysbus new Bus.BusPointRegistration { address: 0xE0001
 dwt2: Miscellaneous.DWT @ sysbus new Bus.BusPointRegistration { address: 0xE0001000; cpu: cpu2 }
     frequency: 160000000
 
+dwt3: Miscellaneous.DWT @ sysbus new Bus.BusPointRegistration { address: 0xE0001000; cpu: cpu3 }
+    frequency: 160000000
+
 coreid0: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu0 }
     size: 0x4
 
@@ -52,6 +69,9 @@ coreid1: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x
     size: 0x4
 
 coreid2: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu2 }
+    size: 0x4
+
+coreid3: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu3 }
     size: 0x4
 
 flash: Memory.MappedMemory @ sysbus 0x00000000

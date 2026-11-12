@@ -9,5 +9,6 @@
 
 #define g_cpu1_idlestack ((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE)
 #define g_cpu2_idlestack ((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE * 2)
+#define g_cpu3_idlestack ((uintptr_t)_ebss + CONFIG_IDLETHREAD_STACKSIZE * 3)
 
 #endif

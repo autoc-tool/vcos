@@ -5,7 +5,8 @@ set(SRCS
   ${CMAKE_CURRENT_LIST_DIR}/../common/autoc_allocateheap.c
   ${CMAKE_CURRENT_LIST_DIR}/../common/autoc_timestamp.c
   ${CMAKE_CURRENT_LIST_DIR}/../common/autoc_serial.c
-  ${CMAKE_CURRENT_LIST_DIR}/mcm7_cpuid.c)
+  ${CMAKE_CURRENT_LIST_DIR}/mcm7_cpuid.c
+  ${CMAKE_CURRENT_LIST_DIR}/mcm7_stubs.c)
 
 target_sources(arch PRIVATE ${SRCS})
 target_include_directories(arch PRIVATE ${NUTTX_CHIP_ABS_DIR} ${NUTTX_CHIP_ABS_DIR}/include)

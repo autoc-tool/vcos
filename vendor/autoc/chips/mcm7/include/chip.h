@@ -11,4 +11,8 @@
 #define AUTOC_SYSCLK_FREQUENCY     CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
 #define AUTOC_COREID_ADDR          0x40000000
 
+/* Core 0 writes the target core index here. The platform unhalts that core. */
+
+#define AUTOC_CORE_RELEASE_ADDR    0x40001000
+
 #endif

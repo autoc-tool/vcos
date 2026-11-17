@@ -57,6 +57,11 @@ SECTIONS
     _ebss = .;
   } > sram
 
+  _cpu_data_size = ((_ebss + CONFIG_IDLETHREAD_STACKSIZE + 63) & ~63) - _sdata;
+  _cpu1_idlestack = _ebss + _cpu_data_size;
+  _cpu2_idlestack = _ebss + _cpu_data_size * 2;
+  _cpu3_idlestack = _ebss + _cpu_data_size * 3;
+
 #if defined(CONFIG_BMP)
   .percpu_reserve (NOLOAD) :
   {

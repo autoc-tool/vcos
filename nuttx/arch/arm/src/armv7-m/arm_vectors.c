@@ -57,12 +57,14 @@
 
 extern void __start(void);
 
-static void start(void)
+static void __attribute__((naked, noreturn)) start(void)
 {
-  /* Zero lr to mark the end of backtrace */
+  /* No prologue: every core shares this initial SP until __start switches
+   * a secondary core onto its own stack.
+   */
 
-  asm volatile ("mov lr, #0\n\t"
-                "b  __start\n\t");
+  __asm__ __volatile__ ("mov lr, #0\n\t"
+                        "b  __start\n\t");
 }
 
 /****************************************************************************

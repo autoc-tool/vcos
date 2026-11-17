@@ -10,6 +10,8 @@ mach create $name
 machine LoadPlatformDescription $ORIGIN/mcm7.repl
 
 include @scripts/single-node/segger-rtt.py
+include $ORIGIN/autoc_core_release.py
+autoc_core_release
 
 macro reset
 """

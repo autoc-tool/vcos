@@ -96,12 +96,27 @@ weak_function Atomic Os_AtomicDec(Atomic *ptr)
 
 weak_function Atomic Os_AtomicOr(Atomic *ptr, int32_t orVal)
 {
-    Atomic ret;
-    __asm __volatile__("cpsid if");
-    ret = *ptr;
-    *ptr |= orVal;
-    __asm __volatile__("cpsie if");
-    return ret;
+    Atomic old;
+    Atomic newval;
+    uint32_t status;
+
+    /* Local cpsid does not exclude another core. LDREX/STREX does. */
+
+    do
+      {
+        __asm__ __volatile__
+          (
+            "ldrex %0, [%3]\n\t"
+            "orr   %1, %0, %4\n\t"
+            "strex %2, %1, [%3]\n\t"
+            : "=&r"(old), "=&r"(newval), "=&r"(status)
+            : "r"(ptr), "r"(orVal)
+            : "memory"
+          );
+      }
+    while (status != 0);
+
+    return old;
 }
 
 /*  \brief          Atomic XOR

@@ -63,16 +63,19 @@ dwt3: Miscellaneous.DWT @ sysbus new Bus.BusPointRegistration { address: 0xE0001
     frequency: 160000000
 
 coreid0: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu0 }
-    size: 0x4
+    size: 0x400
 
 coreid1: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu1 }
-    size: 0x4
+    size: 0x400
 
 coreid2: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu2 }
-    size: 0x4
+    size: 0x400
 
 coreid3: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x40000000; cpu: cpu3 }
-    size: 0x4
+    size: 0x400
+
+corerelease: Memory.MappedMemory @ sysbus 0x40001000
+    size: 0x400
 
 flash: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x800000
